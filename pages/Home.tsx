@@ -1,11 +1,9 @@
 import React from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Truck, Star, TrendingUp, Award } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
-
-const { Link } = ReactRouterDOM as any;
 
 const Home: React.FC = () => {
   const { t } = useAppContext();

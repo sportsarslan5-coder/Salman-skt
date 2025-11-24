@@ -1,10 +1,8 @@
 import React from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '../types';
 import { useAppContext } from '../context/AppContext';
-
-const { Link } = ReactRouterDOM as any;
 
 interface ProductCardProps {
   product: Product;

@@ -1,11 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Star, ShoppingCart, ArrowLeft, CheckCircle, MessageCircle, Shield, RefreshCcw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS, WHATSAPP_NUMBER } from '../constants';
 import ProductCard from '../components/ProductCard';
-
-const { useParams, Link } = ReactRouterDOM as any;
 
 const ProductDetails: React.FC = () => {
   const { id } = useParams();

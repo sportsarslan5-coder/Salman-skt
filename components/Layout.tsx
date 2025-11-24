@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, X, Search, MessageCircle, Instagram, Facebook, Twitter, ArrowUp } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { WHATSAPP_NUMBER } from '../constants';
-
-const { Link, useLocation } = ReactRouterDOM as any;
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { 
@@ -13,6 +11,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +20,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
 
   const navLinks = [
     { name: 'home', path: '/' },
@@ -46,175 +50,186 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4 opacity-90">
             <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent transition-colors">
-              <MessageCircle size={14} /> <span className="font-medium">WhatsApp: 03039877968</span>
+              <MessageCircle size={14} /> <span className="font-medium">WhatsApp: {WHATSAPP_NUMBER}</span>
             </a>
             <span className="hidden sm:inline text-gray-600">|</span>
             <span className="hidden sm:inline text-gray-300">Global Shipping • 24/7 Support</span>
           </div>
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2 cursor-pointer text-xs">
-                <button onClick={() => setLanguage('en')} className={`font-bold transition-colors ${language === 'en' ? 'text-accent' : 'text-gray-500 hover:text-white'}`}>EN</button>
-                <span className="text-gray-700">/</span>
-                <button onClick={() => setLanguage('ur')} className={`font-bold transition-colors ${language === 'ur' ? 'text-accent' : 'text-gray-500 hover:text-white'}`}>UR</button>
+                <button 
+                  onClick={() => setLanguage('en')} 
+                  className={`font-bold transition-colors ${language === 'en' ? 'text-accent' : 'text-gray-400 hover:text-white'}`}
+                >
+                  ENG
+                </button>
+                <span className="text-gray-600">/</span>
+                <button 
+                  onClick={() => setLanguage('ur')} 
+                  className={`font-bold transition-colors ${language === 'ur' ? 'text-accent' : 'text-gray-400 hover:text-white'}`}
+                >
+                  اردو
+                </button>
             </div>
             <div className="flex items-center gap-2 cursor-pointer text-xs">
-                <button onClick={() => setCurrency('USD')} className={`font-bold transition-colors ${currency === 'USD' ? 'text-accent' : 'text-gray-500 hover:text-white'}`}>USD</button>
-                <span className="text-gray-700">/</span>
-                <button onClick={() => setCurrency('PKR')} className={`font-bold transition-colors ${currency === 'PKR' ? 'text-accent' : 'text-gray-500 hover:text-white'}`}>PKR</button>
+                 <button 
+                  onClick={() => setCurrency('USD')} 
+                  className={`font-bold transition-colors ${currency === 'USD' ? 'text-accent' : 'text-gray-400 hover:text-white'}`}
+                >
+                  $ USD
+                </button>
+                <span className="text-gray-600">/</span>
+                <button 
+                  onClick={() => setCurrency('PKR')} 
+                  className={`font-bold transition-colors ${currency === 'PKR' ? 'text-accent' : 'text-gray-400 hover:text-white'}`}
+                >
+                  ₨ PKR
+                </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Header - Glassmorphism */}
-      <header 
-        className={`sticky top-0 z-40 transition-all duration-300 ${
-          scrolled 
-            ? 'bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 py-2' 
-            : 'bg-white border-b border-transparent py-5'
-        }`}
-      >
+      {/* Main Navbar */}
+      <nav className={`sticky top-0 z-40 transition-all duration-300 border-b border-gray-100 ${scrolled ? 'bg-white/80 backdrop-blur-md py-4 shadow-sm' : 'bg-white py-6'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            {/* Logo */}
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl md:text-3xl font-black tracking-tighter group">
-                SALMAN<span className="text-accent group-hover:text-black transition-colors duration-300">.</span>SKT
-              </Link>
-            </div>
+            {/* Mobile Menu Button */}
+            <button 
+              className="lg:hidden p-2 -ml-2 text-black hover:text-accent transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
 
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex space-x-8 items-center">
+            {/* Logo */}
+            <Link to="/" className="text-2xl font-black tracking-tighter uppercase flex items-center gap-1">
+              SALMAN<span className="text-accent">SKT</span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-sm font-semibold uppercase tracking-wider transition-all duration-200 relative group ${
-                    isActive(link.path) ? 'text-black' : 'text-gray-500 hover:text-black'
-                  }`}
+                  className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-accent ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
                 >
                   {t(link.name)}
-                  <span className={`absolute -bottom-1 left-0 w-full h-0.5 bg-accent transform origin-left transition-transform duration-300 ${isActive(link.path) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
                 </Link>
               ))}
-            </nav>
+            </div>
 
             {/* Icons */}
-            <div className="flex items-center gap-3 md:gap-5">
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block text-gray-600 hover:text-black">
-                <Search size={20} />
+            <div className="flex items-center gap-4">
+               {/* Search Icon (Desktop) */}
+              <button onClick={() => navigate('/shop')} className="hidden sm:flex hover:text-accent transition-colors">
+                <Search size={22} strokeWidth={1.5} />
               </button>
-              <Link to="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative group text-gray-600 hover:text-black">
-                <ShoppingBag size={20} />
+
+              {/* Cart */}
+              <Link to="/cart" className="relative group hover:text-accent transition-colors">
+                <ShoppingBag size={22} strokeWidth={1.5} />
                 {cart.length > 0 && (
-                  <span className="absolute top-0 right-0 bg-accent text-black text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                    {cart.reduce((acc, item) => acc + item.quantity, 0)}
+                  <span className="absolute -top-2 -right-2 bg-accent text-black text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full">
+                    {cart.reduce((a, b) => a + b.quantity, 0)}
                   </span>
                 )}
               </Link>
-              <button 
-                className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
             </div>
           </div>
         </div>
+      </nav>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 absolute w-full left-0 z-30 animate-slide-down shadow-xl h-screen">
-            <div className="px-4 pt-4 pb-8 space-y-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-3 text-lg font-bold rounded-xl transition-colors ${
-                    isActive(link.path) 
-                      ? 'bg-accent/10 text-black border-l-4 border-accent' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-black'
-                  }`}
-                >
-                  {t(link.name)}
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className={`fixed inset-y-0 ${isRTL ? 'right-0' : 'left-0'} w-[80%] max-w-sm bg-white shadow-2xl p-6 flex flex-col`}>
+             <div className="flex justify-between items-center mb-8">
+                <Link to="/" className="text-2xl font-black tracking-tighter uppercase">
+                  SALMAN<span className="text-accent">SKT</span>
                 </Link>
-              ))}
-            </div>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X size={24} />
+                </button>
+             </div>
+
+             <div className="flex flex-col gap-6 flex-1">
+               {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    className={`text-lg font-bold uppercase tracking-wider ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
+                  >
+                    {t(link.name)}
+                  </Link>
+                ))}
+             </div>
+
+             <div className="border-t pt-6 space-y-4">
+                <p className="text-sm text-gray-500">Language</p>
+                <div className="flex gap-4">
+                   <button onClick={() => setLanguage('en')} className={`px-4 py-2 rounded-lg border ${language === 'en' ? 'bg-black text-white border-black' : 'border-gray-200'}`}>English</button>
+                   <button onClick={() => setLanguage('ur')} className={`px-4 py-2 rounded-lg border ${language === 'ur' ? 'bg-black text-white border-black' : 'border-gray-200'}`}>اردو</button>
+                </div>
+             </div>
           </div>
-        )}
-      </header>
+        </div>
+      )}
 
       {/* Main Content */}
-      <main className="flex-grow bg-white relative">
+      <main className="flex-grow pt-0">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#050505] text-white pt-20 pb-10">
+      <footer className="bg-black text-white pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-                <div className="space-y-6">
-                    <h3 className="text-3xl font-black tracking-tighter">SALMAN<span className="text-accent">.</span>SKT</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-                        Experience the fusion of comfort and style. We bring you the finest footwear collection in Sialkot, crafted for champions.
-                    </p>
-                    <div className="flex gap-4 pt-2">
-                        <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-accent hover:text-black transition-all duration-300 transform hover:-translate-y-1">
-                            <Facebook size={18} />
-                        </a>
-                        <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-accent hover:text-black transition-all duration-300 transform hover:-translate-y-1">
-                            <Instagram size={18} />
-                        </a>
-                        <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-accent hover:text-black transition-all duration-300 transform hover:-translate-y-1">
-                            <Twitter size={18} />
-                        </a>
-                    </div>
-                </div>
-                
-                <div>
-                    <h4 className="font-bold mb-6 text-lg text-white tracking-wide">{t('shop')}</h4>
-                    <ul className="space-y-4 text-sm text-gray-400">
-                        <li><Link to="/shop?category=Men" className="hover:text-accent transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-accent rounded-full opacity-0 hover:opacity-100 transition-opacity"></span> Men's Collection</Link></li>
-                        <li><Link to="/shop?category=Women" className="hover:text-accent transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-accent rounded-full opacity-0 hover:opacity-100 transition-opacity"></span> Women's Collection</Link></li>
-                        <li><Link to="/shop?category=Kids" className="hover:text-accent transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-accent rounded-full opacity-0 hover:opacity-100 transition-opacity"></span> Kids' World</Link></li>
-                        <li><Link to="/shop" className="hover:text-accent transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-accent rounded-full opacity-0 hover:opacity-100 transition-opacity"></span> New Arrivals</Link></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 className="font-bold mb-6 text-lg text-white tracking-wide">Customer Care</h4>
-                    <ul className="space-y-4 text-sm text-gray-400">
-                        <li><Link to="/contact" className="hover:text-accent transition-colors">Order Tracking</Link></li>
-                        <li><Link to="/contact" className="hover:text-accent transition-colors">Size Guide</Link></li>
-                        <li><Link to="/contact" className="hover:text-accent transition-colors">Returns & Exchanges</Link></li>
-                        <li><Link to="/contact" className="hover:text-accent transition-colors">Contact Support</Link></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 className="font-bold mb-6 text-lg text-white tracking-wide">{t('subscribe')}</h4>
-                    <p className="text-gray-400 text-sm mb-4">Join our newsletter for exclusive drops.</p>
-                    <div className="relative">
-                        <input 
-                            type="email" 
-                            placeholder="Your email address" 
-                            className="bg-white/10 text-white px-5 py-3 pr-12 outline-none w-full text-sm rounded-lg focus:ring-2 focus:ring-accent transition-all border border-transparent focus:border-accent placeholder-gray-500" 
-                        />
-                        <button className="absolute right-1 top-1 bottom-1 bg-accent text-black px-3 rounded-md font-bold hover:bg-white transition-colors flex items-center justify-center">
-                            <ArrowUp size={18} className="rotate-90" />
-                        </button>
-                    </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-2">
+              <Link to="/" className="text-3xl font-black tracking-tighter uppercase mb-6 block">
+                SALMAN<span className="text-accent">SKT</span>
+              </Link>
+              <p className="text-gray-400 max-w-sm mb-6 leading-relaxed">
+                Premium sneakers and streetwear for the modern generation. Sialkot's finest fashion destination.
+              </p>
+              <div className="flex gap-4">
+                 <a href="#" className="w-10 h-10 bg-white/10 flex items-center justify-center rounded-full hover:bg-accent hover:text-black transition-colors"><Instagram size={20} /></a>
+                 <a href="#" className="w-10 h-10 bg-white/10 flex items-center justify-center rounded-full hover:bg-accent hover:text-black transition-colors"><Facebook size={20} /></a>
+                 <a href="#" className="w-10 h-10 bg-white/10 flex items-center justify-center rounded-full hover:bg-accent hover:text-black transition-colors"><Twitter size={20} /></a>
+              </div>
             </div>
-            
-            <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500 text-sm">
-                <div>{t('footerText')}</div>
-                <div className="flex gap-6">
-                    <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                    <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-                </div>
+
+            <div>
+              <h4 className="font-bold text-lg mb-6">{t('shop')}</h4>
+              <ul className="space-y-4 text-gray-400">
+                <li><Link to="/shop?category=Men" className="hover:text-white transition-colors">Men's Collection</Link></li>
+                <li><Link to="/shop?category=Women" className="hover:text-white transition-colors">Women's Collection</Link></li>
+                <li><Link to="/shop?category=Kids" className="hover:text-white transition-colors">Kids' Collection</Link></li>
+                <li><Link to="/shop" className="hover:text-white transition-colors">New Arrivals</Link></li>
+              </ul>
             </div>
+
+            <div>
+               <h4 className="font-bold text-lg mb-6">{t('contact')}</h4>
+               <ul className="space-y-4 text-gray-400">
+                 <li><a href={`https://wa.me/${WHATSAPP_NUMBER}`} className="hover:text-white transition-colors">WhatsApp Support</a></li>
+                 <li><Link to="/contact" className="hover:text-white transition-colors">Store Location</Link></li>
+                 <li><Link to="/contact" className="hover:text-white transition-colors">Email Us</Link></li>
+               </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">
+              {t('footerText')}
+            </p>
+            <div className="flex gap-6 text-sm text-gray-500">
+               <a href="#" className="hover:text-white">Privacy Policy</a>
+               <a href="#" className="hover:text-white">Terms of Service</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

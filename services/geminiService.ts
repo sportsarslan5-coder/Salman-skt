@@ -1,21 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { PRODUCTS } from '../constants';
 
-let ai: GoogleGenAI | null = null;
-
-try {
-  if (process.env.API_KEY) {
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  }
-} catch (error) {
-  console.error("Error initializing GoogleGenAI:", error);
-}
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const chatWithStylist = async (userMessage: string, history: {role: string, parts: {text: string}[]}[]): Promise<string> => {
-  if (!ai) {
-    return "I'm sorry, my AI brain isn't connected right now. Please try again later.";
-  }
-
   const productContext = PRODUCTS.map(p => `${p.name} (${p.category}) - $${p.priceUSD}`).join(', ');
 
   const systemInstruction = `You are a helpful, friendly fashion stylist for "Salman SKT", a trendy brand selling 3D printed t-shirts, gaming apparel, and graphic tees.

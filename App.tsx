@@ -1,5 +1,5 @@
 import React from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -10,9 +10,6 @@ import Checkout from './pages/Checkout';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
 import AIStylist from './components/AIStylist';
-
-// Bypass type checking for react-router-dom exports if they are missing in the environment's type definitions
-const { HashRouter: Router, Routes, Route } = ReactRouterDOM as any;
 
 const App: React.FC = () => {
   return (

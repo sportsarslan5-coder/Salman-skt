@@ -1,10 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
-
-const { useLocation } = ReactRouterDOM as any;
 
 const Shop: React.FC = () => {
   const { t } = useAppContext();
