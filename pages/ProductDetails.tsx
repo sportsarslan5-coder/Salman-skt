@@ -1,3 +1,5 @@
+
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Star, ShoppingCart, ArrowLeft, CheckCircle, MessageCircle, Shield, RefreshCcw } from 'lucide-react';
@@ -44,6 +46,28 @@ const ProductDetails: React.FC = () => {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
 
+  const renderStars = (rating: number) => {
+    return [1, 2, 3, 4, 5].map((star) => (
+      <Star 
+        key={star} 
+        size={20} 
+        fill={star <= Math.round(rating) ? "currentColor" : "none"} 
+        className={star <= Math.round(rating) ? "text-yellow-400" : "text-gray-300"}
+      />
+    ));
+  };
+  
+  const renderSmallStars = (rating: number) => {
+      return [1, 2, 3, 4, 5].map((star) => (
+        <Star 
+          key={star} 
+          size={14} 
+          fill={star <= Math.round(rating) ? "currentColor" : "none"} 
+          className={star <= Math.round(rating) ? "text-yellow-400" : "text-gray-300"}
+        />
+      ));
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 animate-fade-in">
         <nav className="flex items-center gap-3 text-sm text-gray-500 mb-12">
@@ -72,12 +96,8 @@ const ProductDetails: React.FC = () => {
                    <span className="text-accent font-bold uppercase tracking-widest text-xs mb-2 block">{product.category} Series</span>
                    <h1 className="text-4xl md:text-5xl font-black text-primary mb-4 leading-tight">{product.name}</h1>
                    <div className="flex items-center gap-4">
-                        <div className="flex items-center text-yellow-400">
-                            <Star fill="currentColor" size={20} />
-                            <Star fill="currentColor" size={20} />
-                            <Star fill="currentColor" size={20} />
-                            <Star fill="currentColor" size={20} />
-                            <Star fill="currentColor" size={20} />
+                        <div className="flex items-center">
+                            {renderStars(product.rating)}
                         </div>
                         <span className="text-gray-500 text-sm font-medium">({product.reviews} verified reviews)</span>
                    </div>
@@ -148,7 +168,7 @@ const ProductDetails: React.FC = () => {
                          <span className="text-xs text-gray-400">Verified Buyer</span>
                      </div>
                      <div className="flex text-accent mb-3">
-                         {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+                         {renderSmallStars(product.rating)}
                      </div>
                      <p className="text-gray-600 leading-relaxed">"Absolutely love the quality! The material feels premium and the fit is perfect. Delivery to Lahore was super fast."</p>
                  </div>
@@ -161,7 +181,7 @@ const ProductDetails: React.FC = () => {
                          <span className="text-xs text-gray-400">Verified Buyer</span>
                      </div>
                      <div className="flex text-accent mb-3">
-                         {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+                         {renderSmallStars(product.rating)}
                      </div>
                      <p className="text-gray-600 leading-relaxed">"Best sneakers I've bought online. Highly recommended for anyone looking for style and comfort."</p>
                  </div>

@@ -1,7 +1,21 @@
+
+
 import { GoogleGenAI } from "@google/genai";
 import { PRODUCTS } from '../constants';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI | null = null;
+
+const getAIClient = () => {
+  if (!ai) {
+    try {
+        const apiKey = typeof process !== 'undefined' && process.env && process.env.API_KEY ? process.env.API_KEY : 'dummy_key';
+        ai = new GoogleGenAI({ apiKey });
+    } catch (e) {
+        console.error("Failed to initialize AI client", e);
+    }
+  }
+  return ai;
+};
 
 export const chatWithStylist = async (userMessage: string, history: {role: string, parts: {text: string}[]}[]): Promise<string> => {
   const productContext = PRODUCTS.map(p => `${p.name} (${p.category}) - $${p.priceUSD}`).join(', ');
@@ -13,14 +27,17 @@ export const chatWithStylist = async (userMessage: string, history: {role: strin
   
   Rules:
   1. Recommend products from the catalog if they fit the user's request.
-  2. Be enthusiastic about 3D prints and gaming fashion.
+  2. Be enthusiastic about sneakers and street fashion.
   3. Keep answers concise (under 100 words).
   4. If the user asks about prices, convert roughly to PKR if asked (1 USD = ~280 PKR).
   5. If they want to order, tell them they can checkout and it will open WhatsApp to Sajda.
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const client = getAIClient();
+    if (!client) throw new Error("AI Client not available");
+    
+    const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [
         ...history,
