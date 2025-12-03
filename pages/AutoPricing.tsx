@@ -71,10 +71,10 @@ const AutoPricing: React.FC = () => {
       let code = '';
 
       if (err.message === 'MISSING_API_KEY') {
-          friendlyMessage = 'System Configuration Error: API_KEY is missing.';
+          friendlyMessage = 'API Key is missing.';
           code = 'MISSING_KEY';
       } else if (err.message === 'INVALID_API_KEY') {
-          friendlyMessage = 'System Configuration Error: The API Key provided is invalid.';
+          friendlyMessage = 'The API Key provided is invalid.';
           code = 'INVALID_KEY';
       } else if (err.message === 'BAD_REQUEST') {
           friendlyMessage = 'The image could not be processed. It might be corrupted or too complex.';
@@ -146,64 +146,43 @@ const AutoPricing: React.FC = () => {
   const renderErrorContent = () => {
       if (errorCode === 'MISSING_KEY' || errorCode === 'INVALID_KEY') {
           return (
-              <div className="flex flex-col items-center max-w-sm mx-auto animate-fade-in text-center">
-                  <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
-                      <Settings size={32} />
+              <div className="flex flex-col items-center max-w-sm mx-auto animate-fade-in text-center p-4">
+                  <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-3">
+                      <Settings size={24} />
                   </div>
-                  <p className="font-bold text-red-500 mb-2 text-lg">Configuration Required</p>
-                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                      The AI feature is disabled because the API Key is missing.
+                  <h3 className="font-bold text-lg mb-1">Configuration Needed</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                      The AI needs a key to function. 
+                      <br/>Please add <strong>NEXT_PUBLIC_API_KEY</strong> to your environment variables.
                   </p>
-                  <div className="bg-gray-50 p-4 rounded-lg text-left text-xs text-gray-600 mb-6 w-full border border-gray-200">
-                      <strong>To fix this in Vercel:</strong>
-                      <ol className="list-decimal pl-4 mt-2 space-y-1">
-                          <li>Go to your Vercel Project Settings.</li>
-                          <li>Click on <strong>Environment Variables</strong>.</li>
-                          <li>Add a new variable:
-                              <ul className="list-disc pl-4 mt-1">
-                                  <li>Key: <code className="bg-gray-200 px-1 rounded">API_KEY</code></li>
-                                  <li>Value: <em>Your Google Gemini API Key</em></li>
-                              </ul>
-                          </li>
-                          <li>Redeploy your project.</li>
-                      </ol>
-                  </div>
                   <button 
                       onClick={clearAll}
-                      className="bg-black text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-800 transition-colors"
+                      className="text-sm underline text-gray-400 hover:text-black"
                   >
-                      Go Back
+                      Cancel & Go Back
                   </button>
               </div>
           );
       }
 
       return (
-        <div className="flex flex-col items-center max-w-xs mx-auto animate-fade-in text-center">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle size={32} />
+        <div className="flex flex-col items-center max-w-xs mx-auto animate-fade-in text-center p-4">
+            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-3">
+                <AlertTriangle size={24} />
             </div>
-            <p className="font-bold text-red-500 mb-2 text-lg">Analysis Failed</p>
-            <p className="text-sm text-gray-500 mb-6 leading-relaxed">{error}</p>
-            <div className="flex gap-2">
-                <button 
-                    onClick={() => {
-                        if (selectedImage) {
-                            const base64Data = selectedImage.split(',')[1];
-                            analyzeImage(base64Data, 'image/jpeg'); // Retry with last image
-                        }
-                    }}
-                    className="bg-accent text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-yellow-400 transition-colors flex items-center gap-2"
-                >
-                    <RefreshCw size={16} /> Retry
-                </button>
-                <button 
-                    onClick={clearAll}
-                    className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
-                >
-                    New Image
-                </button>
-            </div>
+            <h3 className="font-bold text-lg mb-1">Analysis Failed</h3>
+            <p className="text-sm text-gray-500 mb-6">{error}</p>
+            <button 
+                onClick={() => {
+                    if (selectedImage) {
+                        const base64Data = selectedImage.split(',')[1];
+                        analyzeImage(base64Data, 'image/jpeg'); // Retry with last image
+                    }
+                }}
+                className="bg-accent text-black px-8 py-3 rounded-full font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2 shadow-lg"
+            >
+                <RefreshCw size={18} /> Try Again
+            </button>
         </div>
       );
   };

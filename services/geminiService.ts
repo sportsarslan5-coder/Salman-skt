@@ -7,9 +7,29 @@ let ai: GoogleGenAI | null = null;
 const getAIClient = () => {
   if (!ai) {
     try {
-        // DIRECT ACCESS: This allows bundlers (Vite/Webpack/Vercel) to replace 'process.env.API_KEY' with the actual string value.
-        // We avoid checking 'typeof process' because the global process object might not exist in the browser, even if the env var replacement works.
-        const apiKey = process.env.API_KEY;
+        let apiKey = '';
+        
+        // 1. Check standard process.env (Node/Webpack/Next.js)
+        if (typeof process !== 'undefined' && process.env) {
+            apiKey = process.env.API_KEY || 
+                     process.env.NEXT_PUBLIC_API_KEY || 
+                     process.env.REACT_APP_API_KEY || 
+                     process.env.VITE_API_KEY || 
+                     '';
+        }
+
+        // 2. Check import.meta.env (Vite standard) if process.env failed
+        if (!apiKey) {
+            try {
+                // @ts-ignore
+                if (import.meta && import.meta.env) {
+                    // @ts-ignore
+                    apiKey = import.meta.env.VITE_API_KEY || import.meta.env.NEXT_PUBLIC_API_KEY || '';
+                }
+            } catch (e) {
+                // Ignore errors if import.meta is not supported
+            }
+        }
         
         if (apiKey) {
             ai = new GoogleGenAI({ apiKey: apiKey });
