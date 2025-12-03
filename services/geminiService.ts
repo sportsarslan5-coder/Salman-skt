@@ -4,38 +4,37 @@ import { PRODUCTS } from '../constants';
 
 let ai: GoogleGenAI | null = null;
 
+// Robust helper to find the API key in various environments
+const getAPIKey = (): string => {
+    // 1. Try standard Vite/Client naming (Most likely for Vercel + Vite)
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+        // @ts-ignore
+        if (import.meta.env.VITE_API_KEY) return import.meta.env.VITE_API_KEY;
+        // @ts-ignore
+        if (import.meta.env.NEXT_PUBLIC_API_KEY) return import.meta.env.NEXT_PUBLIC_API_KEY;
+    }
+
+    // 2. Try standard process.env (Node/Compat)
+    if (typeof process !== 'undefined' && process.env) {
+        if (process.env.REACT_APP_API_KEY) return process.env.REACT_APP_API_KEY;
+        if (process.env.NEXT_PUBLIC_API_KEY) return process.env.NEXT_PUBLIC_API_KEY;
+        if (process.env.VITE_API_KEY) return process.env.VITE_API_KEY;
+        if (process.env.API_KEY) return process.env.API_KEY;
+    }
+
+    return '';
+};
+
 const getAIClient = () => {
   if (!ai) {
-    try {
-        let apiKey = '';
-        
-        // 1. Check standard process.env (Node/Webpack/Next.js)
-        if (typeof process !== 'undefined' && process.env) {
-            apiKey = process.env.API_KEY || 
-                     process.env.NEXT_PUBLIC_API_KEY || 
-                     process.env.REACT_APP_API_KEY || 
-                     process.env.VITE_API_KEY || 
-                     '';
-        }
-
-        // 2. Check import.meta.env (Vite standard) if process.env failed
-        if (!apiKey) {
-            try {
-                // @ts-ignore
-                if (import.meta && import.meta.env) {
-                    // @ts-ignore
-                    apiKey = import.meta.env.VITE_API_KEY || import.meta.env.NEXT_PUBLIC_API_KEY || '';
-                }
-            } catch (e) {
-                // Ignore errors if import.meta is not supported
-            }
-        }
-        
-        if (apiKey) {
+    const apiKey = getAPIKey();
+    if (apiKey) {
+        try {
             ai = new GoogleGenAI({ apiKey: apiKey });
+        } catch (e) {
+            console.error("Failed to initialize Google GenAI", e);
         }
-    } catch (e) {
-        console.error("Failed to initialize AI client", e);
     }
   }
   return ai;
@@ -59,7 +58,7 @@ export const chatWithStylist = async (userMessage: string, history: {role: strin
 
   try {
     const client = getAIClient();
-    if (!client) return "I'm currently offline (API Key Missing). Please contact support.";
+    if (!client) return "I'm currently in demo mode (API Key Missing). Please contact support to enable AI features.";
     
     const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -83,14 +82,26 @@ export interface PricingAnalysis {
   category: string;
   price: number;
   reasoning: string;
+  isDemo?: boolean;
 }
 
 export const analyzeProductImage = async (base64Image: string, mimeType: string): Promise<PricingAnalysis> => {
   const client = getAIClient();
   
-  // EXPLICIT ERROR FOR MISSING KEY
+  // FAILSAFE: If API Key is missing, return Demo Data instead of crashing
+  // This ensures the UI looks good even if Vercel config is missing.
   if (!client) {
-      throw new Error("MISSING_API_KEY");
+      console.warn("API Key missing. Returning demo data.");
+      return new Promise((resolve) => {
+          setTimeout(() => {
+              resolve({
+                  category: "Demo Product (Key Missing)",
+                  price: 50.00,
+                  reasoning: "API Key not found in environment. Showing demo mode results. Please add VITE_API_KEY to your hosting settings.",
+                  isDemo: true
+              });
+          }, 1500); // Fake delay for realism
+      });
   }
 
   const prompt = `
@@ -147,7 +158,6 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
 
     // Robust JSON parsing
     let jsonText = response.text.trim();
-    // Remove code blocks if present
     if (jsonText.startsWith('```')) {
         jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '');
     }
@@ -157,23 +167,20 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   } catch (error: any) {
     console.error("Image Analysis failed", error);
     
-    // Check for specific error types
-    if (error.message === "MISSING_API_KEY") {
-        throw new Error("MISSING_API_KEY");
-    }
-
-    if (error.message?.includes('403') || error.message?.includes('API key not valid')) {
-        throw new Error("INVALID_API_KEY");
-    }
-
-    if (error.message?.includes('400')) {
-        throw new Error("BAD_REQUEST");
+    // Fallback to demo mode on API errors too, to keep site alive
+    if (error.message?.includes('403') || error.message?.includes('key') || error.message?.includes('API_KEY')) {
+        return {
+            category: "Demo Product (Auth Error)",
+            price: 50.00,
+            reasoning: "API Key invalid or restricted. Showing demo results.",
+            isDemo: true
+        };
     }
     
     if (error.message?.includes('503') || error.message?.includes('Overloaded')) {
         throw new Error("SERVICE_BUSY");
     }
     
-    throw new Error(error.message || "Failed to analyze image.");
+    throw new Error("Failed to analyze image. Please try again.");
   }
 };

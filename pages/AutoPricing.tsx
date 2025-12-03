@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Check, RefreshCw, AlertTriangle, Settings } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Check, RefreshCw, AlertTriangle, Settings, Info } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -14,7 +14,6 @@ const AutoPricing: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [errorCode, setErrorCode] = useState<string | null>(null);
   
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
@@ -42,7 +41,6 @@ const AutoPricing: React.FC = () => {
       setSelectedImage(base64String);
       setResult(null);
       setError(null);
-      setErrorCode(null);
       setQuantity(1); // Reset quantity
       
       // Extract pure base64 for API (remove data:image/xxx;base64,)
@@ -60,7 +58,6 @@ const AutoPricing: React.FC = () => {
   const analyzeImage = async (base64Data: string, mimeType: string) => {
     setAnalyzing(true);
     setError(null);
-    setErrorCode(null);
     try {
       const data = await analyzeProductImage(base64Data, mimeType);
       setResult(data);
@@ -68,26 +65,14 @@ const AutoPricing: React.FC = () => {
       console.error("Analysis Error:", err);
       
       let friendlyMessage = 'Failed to analyze image. Please try again.';
-      let code = '';
 
-      if (err.message === 'MISSING_API_KEY') {
-          friendlyMessage = 'API Key is missing.';
-          code = 'MISSING_KEY';
-      } else if (err.message === 'INVALID_API_KEY') {
-          friendlyMessage = 'The API Key provided is invalid.';
-          code = 'INVALID_KEY';
-      } else if (err.message === 'BAD_REQUEST') {
-          friendlyMessage = 'The image could not be processed. It might be corrupted or too complex.';
-          code = 'BAD_REQUEST';
-      } else if (err.message === 'SERVICE_BUSY') {
+      if (err.message === 'SERVICE_BUSY') {
           friendlyMessage = 'AI Service is currently busy. Please try again in a few seconds.';
-          code = 'BUSY';
       } else {
           friendlyMessage = err.message || 'An unexpected error occurred.';
       }
 
       setError(friendlyMessage);
-      setErrorCode(code);
     } finally {
       setAnalyzing(false);
     }
@@ -136,56 +121,11 @@ const AutoPricing: React.FC = () => {
     setSelectedImage(null);
     setResult(null);
     setError(null);
-    setErrorCode(null);
     setQuantity(1);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const sizes = ['S', 'M', 'L', 'XL'];
-
-  const renderErrorContent = () => {
-      if (errorCode === 'MISSING_KEY' || errorCode === 'INVALID_KEY') {
-          return (
-              <div className="flex flex-col items-center max-w-sm mx-auto animate-fade-in text-center p-4">
-                  <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-3">
-                      <Settings size={24} />
-                  </div>
-                  <h3 className="font-bold text-lg mb-1">Configuration Needed</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                      The AI needs a key to function. 
-                      <br/>Please add <strong>NEXT_PUBLIC_API_KEY</strong> to your environment variables.
-                  </p>
-                  <button 
-                      onClick={clearAll}
-                      className="text-sm underline text-gray-400 hover:text-black"
-                  >
-                      Cancel & Go Back
-                  </button>
-              </div>
-          );
-      }
-
-      return (
-        <div className="flex flex-col items-center max-w-xs mx-auto animate-fade-in text-center p-4">
-            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-3">
-                <AlertTriangle size={24} />
-            </div>
-            <h3 className="font-bold text-lg mb-1">Analysis Failed</h3>
-            <p className="text-sm text-gray-500 mb-6">{error}</p>
-            <button 
-                onClick={() => {
-                    if (selectedImage) {
-                        const base64Data = selectedImage.split(',')[1];
-                        analyzeImage(base64Data, 'image/jpeg'); // Retry with last image
-                    }
-                }}
-                className="bg-accent text-black px-8 py-3 rounded-full font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2 shadow-lg"
-            >
-                <RefreshCw size={18} /> Try Again
-            </button>
-        </div>
-      );
-  };
 
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6 lg:px-8">
@@ -256,7 +196,15 @@ const AutoPricing: React.FC = () => {
           {/* Results Section */}
           <div className="space-y-6">
              {result ? (
-                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up">
+                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up relative overflow-hidden">
+                    {/* Demo Mode Badge */}
+                    {result.isDemo && (
+                        <div className="bg-yellow-100 text-yellow-800 text-xs px-4 py-2 flex items-center gap-2 mb-4 rounded-lg border border-yellow-200">
+                             <Info size={14} />
+                             <span><strong>Demo Mode:</strong> API Key missing. Add VITE_API_KEY to Vercel for real AI.</span>
+                        </div>
+                    )}
+
                     <div className="flex items-center gap-2 mb-6 text-green-600 bg-green-50 w-fit px-3 py-1 rounded-full text-sm font-bold">
                         <Sparkles size={16} /> AI Analysis Complete
                     </div>
@@ -349,7 +297,24 @@ const AutoPricing: React.FC = () => {
              ) : (
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-[500px] flex flex-col items-center justify-center text-center text-gray-400 border-dashed">
                     {error ? (
-                        renderErrorContent()
+                        <div className="flex flex-col items-center max-w-xs mx-auto animate-fade-in text-center p-4">
+                            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-3">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <h3 className="font-bold text-lg mb-1">Analysis Failed</h3>
+                            <p className="text-sm text-gray-500 mb-6">{error}</p>
+                            <button 
+                                onClick={() => {
+                                    if (selectedImage) {
+                                        const base64Data = selectedImage.split(',')[1];
+                                        analyzeImage(base64Data, 'image/jpeg'); // Retry
+                                    }
+                                }}
+                                className="bg-accent text-black px-8 py-3 rounded-full font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2 shadow-lg"
+                            >
+                                <RefreshCw size={18} /> Try Again
+                            </button>
+                        </div>
                     ) : (
                         <>
                             <ImageIcon size={48} className="mb-4 opacity-20" />
