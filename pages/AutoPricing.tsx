@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Check, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Check, RefreshCw, AlertTriangle, Settings } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -14,6 +14,7 @@ const AutoPricing: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
@@ -41,6 +42,7 @@ const AutoPricing: React.FC = () => {
       setSelectedImage(base64String);
       setResult(null);
       setError(null);
+      setErrorCode(null);
       setQuantity(1); // Reset quantity
       
       // Extract pure base64 for API (remove data:image/xxx;base64,)
@@ -58,12 +60,34 @@ const AutoPricing: React.FC = () => {
   const analyzeImage = async (base64Data: string, mimeType: string) => {
     setAnalyzing(true);
     setError(null);
+    setErrorCode(null);
     try {
       const data = await analyzeProductImage(base64Data, mimeType);
       setResult(data);
     } catch (err: any) {
       console.error("Analysis Error:", err);
-      setError(err.message || 'Failed to analyze image. Please try again.');
+      
+      let friendlyMessage = 'Failed to analyze image. Please try again.';
+      let code = '';
+
+      if (err.message === 'MISSING_API_KEY') {
+          friendlyMessage = 'System Configuration Error: API_KEY is missing.';
+          code = 'MISSING_KEY';
+      } else if (err.message === 'INVALID_API_KEY') {
+          friendlyMessage = 'System Configuration Error: The API Key provided is invalid.';
+          code = 'INVALID_KEY';
+      } else if (err.message === 'BAD_REQUEST') {
+          friendlyMessage = 'The image could not be processed. It might be corrupted or too complex.';
+          code = 'BAD_REQUEST';
+      } else if (err.message === 'SERVICE_BUSY') {
+          friendlyMessage = 'AI Service is currently busy. Please try again in a few seconds.';
+          code = 'BUSY';
+      } else {
+          friendlyMessage = err.message || 'An unexpected error occurred.';
+      }
+
+      setError(friendlyMessage);
+      setErrorCode(code);
     } finally {
       setAnalyzing(false);
     }
@@ -112,11 +136,77 @@ const AutoPricing: React.FC = () => {
     setSelectedImage(null);
     setResult(null);
     setError(null);
+    setErrorCode(null);
     setQuantity(1);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const sizes = ['S', 'M', 'L', 'XL'];
+
+  const renderErrorContent = () => {
+      if (errorCode === 'MISSING_KEY' || errorCode === 'INVALID_KEY') {
+          return (
+              <div className="flex flex-col items-center max-w-sm mx-auto animate-fade-in text-center">
+                  <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+                      <Settings size={32} />
+                  </div>
+                  <p className="font-bold text-red-500 mb-2 text-lg">Configuration Required</p>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                      The AI feature is disabled because the API Key is missing.
+                  </p>
+                  <div className="bg-gray-50 p-4 rounded-lg text-left text-xs text-gray-600 mb-6 w-full border border-gray-200">
+                      <strong>To fix this in Vercel:</strong>
+                      <ol className="list-decimal pl-4 mt-2 space-y-1">
+                          <li>Go to your Vercel Project Settings.</li>
+                          <li>Click on <strong>Environment Variables</strong>.</li>
+                          <li>Add a new variable:
+                              <ul className="list-disc pl-4 mt-1">
+                                  <li>Key: <code className="bg-gray-200 px-1 rounded">API_KEY</code></li>
+                                  <li>Value: <em>Your Google Gemini API Key</em></li>
+                              </ul>
+                          </li>
+                          <li>Redeploy your project.</li>
+                      </ol>
+                  </div>
+                  <button 
+                      onClick={clearAll}
+                      className="bg-black text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-800 transition-colors"
+                  >
+                      Go Back
+                  </button>
+              </div>
+          );
+      }
+
+      return (
+        <div className="flex flex-col items-center max-w-xs mx-auto animate-fade-in text-center">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle size={32} />
+            </div>
+            <p className="font-bold text-red-500 mb-2 text-lg">Analysis Failed</p>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">{error}</p>
+            <div className="flex gap-2">
+                <button 
+                    onClick={() => {
+                        if (selectedImage) {
+                            const base64Data = selectedImage.split(',')[1];
+                            analyzeImage(base64Data, 'image/jpeg'); // Retry with last image
+                        }
+                    }}
+                    className="bg-accent text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-yellow-400 transition-colors flex items-center gap-2"
+                >
+                    <RefreshCw size={16} /> Retry
+                </button>
+                <button 
+                    onClick={clearAll}
+                    className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
+                >
+                    New Image
+                </button>
+            </div>
+        </div>
+      );
+  };
 
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6 lg:px-8">
@@ -280,32 +370,7 @@ const AutoPricing: React.FC = () => {
              ) : (
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-[500px] flex flex-col items-center justify-center text-center text-gray-400 border-dashed">
                     {error ? (
-                        <div className="flex flex-col items-center max-w-xs mx-auto animate-fade-in">
-                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <p className="font-bold text-red-500 mb-2 text-lg">System Error</p>
-                            <p className="text-sm text-gray-500 mb-6 leading-relaxed whitespace-pre-wrap">{error}</p>
-                            <div className="flex gap-2">
-                                <button 
-                                    onClick={() => {
-                                        if (selectedImage) {
-                                            const base64Data = selectedImage.split(',')[1];
-                                            analyzeImage(base64Data, 'image/jpeg'); // Retry with last image
-                                        }
-                                    }}
-                                    className="bg-accent text-black px-6 py-2 rounded-full font-bold text-sm hover:bg-yellow-400 transition-colors flex items-center gap-2"
-                                >
-                                    <RefreshCw size={16} /> Retry
-                                </button>
-                                <button 
-                                    onClick={clearAll}
-                                    className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
-                                >
-                                    New Image
-                                </button>
-                            </div>
-                        </div>
+                        renderErrorContent()
                     ) : (
                         <>
                             <ImageIcon size={48} className="mb-4 opacity-20" />

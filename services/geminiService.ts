@@ -7,13 +7,12 @@ let ai: GoogleGenAI | null = null;
 const getAIClient = () => {
   if (!ai) {
     try {
-        // Safe check for process.env
-        const apiKey = typeof process !== 'undefined' && process.env && process.env.API_KEY ? process.env.API_KEY : '';
+        // DIRECT ACCESS: This allows bundlers (Vite/Webpack/Vercel) to replace 'process.env.API_KEY' with the actual string value.
+        // We avoid checking 'typeof process' because the global process object might not exist in the browser, even if the env var replacement works.
+        const apiKey = process.env.API_KEY;
         
         if (apiKey) {
             ai = new GoogleGenAI({ apiKey: apiKey });
-        } else {
-             console.warn("Gemini API Key is missing. AI features will not work until API_KEY is set in environment variables.");
         }
     } catch (e) {
         console.error("Failed to initialize AI client", e);
@@ -71,7 +70,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   
   // EXPLICIT ERROR FOR MISSING KEY
   if (!client) {
-      throw new Error("CRITICAL: API Key is missing. Please add 'API_KEY' to your deployment Environment Variables.");
+      throw new Error("MISSING_API_KEY");
   }
 
   const prompt = `
@@ -138,12 +137,21 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   } catch (error: any) {
     console.error("Image Analysis failed", error);
     
-    // Detailed error messaging for the UI
-    if (error.message?.includes('API_KEY') || error.message?.includes('400') || error.message?.includes('403')) {
-        throw new Error("API Key Error: Please check your website settings and ensure API_KEY is added to Environment Variables.");
+    // Check for specific error types
+    if (error.message === "MISSING_API_KEY") {
+        throw new Error("MISSING_API_KEY");
     }
-    if (error.message?.includes('503') || error.message?.includes('500') || error.message?.includes('Overloaded')) {
-        throw new Error("AI Service is busy. Please try again in 5 seconds.");
+
+    if (error.message?.includes('403') || error.message?.includes('API key not valid')) {
+        throw new Error("INVALID_API_KEY");
+    }
+
+    if (error.message?.includes('400')) {
+        throw new Error("BAD_REQUEST");
+    }
+    
+    if (error.message?.includes('503') || error.message?.includes('Overloaded')) {
+        throw new Error("SERVICE_BUSY");
     }
     
     throw new Error(error.message || "Failed to analyze image.");
