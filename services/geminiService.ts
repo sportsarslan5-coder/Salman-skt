@@ -7,15 +7,14 @@ let ai: GoogleGenAI | null = null;
 const getAIClient = () => {
   if (!ai) {
     try {
-        // Safe check for process.env to avoid crashes in some browser builds
+        // Safe check for process.env
         const apiKey = typeof process !== 'undefined' && process.env && process.env.API_KEY ? process.env.API_KEY : '';
         
-        if (!apiKey) {
-            console.warn("Gemini API Key is missing. Please set process.env.API_KEY.");
+        if (apiKey) {
+            ai = new GoogleGenAI({ apiKey: apiKey });
+        } else {
+             console.warn("Gemini API Key is missing. AI features will not work until API_KEY is set in environment variables.");
         }
-        
-        // Initialize even if empty to let the API call fail gracefully with a 400 later
-        ai = new GoogleGenAI({ apiKey: apiKey || 'dummy_key' });
     } catch (e) {
         console.error("Failed to initialize AI client", e);
     }
@@ -41,7 +40,7 @@ export const chatWithStylist = async (userMessage: string, history: {role: strin
 
   try {
     const client = getAIClient();
-    if (!client) throw new Error("AI Client not initialized");
+    if (!client) return "I'm currently offline (API Key Missing). Please contact support.";
     
     const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -69,7 +68,11 @@ export interface PricingAnalysis {
 
 export const analyzeProductImage = async (base64Image: string, mimeType: string): Promise<PricingAnalysis> => {
   const client = getAIClient();
-  if (!client) throw new Error("AI Client not available");
+  
+  // EXPLICIT ERROR FOR MISSING KEY
+  if (!client) {
+      throw new Error("CRITICAL: API Key is missing. Please add 'API_KEY' to your deployment Environment Variables.");
+  }
 
   const prompt = `
     Analyze this product image and determine its category and a SINGLE estimated price.
@@ -120,22 +123,27 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
     });
 
     if (!response.text) {
-        throw new Error("AI returned empty response. Possibly blocked by safety settings.");
+        throw new Error("AI returned empty response.");
     }
 
-    // Clean up response text just in case model adds markdown formatting
-    const cleanedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Robust JSON parsing
+    let jsonText = response.text.trim();
+    // Remove code blocks if present
+    if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '');
+    }
     
-    return JSON.parse(cleanedText) as PricingAnalysis;
+    return JSON.parse(jsonText) as PricingAnalysis;
+
   } catch (error: any) {
     console.error("Image Analysis failed", error);
     
-    // Provide more helpful error messages
-    if (error.message?.includes('400') || error.message?.includes('403') || error.message?.includes('API_KEY')) {
-        throw new Error("System Configuration Error: API Key is missing or invalid. Please check your environment settings.");
+    // Detailed error messaging for the UI
+    if (error.message?.includes('API_KEY') || error.message?.includes('400') || error.message?.includes('403')) {
+        throw new Error("API Key Error: Please check your website settings and ensure API_KEY is added to Environment Variables.");
     }
-    if (error.message?.includes('503') || error.message?.includes('500')) {
-        throw new Error("AI Service is currently busy. Please try again in a moment.");
+    if (error.message?.includes('503') || error.message?.includes('500') || error.message?.includes('Overloaded')) {
+        throw new Error("AI Service is busy. Please try again in 5 seconds.");
     }
     
     throw new Error(error.message || "Failed to analyze image.");
