@@ -1,7 +1,6 @@
 
-
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, ShoppingCart, ArrowLeft, CheckCircle, MessageCircle, Shield, RefreshCcw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS, WHATSAPP_NUMBER } from '../constants';
@@ -9,6 +8,7 @@ import ProductCard from '../components/ProductCard';
 
 const ProductDetails: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { t, convertPrice, addToCart } = useAppContext();
   const product = PRODUCTS.find(p => p.id === Number(id));
   const [selectedSize, setSelectedSize] = useState<string>('');
@@ -35,9 +35,13 @@ const ProductDetails: React.FC = () => {
     return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
   }
 
-  const handleOrderNow = () => {
+  const handleAddToCart = () => {
     addToCart(product, selectedSize);
-    const message = `*Hi, I want to buy this item:*%0a` +
+    navigate('/cart');
+  };
+
+  const handleWhatsApp = () => {
+    const message = `*Hi, I want to inquire about this item:*%0a` +
                     `Item: ${product.name}%0a` +
                     `Price: ${convertPrice(product.priceUSD)}%0a` +
                     `Size: ${selectedSize}%0a` +
@@ -136,11 +140,18 @@ const ProductDetails: React.FC = () => {
 
                 <div className="space-y-4">
                     <button
-                        onClick={handleOrderNow}
-                        className="w-full bg-green-500 text-white px-6 py-5 rounded-full font-bold text-lg hover:bg-green-600 transition-all transform hover:scale-[1.02] shadow-xl shadow-green-200 flex items-center justify-center gap-3"
+                        onClick={handleAddToCart}
+                        className="w-full bg-black text-white py-5 rounded-full font-bold text-lg hover:bg-accent hover:text-black transition-all transform hover:scale-[1.02] shadow-xl flex items-center justify-center gap-3"
                     >
-                        <MessageCircle size={24} fill="currentColor" className="text-white" />
-                        <span>Order via WhatsApp</span>
+                        <ShoppingCart size={24} />
+                        <span>Add to Cart / Order Now</span>
+                    </button>
+                    <button
+                        onClick={handleWhatsApp}
+                        className="w-full bg-green-50 text-green-600 py-4 rounded-full font-bold text-lg hover:bg-green-100 transition-all border border-green-100 flex items-center justify-center gap-3"
+                    >
+                        <MessageCircle size={24} />
+                        <span>Chat on WhatsApp</span>
                     </button>
                 </div>
 

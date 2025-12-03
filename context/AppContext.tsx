@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, CartItem, Language, Currency } from '../types';
 import { TRANSLATIONS, EXCHANGE_RATE_PKR } from '../constants';
@@ -8,7 +9,7 @@ interface AppContextType {
   currency: Currency;
   setCurrency: (curr: Currency) => void;
   cart: CartItem[];
-  addToCart: (product: Product, size: string) => void;
+  addToCart: (product: Product, size: string, quantity?: number) => void;
   removeFromCart: (id: number, size: string) => void;
   updateQuantity: (id: number, size: string, qty: number) => void;
   clearCart: () => void;
@@ -37,17 +38,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return `$${priceUSD.toFixed(2)}`;
   };
 
-  const addToCart = (product: Product, size: string) => {
+  const addToCart = (product: Product, size: string, quantity: number = 1) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id && item.selectedSize === size);
       if (existing) {
         return prev.map(item => 
           item.id === product.id && item.selectedSize === size 
-            ? { ...item, quantity: item.quantity + 1 } 
+            ? { ...item, quantity: item.quantity + quantity } 
             : item
         );
       }
-      return [...prev, { ...product, selectedSize: size, quantity: 1 }];
+      return [...prev, { ...product, selectedSize: size, quantity: quantity }];
     });
   };
 

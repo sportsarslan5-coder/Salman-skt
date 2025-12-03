@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Truck, Star, TrendingUp, Award } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Truck, Star, TrendingUp, Award, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
@@ -24,9 +25,15 @@ const Home: React.FC = () => {
         <div className="absolute inset-0 z-20 flex items-center px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto w-full">
             <div className="max-w-3xl space-y-8">
-              <div className="inline-block bg-accent/20 backdrop-blur-sm border border-accent/30 text-accent px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase animate-fade-in-up">
-                New Season 2025-2026
+              <div className="flex flex-wrap gap-3 animate-fade-in-up">
+                <div className="inline-block bg-accent/20 backdrop-blur-sm border border-accent/30 text-accent px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase">
+                  New Season 2025-2026
+                </div>
+                <div className="inline-block bg-red-600 text-white px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase animate-pulse">
+                  🔥 Special Offer: Buy 5 Items Get 1 Free
+                </div>
               </div>
+              
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight leading-[1.1] animate-fade-in-up delay-100 drop-shadow-2xl">
                 WALK ON <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-yellow-200">AIR & STYLE</span>
@@ -62,7 +69,7 @@ const Home: React.FC = () => {
       {/* Marquee Brands (Decorative) */}
       <div className="bg-accent py-4 overflow-hidden whitespace-nowrap relative">
         <div className="inline-block animate-marquee text-black font-bold text-lg tracking-widest uppercase">
-           • Premium Quality • Free Shipping • 30 Day Returns • Secure Payment • 24/7 Support • Premium Quality • Free Shipping • 30 Day Returns • Secure Payment • 24/7 Support
+           • BUY 5 ITEMS GET 1 FREE • Premium Quality • Free Shipping • 30 Day Returns • Secure Payment • 24/7 Support • BUY 5 ITEMS GET 1 FREE • Premium Quality • Free Shipping • 30 Day Returns
         </div>
       </div>
 

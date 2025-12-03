@@ -31,7 +31,8 @@ export const TRANSLATIONS: Translations = {
   stylistIntro: { en: 'Hi! Looking for running shoes or casual kicks? I can help.', ur: 'ہائے! کیا آپ دوڑنے والے جوتے یا آرام دہ جوتے تلاش کر رہے ہیں؟ میں مدد کر سکتا ہوں۔' },
   typing: { en: 'Expert is typing...', ur: 'ماہر لکھ رہا ہے...' },
   footerText: { en: '© 2024 Salman SKT. All rights reserved.', ur: '© 2024 سلمان سیالکوٹ۔ جملہ حقوق محفوظ ہیں۔' },
-  subscribe: { en: 'Subscribe', ur: 'سبسکرائب' }
+  subscribe: { en: 'Subscribe', ur: 'سبسکرائب' },
+  smartPricing: { en: 'Smart Pricing', ur: 'اسمارٹ قیمت' },
 };
 
 export const PRODUCTS: Product[] = [

@@ -1,6 +1,8 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, MessageCircle, Instagram, Facebook, Twitter, ArrowUp } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, MessageCircle, Instagram, Facebook, Twitter, ArrowUp, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { WHATSAPP_NUMBER } from '../constants';
 
@@ -29,6 +31,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navLinks = [
     { name: 'home', path: '/' },
     { name: 'shop', path: '/shop' },
+    { name: 'smartPricing', path: '/smart-pricing' }, // Added new link
     { name: 'men', path: '/shop?category=Men' },
     { name: 'women', path: '/shop?category=Women' },
     { name: 'kids', path: '/shop?category=Kids' },
@@ -108,13 +111,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-6 xl:gap-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-accent ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
+                  className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-accent flex items-center gap-1 ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
                 >
+                  {link.name === 'smartPricing' && <Sparkles size={14} className="text-accent" />}
                   {t(link.name)}
                 </Link>
               ))}
@@ -155,13 +159,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </button>
              </div>
 
-             <div className="flex flex-col gap-6 flex-1">
+             <div className="flex flex-col gap-6 flex-1 overflow-y-auto">
                {navLinks.map((link) => (
                   <Link
                     key={link.name}
                     to={link.path}
-                    className={`text-lg font-bold uppercase tracking-wider ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
+                    className={`text-lg font-bold uppercase tracking-wider flex items-center gap-2 ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
                   >
+                     {link.name === 'smartPricing' && <Sparkles size={16} className="text-accent" />}
                     {t(link.name)}
                   </Link>
                 ))}
@@ -204,10 +209,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div>
               <h4 className="font-bold text-lg mb-6">{t('shop')}</h4>
               <ul className="space-y-4 text-gray-400">
+                <li><Link to="/smart-pricing" className="hover:text-accent transition-colors flex items-center gap-2"><Sparkles size={14} /> Smart Pricing</Link></li>
                 <li><Link to="/shop?category=Men" className="hover:text-white transition-colors">Men's Collection</Link></li>
                 <li><Link to="/shop?category=Women" className="hover:text-white transition-colors">Women's Collection</Link></li>
                 <li><Link to="/shop?category=Kids" className="hover:text-white transition-colors">Kids' Collection</Link></li>
-                <li><Link to="/shop" className="hover:text-white transition-colors">New Arrivals</Link></li>
               </ul>
             </div>
 
