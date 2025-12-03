@@ -7,8 +7,15 @@ let ai: GoogleGenAI | null = null;
 const getAIClient = () => {
   if (!ai) {
     try {
-        const apiKey = typeof process !== 'undefined' && process.env && process.env.API_KEY ? process.env.API_KEY : 'dummy_key';
-        ai = new GoogleGenAI({ apiKey });
+        // Safe check for process.env to avoid crashes in some browser builds
+        const apiKey = typeof process !== 'undefined' && process.env && process.env.API_KEY ? process.env.API_KEY : '';
+        
+        if (!apiKey) {
+            console.warn("Gemini API Key is missing. Please set process.env.API_KEY.");
+        }
+        
+        // Initialize even if empty to let the API call fail gracefully with a 400 later
+        ai = new GoogleGenAI({ apiKey: apiKey || 'dummy_key' });
     } catch (e) {
         console.error("Failed to initialize AI client", e);
     }
@@ -34,7 +41,7 @@ export const chatWithStylist = async (userMessage: string, history: {role: strin
 
   try {
     const client = getAIClient();
-    if (!client) throw new Error("AI Client not available");
+    if (!client) throw new Error("AI Client not initialized");
     
     const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -94,7 +101,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
       model: 'gemini-2.5-flash',
       contents: {
         parts: [
-          { inlineData: { mimeType, data: base64Image } },
+          { inlineData: { mimeType: mimeType || 'image/jpeg', data: base64Image } },
           { text: prompt }
         ]
       },
@@ -106,17 +113,31 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
             category: { type: Type.STRING },
             price: { type: Type.NUMBER },
             reasoning: { type: Type.STRING },
-          }
+          },
+          required: ["category", "price", "reasoning"]
         }
       }
     });
 
-    if (response.text) {
-        return JSON.parse(response.text) as PricingAnalysis;
+    if (!response.text) {
+        throw new Error("AI returned empty response. Possibly blocked by safety settings.");
     }
-    throw new Error("No response text");
-  } catch (error) {
+
+    // Clean up response text just in case model adds markdown formatting
+    const cleanedText = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    return JSON.parse(cleanedText) as PricingAnalysis;
+  } catch (error: any) {
     console.error("Image Analysis failed", error);
-    throw error;
+    
+    // Provide more helpful error messages
+    if (error.message?.includes('400') || error.message?.includes('403') || error.message?.includes('API_KEY')) {
+        throw new Error("System Configuration Error: API Key is missing or invalid. Please check your environment settings.");
+    }
+    if (error.message?.includes('503') || error.message?.includes('500')) {
+        throw new Error("AI Service is currently busy. Please try again in a moment.");
+    }
+    
+    throw new Error(error.message || "Failed to analyze image.");
   }
 };

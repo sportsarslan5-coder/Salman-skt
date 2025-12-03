@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Check } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Check, RefreshCw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -25,8 +25,12 @@ const AutoPricing: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    processFile(file);
+  };
+
+  const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      setError('Please upload a valid image file.');
+      setError('Please upload a valid image file (JPG, PNG).');
       return;
     }
 
@@ -45,6 +49,9 @@ const AutoPricing: React.FC = () => {
 
       analyzeImage(base64Data, mimeType);
     };
+    reader.onerror = () => {
+        setError("Failed to read the file. Please try another image.");
+    };
     reader.readAsDataURL(file);
   };
 
@@ -53,8 +60,8 @@ const AutoPricing: React.FC = () => {
     try {
       const data = await analyzeProductImage(base64Data, mimeType);
       setResult(data);
-    } catch (err) {
-      setError('Failed to analyze image. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to analyze image. Please try again.');
     } finally {
       setAnalyzing(false);
     }
@@ -67,20 +74,8 @@ const AutoPricing: React.FC = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64String = reader.result as string;
-          setSelectedImage(base64String);
-          setResult(null);
-          setError(null);
-          setQuantity(1);
-          
-          const base64Data = base64String.split(',')[1];
-          const mimeType = file.type;
-          analyzeImage(base64Data, mimeType);
-        };
-        reader.readAsDataURL(file);
+    if (file) {
+        processFile(file);
     }
   };
 
@@ -147,6 +142,7 @@ const AutoPricing: React.FC = () => {
                  <button 
                     onClick={clearAll}
                     className="absolute top-4 right-4 bg-white/80 p-2 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors shadow-sm z-20"
+                    title="Clear Image"
                  >
                     <X size={20} />
                  </button>
@@ -282,13 +278,19 @@ const AutoPricing: React.FC = () => {
              ) : (
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-[500px] flex flex-col items-center justify-center text-center text-gray-400 border-dashed">
                     {error ? (
-                        <>
+                        <div className="flex flex-col items-center">
                             <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
                                 <X size={32} />
                             </div>
-                            <p className="font-bold text-red-500">{error}</p>
-                            <button onClick={() => fileInputRef.current?.click()} className="mt-4 underline text-sm">Try another image</button>
-                        </>
+                            <p className="font-bold text-red-500 mb-2 text-lg">Analysis Failed</p>
+                            <p className="text-sm text-gray-500 max-w-xs mx-auto mb-6 leading-relaxed">{error}</p>
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="bg-black text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-accent hover:text-black transition-colors flex items-center gap-2"
+                            >
+                                <RefreshCw size={16} /> Try Another Image
+                            </button>
+                        </div>
                     ) : (
                         <>
                             <ImageIcon size={48} className="mb-4 opacity-20" />
