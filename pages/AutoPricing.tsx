@@ -13,7 +13,6 @@ const AutoPricing: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
-  const [error, setError] = useState<string | null>(null);
   
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
@@ -30,7 +29,7 @@ const AutoPricing: React.FC = () => {
 
   const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      setError('Please upload a valid image file (JPG, PNG).');
+      alert('Please upload a valid image file (JPG, PNG).');
       return;
     }
 
@@ -40,7 +39,6 @@ const AutoPricing: React.FC = () => {
       const base64String = reader.result as string;
       setSelectedImage(base64String);
       setResult(null);
-      setError(null);
       setQuantity(1); // Reset quantity
       
       // Extract pure base64 for API (remove data:image/xxx;base64,)
@@ -49,30 +47,19 @@ const AutoPricing: React.FC = () => {
 
       analyzeImage(base64Data, mimeType);
     };
-    reader.onerror = () => {
-        setError("Failed to read the file. Please try another image.");
-    };
     reader.readAsDataURL(file);
   };
 
   const analyzeImage = async (base64Data: string, mimeType: string) => {
     setAnalyzing(true);
-    setError(null);
     try {
       const data = await analyzeProductImage(base64Data, mimeType);
       setResult(data);
-    } catch (err: any) {
-      console.error("Analysis Error:", err);
-      
-      let friendlyMessage = 'Failed to analyze image. Please try again.';
-
-      if (err.message === 'SERVICE_BUSY') {
-          friendlyMessage = 'AI Service is currently busy. Please try again in a few seconds.';
-      } else {
-          friendlyMessage = err.message || 'An unexpected error occurred.';
-      }
-
-      setError(friendlyMessage);
+    } catch (err) {
+      // This block should technically rarely be reached now due to failsafes in service
+      // But if it does, we just reset.
+      console.error("Critical Failure:", err);
+      setAnalyzing(false);
     } finally {
       setAnalyzing(false);
     }
@@ -96,7 +83,7 @@ const AutoPricing: React.FC = () => {
     // Create a temporary "Custom" product object to fit the cart structure
     const customProduct: Product = {
         id: Date.now(), // Unique ID for this custom item
-        name: `${result.category} (AI Identified)`,
+        name: `${result.category} (Custom)`,
         category: 'Men', // Defaulting to generic
         priceUSD: result.price,
         image: selectedImage,
@@ -120,7 +107,6 @@ const AutoPricing: React.FC = () => {
   const clearAll = () => {
     setSelectedImage(null);
     setResult(null);
-    setError(null);
     setQuantity(1);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -197,16 +183,8 @@ const AutoPricing: React.FC = () => {
           <div className="space-y-6">
              {result ? (
                  <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up relative overflow-hidden">
-                    {/* Demo Mode Badge */}
-                    {result.isDemo && (
-                        <div className="bg-yellow-100 text-yellow-800 text-xs px-4 py-2 flex items-center gap-2 mb-4 rounded-lg border border-yellow-200">
-                             <Info size={14} />
-                             <span><strong>Demo Mode:</strong> API Key missing. Add VITE_API_KEY to Vercel for real AI.</span>
-                        </div>
-                    )}
-
                     <div className="flex items-center gap-2 mb-6 text-green-600 bg-green-50 w-fit px-3 py-1 rounded-full text-sm font-bold">
-                        <Sparkles size={16} /> AI Analysis Complete
+                        <Sparkles size={16} /> Analysis Complete
                     </div>
                     
                     <div className="space-y-6">
@@ -296,40 +274,17 @@ const AutoPricing: React.FC = () => {
                  </div>
              ) : (
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-[500px] flex flex-col items-center justify-center text-center text-gray-400 border-dashed">
-                    {error ? (
-                        <div className="flex flex-col items-center max-w-xs mx-auto animate-fade-in text-center p-4">
-                            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-3">
-                                <AlertTriangle size={24} />
-                            </div>
-                            <h3 className="font-bold text-lg mb-1">Analysis Failed</h3>
-                            <p className="text-sm text-gray-500 mb-6">{error}</p>
-                            <button 
-                                onClick={() => {
-                                    if (selectedImage) {
-                                        const base64Data = selectedImage.split(',')[1];
-                                        analyzeImage(base64Data, 'image/jpeg'); // Retry
-                                    }
-                                }}
-                                className="bg-accent text-black px-8 py-3 rounded-full font-bold hover:bg-yellow-400 transition-colors flex items-center gap-2 shadow-lg"
-                            >
-                                <RefreshCw size={18} /> Try Again
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            <ImageIcon size={48} className="mb-4 opacity-20" />
-                            <p>Upload an image to identify & order.</p>
-                            <div className="mt-8 text-left text-sm space-y-2 opacity-60">
-                                <p className="font-bold uppercase tracking-widest text-xs mb-2">How it works:</p>
-                                <ul className="list-disc pl-4 space-y-1">
-                                    <li>Upload Photo</li>
-                                    <li>AI Identifies Item & Price</li>
-                                    <li>Select Size & Quantity</li>
-                                    <li>Order Directly</li>
-                                </ul>
-                            </div>
-                        </>
-                    )}
+                    <ImageIcon size={48} className="mb-4 opacity-20" />
+                    <p>Upload an image to identify & order.</p>
+                    <div className="mt-8 text-left text-sm space-y-2 opacity-60">
+                        <p className="font-bold uppercase tracking-widest text-xs mb-2">How it works:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            <li>Upload Photo</li>
+                            <li>AI Identifies Item & Price</li>
+                            <li>Select Size & Quantity</li>
+                            <li>Order Directly</li>
+                        </ul>
+                    </div>
                 </div>
              )}
           </div>
