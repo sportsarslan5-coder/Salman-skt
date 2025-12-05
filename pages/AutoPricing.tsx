@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -15,6 +15,10 @@ const AutoPricing: React.FC = () => {
   // Editable State
   const [editableName, setEditableName] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
+  
+  // Category & Price State
+  const [currentCategory, setCurrentCategory] = useState('');
+  const [currentPrice, setCurrentPrice] = useState(0);
 
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
@@ -23,39 +27,84 @@ const AutoPricing: React.FC = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync result to editable name
+  // Standard Pricing Rules (Fallback/Manual Correction)
+  const STANDARD_PRICES: {[key: string]: number} = {
+      'Jerseys': 45.00,
+      'T-Shirts': 30.00,
+      'Hoodies': 50.00,
+      'Jackets': 80.00,
+      'Shoes': 125.00,
+      'Footballs': 45.00,
+      'Cricket Bat': 85.00,
+      'Custom': 50.00
+  };
+
+  const CATEGORY_OPTIONS = Object.keys(STANDARD_PRICES);
+
+  // Sync result to editable state when result changes
   useEffect(() => {
     if (result) {
         setEditableName(result.productName);
+        setCurrentCategory(normalizeCategory(result.category));
+        setCurrentPrice(result.price);
     }
   }, [result]);
 
-  // Dynamic Sizing Logic based on Category
-  useEffect(() => {
-    if (result) {
-        const cat = result.category.toLowerCase();
-        let sizes: string[] = [];
+  // Helper to map AI category to our dropdown list
+  const normalizeCategory = (cat: string): string => {
+      const c = cat.toLowerCase();
+      if (c.includes('jersey')) return 'Jerseys';
+      if (c.includes('hoodie')) return 'Hoodies';
+      if (c.includes('jacket')) return 'Jackets';
+      if (c.includes('shoe') || c.includes('sneaker')) return 'Shoes';
+      if (c.includes('ball')) return 'Footballs';
+      if (c.includes('bat')) return 'Cricket Bat';
+      if (c.includes('shirt') || c.includes('tee')) return 'T-Shirts';
+      return 'Custom';
+  };
 
-        if (cat.includes('shoe') || cat.includes('footwear') || cat.includes('sneaker')) {
+  // Update Size & Price when Category Changes
+  useEffect(() => {
+    if (currentCategory) {
+        updateSizesForCategory(currentCategory);
+        // Ensure price matches the category rule if it deviates significantly or was manually changed
+        const standardPrice = STANDARD_PRICES[currentCategory];
+        if (standardPrice) {
+            setCurrentPrice(standardPrice);
+        }
+    }
+  }, [currentCategory]);
+
+  const updateSizesForCategory = (cat: string) => {
+        let sizes: string[] = [];
+        let defaultSize = '';
+
+        if (cat === 'Shoes') {
             sizes = ['US 7', 'US 8', 'US 9', 'US 10', 'US 11', 'US 12'];
-            setSelectedSize('US 9');
-        } else if (cat.includes('bat') || cat.includes('cricket')) {
+            defaultSize = 'US 9';
+        } else if (cat === 'Cricket Bat') {
             sizes = ['Harrow', 'Short Handle', 'Long Handle'];
-            setSelectedSize('Short Handle');
-        } else if (cat.includes('ball') || cat.includes('football') || cat.includes('volleyball')) {
+            defaultSize = 'Short Handle';
+        } else if (cat === 'Footballs') {
             sizes = ['Standard Size 5'];
-            setSelectedSize('Standard Size 5');
-        } else if (cat.includes('kid')) {
-            sizes = ['2Y', '3Y', '4Y', '5Y', 'XS', 'S'];
-            setSelectedSize('3Y');
+            defaultSize = 'Standard Size 5';
         } else {
             // Default clothing
             sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-            setSelectedSize('M');
+            defaultSize = 'M';
         }
         setAvailableSizes(sizes);
-    }
-  }, [result]);
+        setSelectedSize(defaultSize);
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const newCat = e.target.value;
+      setCurrentCategory(newCat);
+      // Auto-fix price based on category rule
+      if (STANDARD_PRICES[newCat]) {
+          setCurrentPrice(STANDARD_PRICES[newCat]);
+      }
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -118,9 +167,9 @@ const AutoPricing: React.FC = () => {
 
     const customProduct: Product = {
         id: Date.now(),
-        name: editableName, // Use the edited name
+        name: editableName,
         category: 'Men', 
-        priceUSD: result.price,
+        priceUSD: currentPrice,
         image: selectedImage,
         description: result.reasoning,
         sizes: availableSizes,
@@ -134,10 +183,10 @@ const AutoPricing: React.FC = () => {
 
   const handleWhatsApp = () => {
     if (!result) return;
-    const priceDisplay = convertPrice(result.price);
+    const priceDisplay = convertPrice(currentPrice);
     
     // Detailed message to compensate for lack of auto-image
-    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${editableName}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
+    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${editableName}*%0a📂 Category: ${currentCategory}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -148,6 +197,7 @@ const AutoPricing: React.FC = () => {
     setQuantity(1);
     setEditableName('');
     setIsEditingName(false);
+    setCurrentCategory('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -260,9 +310,23 @@ const AutoPricing: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="flex items-center gap-2 mt-2">
-                                <span className="text-xs font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded uppercase tracking-wider">{result.category}</span>
+                            {/* Category Dropdown (Fix for wrong category/price) */}
+                            <div className="flex items-center gap-2 mt-4">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Category:</span>
+                                <div className="relative">
+                                    <select 
+                                        value={currentCategory}
+                                        onChange={handleCategoryChange}
+                                        className="appearance-none bg-gray-100 font-bold text-sm px-4 py-2 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-black"
+                                    >
+                                        {CATEGORY_OPTIONS.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
+                                </div>
                             </div>
+                            
                             <p className="text-sm text-gray-500 italic mt-3 border-l-2 border-accent pl-3">
                                 "{result.reasoning}"
                             </p>
@@ -276,7 +340,7 @@ const AutoPricing: React.FC = () => {
                             
                             {/* Size Selector */}
                             <div>
-                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size ({result.category})</span>
+                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size ({currentCategory})</span>
                                 <div className="flex flex-wrap gap-2">
                                     {availableSizes.map(size => (
                                         <button
@@ -321,10 +385,10 @@ const AutoPricing: React.FC = () => {
                         <div className="flex justify-between items-end">
                             <div>
                                 <p className="text-sm text-gray-400 font-bold">Estimated Price</p>
-                                <p className="text-xs text-gray-400">{quantity} item(s) x {convertPrice(result.price)}</p>
+                                <p className="text-xs text-gray-400">{quantity} item(s) x {convertPrice(currentPrice)}</p>
                             </div>
                             <h2 className="text-4xl font-black text-accent">
-                                {convertPrice(result.price * quantity)}
+                                {convertPrice(currentPrice * quantity)}
                             </h2>
                         </div>
 
@@ -359,8 +423,8 @@ const AutoPricing: React.FC = () => {
                         <ul className="list-disc pl-4 space-y-1">
                             <li>Upload Photo</li>
                             <li>AI Identifies the <strong>Exact Model</strong> (Or you can edit it!)</li>
-                            <li>Select <strong>Correct Size</strong> (US, EU, etc.)</li>
-                            <li>Order instantly</li>
+                            <li>Confirm <strong>Category</strong> if needed (Price updates automatically!)</li>
+                            <li>Select Size & Order</li>
                         </ul>
                     </div>
                 </div>

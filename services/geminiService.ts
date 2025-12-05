@@ -101,7 +101,7 @@ const getFallbackResult = (): PricingAnalysis => {
         productName: "Custom Design Item",
         category: "Custom",
         price: 50.00, // Safe middle ground
-        reasoning: "Visual Analysis System: Custom design detected. Please edit the name if specific identification is required.",
+        reasoning: "Visual Analysis System: Custom design detected. Please edit the name or category if specific identification is required.",
         isDemo: true
     };
 };
@@ -119,28 +119,25 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
       });
   }
 
-  // UPDATED PROMPT: Text Recognition Focus
+  // UPDATED PROMPT: Text Recognition Focus & Strict Pricing
   const prompt = `
     Act as a Professional Product Authenticator.
     
     TASK: Analyze the image to identify the item.
     
-    CRITICAL INSTRUCTION:
-    1. READ ANY TEXT on the product (Logos, Brand Names, Model Numbers). 
-       - If it says "Nike", the name MUST start with "Nike".
-       - If it says a Team Name, include it.
-    2. Be SPECIFIC. Do not just say "Shoes". Say "High-Top Basketball Sneaker".
-    3. If you are not 100% sure of the brand, describe the visual style (e.g. "Red & White Athletic Jersey").
-
-    **Pricing Rules (USD):**
-    - T-Shirts: $20–$40
-    - Hoodies: $40–$60
-    - Jerseys: STRICTLY $40–$50
-    - Jackets: $60–$100
-    - Shoes: $100–$150
-    - Footballs: $30–$60
-    - Cricket Bat: $50–$120
-    - Other: Estimate International Market Price.
+    CRITICAL INSTRUCTIONS:
+    1. READ ANY TEXT (Logos, Brands). If you see "Nike", "Adidas", "Team Names", use them in the 'productName'.
+    2. CATEGORIZE STRICTLY: Is it a 'Jersey', 'T-Shirt', 'Hoodie', 'Shoe', 'Football', or 'Cricket Bat'?
+       - A Jersey usually has a team logo, number, or collar. 
+       - A T-Shirt is simpler.
+    3. PRICING RULES (Use exactly these ranges):
+       - 'Jerseys': $45 (approx range 40-50)
+       - 'T-Shirts': $30 (approx range 20-40)
+       - 'Hoodies': $50 (approx range 40-60)
+       - 'Jackets': $80 (approx range 60-100)
+       - 'Shoes': $125 (approx range 100-150)
+       - 'Footballs': $45 (approx range 30-60)
+       - 'Cricket Bat': $85 (approx range 50-120)
 
     Return JSON format only.
   `;
@@ -155,13 +152,13 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         ]
       },
       config: {
-        temperature: 0.2, // Low temperature for high accuracy
+        temperature: 0.1, // Lowest temperature for strict categorization
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            productName: { type: Type.STRING, description: "The exact model name found via OCR or visual ID." },
-            category: { type: Type.STRING },
+            productName: { type: Type.STRING, description: "Exact model name." },
+            category: { type: Type.STRING, description: "One of: Jerseys, T-Shirts, Hoodies, Jackets, Shoes, Footballs, Cricket Bat, Custom" },
             price: { type: Type.NUMBER },
             reasoning: { type: Type.STRING },
           },
