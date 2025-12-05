@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -12,18 +12,20 @@ const AutoPricing: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
   
-  // Editable State
+  // UX State
+  const [isConfirmed, setIsConfirmed] = useState(false); // New state for "Looks Good"
+  const [isEditingMode, setIsEditingMode] = useState(false);
+
+  // Data State
   const [editableName, setEditableName] = useState('');
-  const [isEditingName, setIsEditingName] = useState(false);
-  
-  // Category & Price State
   const [currentCategory, setCurrentCategory] = useState('');
+  const [currentColors, setCurrentColors] = useState<string[]>([]);
   const [currentPrice, setCurrentPrice] = useState(0);
 
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
-  const [availableSizes, setAvailableSizes] = useState<string[]>(['S', 'M', 'L', 'XL']); // Default
+  const [availableSizes, setAvailableSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,12 +38,13 @@ const AutoPricing: React.FC = () => {
       'Shoes': 125.00,
       'Footballs': 45.00,
       'Cricket Bat': 85.00,
+      'Caps': 15.00,
       'Custom': 50.00
   };
 
   const CATEGORY_OPTIONS = Object.keys(STANDARD_PRICES);
 
-  // Sync result to editable state when result changes
+  // Sync result to state when analysis finishes
   useEffect(() => {
     if (result) {
         setEditableName(result.productName);
@@ -49,10 +52,15 @@ const AutoPricing: React.FC = () => {
         // Normalize Category
         const normalizedCat = normalizeCategory(result.category);
         setCurrentCategory(normalizedCat);
+        setCurrentColors(result.dominantColors || []);
         
-        // SET EXACT PRICE based on Category (No AI guessing)
+        // SET EXACT PRICE based on Category
         const price = STANDARD_PRICES[normalizedCat] || 50.00;
         setCurrentPrice(price);
+        
+        // Reset Confirmation
+        setIsConfirmed(false);
+        setIsEditingMode(false);
     }
   }, [result]);
 
@@ -65,6 +73,7 @@ const AutoPricing: React.FC = () => {
       if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot')) return 'Shoes';
       if (c.includes('ball')) return 'Footballs';
       if (c.includes('bat')) return 'Cricket Bat';
+      if (c.includes('cap') || c.includes('hat')) return 'Caps';
       if (c.includes('shirt') || c.includes('tee')) return 'T-Shirts';
       return 'Custom';
   };
@@ -95,6 +104,9 @@ const AutoPricing: React.FC = () => {
         } else if (cat === 'Footballs') {
             sizes = ['Standard Size 5'];
             defaultSize = 'Standard Size 5';
+        } else if (cat === 'Caps') {
+            sizes = ['One Size'];
+            defaultSize = 'One Size';
         } else {
             // Default clothing
             sizes = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -104,16 +116,9 @@ const AutoPricing: React.FC = () => {
         setSelectedSize(defaultSize);
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newCat = e.target.value;
-      setCurrentCategory(newCat);
-      // Price updates via useEffect automatically
-  };
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     processFile(file);
   };
 
@@ -123,16 +128,13 @@ const AutoPricing: React.FC = () => {
       return;
     }
 
-    // Convert to base64 for display and API
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result as string;
       setSelectedImage(base64String);
       setResult(null);
-      setQuantity(1); // Reset quantity
-      setIsEditingName(false);
+      setQuantity(1);
       
-      // Extract pure base64 for API (remove data:image/xxx;base64,)
       const base64Data = base64String.split(',')[1];
       const mimeType = file.type;
 
@@ -154,18 +156,6 @@ const AutoPricing: React.FC = () => {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-        processFile(file);
-    }
-  };
-
   const handleAddToCart = () => {
     if (!result || !selectedImage) return;
 
@@ -175,7 +165,7 @@ const AutoPricing: React.FC = () => {
         category: 'Men', 
         priceUSD: currentPrice,
         image: selectedImage,
-        description: result.reasoning,
+        description: `Color: ${currentColors.join(', ')}. ${result.reasoning}`,
         sizes: availableSizes,
         rating: 5.0,
         reviews: 0
@@ -188,9 +178,9 @@ const AutoPricing: React.FC = () => {
   const handleWhatsApp = () => {
     if (!result) return;
     const priceDisplay = convertPrice(currentPrice);
+    const colorStr = currentColors.join(', ');
     
-    // Detailed message to compensate for lack of auto-image
-    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a🛍️ *${editableName}*%0a📂 Category: ${currentCategory}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
+    const message = `*NEW IMAGE ORDER*%0a----------------------------%0aI want to order this item:%0a🛍️ *${editableName}*%0a📂 Type: ${currentCategory}%0a🎨 Color: ${colorStr}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *IMAGE ATTACHED BELOW*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -200,8 +190,8 @@ const AutoPricing: React.FC = () => {
     setResult(null);
     setQuantity(1);
     setEditableName('');
-    setIsEditingName(false);
-    setCurrentCategory('');
+    setIsConfirmed(false);
+    setIsEditingMode(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -214,7 +204,7 @@ const AutoPricing: React.FC = () => {
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-primary mb-4">SMART PRICING SYSTEM</h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Upload a photo. Our AI identifies the exact model, gives you a price, and lets you order immediately.
+            Auto-identify your product, confirm the details, and order instantly.
           </p>
         </div>
 
@@ -222,8 +212,6 @@ const AutoPricing: React.FC = () => {
           {/* Upload Section */}
           <div 
             className={`bg-white rounded-3xl p-8 shadow-xl border-2 border-dashed transition-all duration-300 relative overflow-hidden h-[500px] flex flex-col items-center justify-center ${selectedImage ? 'border-accent' : 'border-gray-300 hover:border-gray-400'}`}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
           >
             {selectedImage ? (
                <>
@@ -242,8 +230,7 @@ const AutoPricing: React.FC = () => {
                         <Camera size={40} />
                     </div>
                     <div>
-                        <p className="font-bold text-lg text-gray-700">Drag & Drop your Image</p>
-                        <p className="text-sm text-gray-400 mt-1">or click to browse</p>
+                        <p className="font-bold text-lg text-gray-700">Drag & Drop or Click</p>
                     </div>
                     <button 
                         onClick={() => fileInputRef.current?.click()}
@@ -265,92 +252,136 @@ const AutoPricing: React.FC = () => {
             {analyzing && (
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                     <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
-                    <p className="font-bold text-lg animate-pulse">Scanning Product...</p>
-                    <p className="text-sm text-gray-500">Reading text & identifying model</p>
+                    <p className="font-bold text-lg animate-pulse">AI Identifying...</p>
+                    <p className="text-sm text-gray-500">Detecting Colors & Category</p>
                 </div>
             )}
           </div>
 
-          {/* Results Section */}
+          {/* Results Section - The Smart Flow */}
           <div className="space-y-6">
              {result ? (
-                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up relative overflow-hidden">
-                    <div className="flex items-center gap-2 mb-6 text-green-600 bg-green-50 w-fit px-3 py-1 rounded-full text-sm font-bold">
-                        <Sparkles size={16} /> Analysis Complete
-                    </div>
+                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up relative overflow-hidden flex flex-col h-full">
                     
-                    <div className="space-y-6">
-                        {/* Header Info */}
-                        <div>
-                            <p className="text-sm text-gray-400 uppercase tracking-widest font-bold">Identified Model</p>
-                            
-                            <div className="flex items-start gap-2">
-                                {isEditingName ? (
-                                    <div className="flex-1 flex gap-2">
-                                        <input 
-                                            value={editableName}
-                                            onChange={(e) => setEditableName(e.target.value)}
-                                            className="w-full text-2xl font-bold border-b-2 border-black focus:outline-none bg-transparent"
-                                            autoFocus
-                                        />
-                                        <button 
-                                            onClick={() => setIsEditingName(false)}
-                                            className="bg-black text-white p-2 rounded-full hover:bg-accent hover:text-black"
-                                        >
-                                            <Check size={18} />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <h2 className="text-3xl font-black text-primary leading-tight flex-1 group relative">
-                                        {editableName}
-                                        <button 
-                                            onClick={() => setIsEditingName(true)}
-                                            className="ml-3 inline-block opacity-20 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-black align-middle"
-                                            title="Edit Name"
-                                        >
-                                            <Edit2 size={20} />
-                                        </button>
-                                    </h2>
-                                )}
+                    {/* Phase 1: Confirmation */}
+                    {!isConfirmed && !isEditingMode && (
+                        <div className="flex-1 flex flex-col justify-center text-center space-y-6">
+                            <div className="mx-auto w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                <CheckCircle size={32} />
                             </div>
-
-                            {/* Category Dropdown (Fix for wrong category/price) */}
-                            <div className="flex items-center gap-2 mt-4">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Category:</span>
-                                <div className="relative">
-                                    <select 
-                                        value={currentCategory}
-                                        onChange={handleCategoryChange}
-                                        className="appearance-none bg-gray-100 font-bold text-sm px-4 py-2 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-black"
-                                    >
-                                        {CATEGORY_OPTIONS.map(cat => (
-                                            <option key={cat} value={cat}>{cat} (${STANDARD_PRICES[cat]})</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
+                            <div>
+                                <h2 className="text-2xl font-bold mb-2">Analysis Complete</h2>
+                                <p className="text-gray-500">We identified the following:</p>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-xl p-4 text-left space-y-3 border border-gray-200">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 text-sm">Product</span>
+                                    <span className="font-bold">{editableName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 text-sm">Type</span>
+                                    <span className="font-bold text-accent bg-black px-2 rounded text-xs py-0.5">{currentCategory}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 text-sm">Colors</span>
+                                    <span className="font-bold">{currentColors.join(', ')}</span>
+                                </div>
+                                <div className="flex justify-between border-t pt-2 mt-2">
+                                    <span className="text-gray-500 text-sm">Base Price</span>
+                                    <span className="font-bold text-xl text-primary">{convertPrice(currentPrice)}</span>
                                 </div>
                             </div>
-                            
-                            <p className="text-sm text-gray-500 italic mt-3 border-l-2 border-accent pl-3">
-                                "{result.reasoning}"
-                            </p>
+
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={() => setIsEditingMode(true)}
+                                    className="flex-1 py-3 border border-gray-300 rounded-xl font-bold hover:bg-gray-50 text-gray-700"
+                                >
+                                    Correct This
+                                </button>
+                                <button 
+                                    onClick={() => setIsConfirmed(true)}
+                                    className="flex-1 py-3 bg-black text-white rounded-xl font-bold hover:bg-accent hover:text-black transition-colors"
+                                >
+                                    Looks Good
+                                </button>
+                            </div>
                         </div>
+                    )}
 
-                        <div className="w-full h-px bg-gray-100"></div>
-
-                        {/* Order Configuration Panel */}
-                        <div className="space-y-4">
-                            <h3 className="font-bold text-lg">Configure Order</h3>
+                    {/* Phase 1.5: Editing Mode */}
+                    {isEditingMode && !isConfirmed && (
+                         <div className="flex-1 flex flex-col space-y-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="font-bold text-lg">Edit Details</h3>
+                                <button onClick={() => setIsEditingMode(false)} className="text-sm underline text-gray-500">Cancel</button>
+                            </div>
                             
+                            <div>
+                                <label className="text-xs font-bold uppercase text-gray-500">Product Name</label>
+                                <input 
+                                    value={editableName}
+                                    onChange={(e) => setEditableName(e.target.value)}
+                                    className="w-full border p-3 rounded-lg font-bold"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold uppercase text-gray-500">Category</label>
+                                <select 
+                                    value={currentCategory}
+                                    onChange={(e) => {
+                                        setCurrentCategory(e.target.value);
+                                        // Price updates via useEffect
+                                    }}
+                                    className="w-full border p-3 rounded-lg bg-white"
+                                >
+                                    {CATEGORY_OPTIONS.map(cat => (
+                                        <option key={cat} value={cat}>{cat} (${STANDARD_PRICES[cat]})</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <button 
+                                onClick={() => {
+                                    setIsEditingMode(false);
+                                    setIsConfirmed(true);
+                                }}
+                                className="w-full bg-black text-white py-3 rounded-xl font-bold mt-auto"
+                            >
+                                Save & Continue
+                            </button>
+                         </div>
+                    )}
+
+                    {/* Phase 2: Configuration & Order (Only after confirmation) */}
+                    {isConfirmed && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h2 className="text-2xl font-black leading-tight">{editableName}</h2>
+                                    <div className="flex gap-2 mt-1">
+                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600">{currentCategory}</span>
+                                        {currentColors.map(c => (
+                                            <span key={c} className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600">{c}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <button onClick={() => setIsConfirmed(false)} className="text-gray-400 hover:text-black"><Edit2 size={18} /></button>
+                            </div>
+
+                            <div className="w-full h-px bg-gray-100"></div>
+
                             {/* Size Selector */}
                             <div>
-                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size ({currentCategory})</span>
+                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size</span>
                                 <div className="flex flex-wrap gap-2">
                                     {availableSizes.map(size => (
                                         <button
                                             key={size}
                                             onClick={() => setSelectedSize(size)}
-                                            className={`flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all border ${
+                                            className={`flex-1 min-w-[50px] py-2 rounded-lg text-sm font-bold transition-all border ${
                                                 selectedSize === size 
                                                 ? 'bg-black text-white border-black shadow-md' 
                                                 : 'bg-white text-gray-600 border-gray-200 hover:border-black'
@@ -362,75 +393,48 @@ const AutoPricing: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Quantity Selector */}
-                            <div>
-                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Quantity</span>
-                                <div className="flex items-center justify-between bg-gray-50 p-2 rounded-xl border border-gray-100">
-                                    <button 
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-accent"
-                                    >
-                                        <Minus size={18} />
-                                    </button>
-                                    <span className="font-bold text-xl">{quantity}</span>
-                                    <button 
-                                        onClick={() => setQuantity(quantity + 1)}
-                                        className="w-10 h-10 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-accent"
-                                    >
-                                        <Plus size={18} />
-                                    </button>
+                            {/* Quantity */}
+                            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                <span className="font-bold text-gray-600 text-sm ml-2">Quantity</span>
+                                <div className="flex items-center gap-4">
+                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Minus size={14} /></button>
+                                    <span className="font-bold">{quantity}</span>
+                                    <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Plus size={14} /></button>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="w-full h-px bg-gray-100"></div>
-
-                        {/* Price Display */}
-                        <div className="flex justify-between items-end">
-                            <div>
-                                <p className="text-sm text-gray-400 font-bold">Estimated Price</p>
-                                <p className="text-xs text-gray-400">{quantity} item(s) x {convertPrice(currentPrice)}</p>
+                            {/* Total */}
+                            <div className="flex justify-between items-end pt-2">
+                                <span className="text-sm font-bold text-gray-400">Total Estimate</span>
+                                <h2 className="text-4xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
                             </div>
-                            <h2 className="text-4xl font-black text-accent">
-                                {convertPrice(currentPrice * quantity)}
-                            </h2>
-                        </div>
 
-                        {/* Actions */}
-                        <div className="grid grid-cols-1 gap-3 pt-2">
-                             <button 
-                                onClick={handleAddToCart}
-                                className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-accent hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-[1.02]"
-                            >
-                                <ShoppingCart size={20} /> Add to Cart
-                            </button>
-                            <div className="relative group">
+                            {/* Actions */}
+                            <div className="grid grid-cols-1 gap-3">
+                                 <button 
+                                    onClick={handleAddToCart}
+                                    className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-accent hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg"
+                                >
+                                    <ShoppingCart size={20} /> Add to Cart
+                                </button>
                                 <button 
                                     onClick={handleWhatsApp}
                                     className="w-full bg-green-50 text-green-600 py-3 rounded-xl font-bold text-sm hover:bg-green-100 transition-all flex items-center justify-center gap-2 border border-green-200"
                                 >
-                                    <MessageCircle size={18} /> Order on WhatsApp
+                                    <MessageCircle size={18} /> Confirm on WhatsApp
                                 </button>
-                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                    Don't forget to paste the image in the chat!
-                                </div>
+                                <p className="text-[10px] text-center text-gray-400">
+                                    *Please attach the photo in the WhatsApp chat so we can see the design.
+                                </p>
                             </div>
                         </div>
-                    </div>
+                    )}
                  </div>
              ) : (
+                // Empty State
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-[500px] flex flex-col items-center justify-center text-center text-gray-400 border-dashed">
                     <ImageIcon size={48} className="mb-4 opacity-20" />
                     <p>Upload an image to identify & order.</p>
-                    <div className="mt-8 text-left text-sm space-y-2 opacity-60">
-                        <p className="font-bold uppercase tracking-widest text-xs mb-2">How it works:</p>
-                        <ul className="list-disc pl-4 space-y-1">
-                            <li>Upload Photo</li>
-                            <li>AI Identifies the <strong>Exact Model</strong> (Or you can edit it!)</li>
-                            <li>Confirm <strong>Category</strong> if needed (Price updates automatically!)</li>
-                            <li>Select Size & Order</li>
-                        </ul>
-                    </div>
                 </div>
              )}
           </div>

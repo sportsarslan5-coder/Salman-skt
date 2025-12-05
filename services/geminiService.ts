@@ -88,8 +88,8 @@ export const chatWithStylist = async (userMessage: string, history: {role: strin
 export interface PricingAnalysis {
   productName: string; // Specific name (e.g. "Air Jordan 4 Retro")
   category: string;    // Broad category (e.g. "Shoes")
+  dominantColors: string[]; // e.g. ["Red", "Black"]
   reasoning: string;
-  isDemo?: boolean;
 }
 
 // Helper to generate a realistic fallback based on nothing (randomized slightly)
@@ -105,8 +105,8 @@ const getFallbackResult = (): PricingAnalysis => {
     return {
         productName: randomName,
         category: "Custom",
-        reasoning: "Visual Analysis System: High-quality item detected. Please confirm category to see exact price.",
-        isDemo: true
+        dominantColors: ["Multi-color"],
+        reasoning: "Visual Analysis System: High-quality item detected. Please confirm category to see exact price."
     };
 };
 
@@ -123,19 +123,21 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
       });
   }
 
-  // UPDATED PROMPT: Prioritize Simple, Automatic Naming
+  // UPDATED PROMPT: Prioritize Automatic Labeling and Color Detection
   const prompt = `
-    Act as a Smart Product Identifier for an e-commerce store.
+    Act as an Expert Product Identifier for an e-commerce store.
     
-    TASK: Look at the image and Name the product automatically.
+    TASK: Analyze the image and extract:
+    1. Exact Product Name (e.g. "Red Bull Formula 1 Jersey", "Nike Air Force 1 White").
+    2. The Strict Category from the list below.
+    3. The Dominant Colors (e.g. "Red", "Black", "Gold").
     
-    NAMING RULES (CRITICAL):
-    1. SIMPLE & CLEAR: If you see a shoe, call it "Premium [Color] Sneaker". If you see a shirt, call it "Graphic [Color] T-Shirt".
-    2. BRAND TEXT: Only use brand names (Nike, Adidas, etc) if they are clearly written on the product.
-    3. NO CONFUSION: Do not use complex code numbers. Use names a normal person understands.
-    4. EXAMPLES: "Red High-Top Shoes", "Yellow Cricket Bat", "Black Sports Hoodie".
-    
-    CATEGORY RULES (Pick ONE strictly):
+    NAMING RULES:
+    - If there is text on the product (like 'Supreme', 'Adidas', Team Names), USE IT in the name.
+    - If no text, describe it visually: "Premium [Color] [Type]".
+    - Keep it short and professional.
+
+    CATEGORY LIST (Pick ONE strictly):
     - 'Jerseys'
     - 'T-Shirts'
     - 'Hoodies'
@@ -143,6 +145,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
     - 'Shoes'
     - 'Footballs'
     - 'Cricket Bat'
+    - 'Caps'
     - 'Custom'
 
     Return JSON format only.
@@ -163,11 +166,16 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            productName: { type: Type.STRING, description: "Simple, descriptive name (e.g. Red Sneakers)" },
+            productName: { type: Type.STRING, description: "Simple, descriptive name" },
             category: { type: Type.STRING, description: "Strict category from list." },
+            dominantColors: { 
+                type: Type.ARRAY, 
+                items: { type: Type.STRING },
+                description: "List of 1-3 dominant colors"
+            },
             reasoning: { type: Type.STRING },
           },
-          required: ["productName", "category", "reasoning"]
+          required: ["productName", "category", "dominantColors", "reasoning"]
         }
       }
     });
