@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -12,12 +12,23 @@ const AutoPricing: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
   
+  // Editable State
+  const [editableName, setEditableName] = useState('');
+  const [isEditingName, setIsEditingName] = useState(false);
+
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [availableSizes, setAvailableSizes] = useState<string[]>(['S', 'M', 'L', 'XL']); // Default
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync result to editable name
+  useEffect(() => {
+    if (result) {
+        setEditableName(result.productName);
+    }
+  }, [result]);
 
   // Dynamic Sizing Logic based on Category
   useEffect(() => {
@@ -66,6 +77,7 @@ const AutoPricing: React.FC = () => {
       setSelectedImage(base64String);
       setResult(null);
       setQuantity(1); // Reset quantity
+      setIsEditingName(false);
       
       // Extract pure base64 for API (remove data:image/xxx;base64,)
       const base64Data = base64String.split(',')[1];
@@ -106,7 +118,7 @@ const AutoPricing: React.FC = () => {
 
     const customProduct: Product = {
         id: Date.now(),
-        name: result.productName,
+        name: editableName, // Use the edited name
         category: 'Men', 
         priceUSD: result.price,
         image: selectedImage,
@@ -125,7 +137,7 @@ const AutoPricing: React.FC = () => {
     const priceDisplay = convertPrice(result.price);
     
     // Detailed message to compensate for lack of auto-image
-    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${result.productName}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
+    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${editableName}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -134,6 +146,8 @@ const AutoPricing: React.FC = () => {
     setSelectedImage(null);
     setResult(null);
     setQuantity(1);
+    setEditableName('');
+    setIsEditingName(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -215,7 +229,37 @@ const AutoPricing: React.FC = () => {
                         {/* Header Info */}
                         <div>
                             <p className="text-sm text-gray-400 uppercase tracking-widest font-bold">Identified Model</p>
-                            <h2 className="text-3xl font-black text-primary leading-tight">{result.productName}</h2>
+                            
+                            <div className="flex items-start gap-2">
+                                {isEditingName ? (
+                                    <div className="flex-1 flex gap-2">
+                                        <input 
+                                            value={editableName}
+                                            onChange={(e) => setEditableName(e.target.value)}
+                                            className="w-full text-2xl font-bold border-b-2 border-black focus:outline-none bg-transparent"
+                                            autoFocus
+                                        />
+                                        <button 
+                                            onClick={() => setIsEditingName(false)}
+                                            className="bg-black text-white p-2 rounded-full hover:bg-accent hover:text-black"
+                                        >
+                                            <Check size={18} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <h2 className="text-3xl font-black text-primary leading-tight flex-1 group relative">
+                                        {editableName}
+                                        <button 
+                                            onClick={() => setIsEditingName(true)}
+                                            className="ml-3 inline-block opacity-20 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-black align-middle"
+                                            title="Edit Name"
+                                        >
+                                            <Edit2 size={20} />
+                                        </button>
+                                    </h2>
+                                )}
+                            </div>
+
                             <div className="flex items-center gap-2 mt-2">
                                 <span className="text-xs font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded uppercase tracking-wider">{result.category}</span>
                             </div>
@@ -314,7 +358,7 @@ const AutoPricing: React.FC = () => {
                         <p className="font-bold uppercase tracking-widest text-xs mb-2">How it works:</p>
                         <ul className="list-disc pl-4 space-y-1">
                             <li>Upload Photo</li>
-                            <li>AI Identifies the <strong>Exact Model</strong></li>
+                            <li>AI Identifies the <strong>Exact Model</strong> (Or you can edit it!)</li>
                             <li>Select <strong>Correct Size</strong> (US, EU, etc.)</li>
                             <li>Order instantly</li>
                         </ul>

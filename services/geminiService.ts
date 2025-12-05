@@ -95,22 +95,13 @@ export interface PricingAnalysis {
 
 // Helper to generate a realistic fallback price based on nothing (randomized slightly)
 const getFallbackResult = (): PricingAnalysis => {
-    // UPDATED: More generic fallbacks so it doesn't look like a "Wrong Guess" if the API key is missing
-    const fallbackCategories = [
-        { name: "Premium High-Top Sneaker (Custom Series)", cat: "Shoes", price: 110.00 },
-        { name: "Pro-Grade Sports Equipment", cat: "Sports Equipment", price: 65.00 },
-        { name: "Designer Streetwear Hoodie", cat: "Hoodies", price: 55.00 },
-        { name: "Limited Edition Jersey", cat: "Jerseys", price: 45.00 },
-        { name: "Custom Graphic T-Shirt", cat: "T-Shirts", price: 35.00 }
-    ];
-    // Randomly pick one
-    const choice = fallbackCategories[Math.floor(Math.random() * fallbackCategories.length)];
-    
+    // FAILSAFE: Use a generic name so we don't guess "Shoes" when it's a "Bat".
+    // This allows the user to edit the name themselves.
     return {
-        productName: choice.name,
-        category: choice.cat,
-        price: choice.price,
-        reasoning: "Visual Analysis System (Demo Mode): Identified high-quality custom design.",
+        productName: "Custom Design Item",
+        category: "Custom",
+        price: 50.00, // Safe middle ground
+        reasoning: "Visual Analysis System: Custom design detected. Please edit the name if specific identification is required.",
         isDemo: true
     };
 };
@@ -128,22 +119,18 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
       });
   }
 
-  // UPDATED PROMPT: More aggressive about reading text and specific details
+  // UPDATED PROMPT: Text Recognition Focus
   const prompt = `
-    Act as a World-Class Sneaker & Fashion Authenticator.
+    Act as a Professional Product Authenticator.
     
-    TASK: Analyze the image pixel-by-pixel. 
-    1. READ ANY TEXT, LOGOS, or BRANDING visible on the product. Use this to name it.
-    2. Identify the EXACT model name, colorway, and edition.
-    3. If it is a generic or custom item, describe the visual print/pattern in the name.
-
-    **Naming Examples:**
-    - Bad: "Running Shoes"
-    - Good: "Nike Air Jordan 1 Retro High OG 'Chicago'"
-    - Bad: "Jersey"
-    - Good: "Custom Sublimated Football Jersey (Yellow/Black Honeycomb Pattern)"
-    - Bad: "Bat"
-    - Good: "CA Plus 15000 English Willow Cricket Bat"
+    TASK: Analyze the image to identify the item.
+    
+    CRITICAL INSTRUCTION:
+    1. READ ANY TEXT on the product (Logos, Brand Names, Model Numbers). 
+       - If it says "Nike", the name MUST start with "Nike".
+       - If it says a Team Name, include it.
+    2. Be SPECIFIC. Do not just say "Shoes". Say "High-Top Basketball Sneaker".
+    3. If you are not 100% sure of the brand, describe the visual style (e.g. "Red & White Athletic Jersey").
 
     **Pricing Rules (USD):**
     - T-Shirts: $20–$40
@@ -153,6 +140,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
     - Shoes: $100–$150
     - Footballs: $30–$60
     - Cricket Bat: $50–$120
+    - Other: Estimate International Market Price.
 
     Return JSON format only.
   `;
@@ -167,12 +155,12 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         ]
       },
       config: {
-        temperature: 0.4, // Lower temperature for more accurate/factual naming
+        temperature: 0.2, // Low temperature for high accuracy
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            productName: { type: Type.STRING, description: "The exact model name, colorway, and edition." },
+            productName: { type: Type.STRING, description: "The exact model name found via OCR or visual ID." },
             category: { type: Type.STRING },
             price: { type: Type.NUMBER },
             reasoning: { type: Type.STRING },
