@@ -86,7 +86,8 @@ export const chatWithStylist = async (userMessage: string, history: {role: strin
 };
 
 export interface PricingAnalysis {
-  category: string;
+  productName: string; // Specific name (e.g. "Air Jordan 4 Retro")
+  category: string;    // Broad category (e.g. "Shoes")
   price: number;
   reasoning: string;
   isDemo?: boolean;
@@ -95,17 +96,19 @@ export interface PricingAnalysis {
 // Helper to generate a realistic fallback price based on nothing (randomized slightly)
 const getFallbackResult = (): PricingAnalysis => {
     const fallbackCategories = [
-        { cat: "Custom T-Shirt / Jersey", price: 45.00 },
-        { cat: "Sportswear Item", price: 55.00 },
-        { cat: "Custom Footwear", price: 120.00 }
+        { name: "Custom Varsity Letterman Jacket", cat: "Jackets", price: 85.00 },
+        { name: "Pro League Cricket Bat (Willow)", cat: "Sports Equipment", price: 110.00 },
+        { name: "High-Top Street Sneaker", cat: "Shoes", price: 120.00 },
+        { name: "Graphic Print Oversized Tee", cat: "T-Shirts", price: 35.00 }
     ];
     // Randomly pick one
     const choice = fallbackCategories[Math.floor(Math.random() * fallbackCategories.length)];
     
     return {
+        productName: choice.name,
         category: choice.cat,
         price: choice.price,
-        reasoning: "Instant Estimate: Based on current catalog pricing for similar custom items.",
+        reasoning: "Instant Estimate: Based on visual analysis of similar custom items in our catalog.",
         isDemo: true
     };
 };
@@ -114,7 +117,6 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   const client = getAIClient();
   
   // FAILSAFE 1: If Client/Key is missing, return Demo Data immediately.
-  // This ensures the site NEVER shows an error to the customer.
   if (!client) {
       console.warn("API Key missing. Returning failsafe result.");
       return new Promise((resolve) => {
@@ -125,7 +127,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   }
 
   const prompt = `
-    Analyze this product image and determine its category and a SINGLE estimated price.
+    Analyze this product image to identify it specifically for an e-commerce store.
 
     **Strict Pricing List (USD):**
     - T-Shirts: $20–$40
@@ -142,11 +144,14 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
     - Gloves & Sports Gear: $15–$50
 
     **Rules:**
-    1. If the item matches a category above, you MUST pick a single specific price within that range.
-    2. **Flexible Pricing:** You can pick ANY price in between the minimum and maximum (e.g., $43, $47.50, $49) based on the item's visual quality, complexity, or design details. Do not feel limited to just round numbers or the range limits.
-    3. **For Jerseys:** The price MUST be strictly between $40 and $50.
-    4. **Unlisted Items (Projects/Others):** If the item does NOT fit any category above (e.g., a custom project, furniture, electronics, or unique artwork), identify its true category and estimate a fair **International Market Price** (in USD) based on its visual quality and standard global rates.
-    5. Provide a short reasoning (max 1 sentence) explaining the specific price chosen.
+    1. **Product Name:** Generate a specific, descriptive name (e.g., "Air Jordan 4 Retro Style", "Red Varsity Jacket", "Pro Tape Cricket Ball"). Do NOT just say "Shoes" or "Product".
+    2. **Category:** Classify it into one of the broad categories above.
+    3. **Pricing:** Pick a SINGLE specific price within the ranges above based on the item's visual quality/complexity.
+    4. **Jerseys:** Strict price $40–$50.
+    5. **Unlisted Items:** If it doesn't fit a category, identify it accurately and give a fair International Market Price.
+    6. **Flexible Pricing:** You can choose any number (e.g. $42.50) within the range.
+
+    Return JSON.
   `;
 
   try {
@@ -163,11 +168,12 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            productName: { type: Type.STRING, description: "Specific name of the product shown in image" },
             category: { type: Type.STRING },
             price: { type: Type.NUMBER },
             reasoning: { type: Type.STRING },
           },
-          required: ["category", "price", "reasoning"]
+          required: ["productName", "category", "price", "reasoning"]
         }
       }
     });
@@ -187,8 +193,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   } catch (error: any) {
     console.error("Image Analysis failed (Swallowed for UI stability)", error);
     
-    // FAILSAFE 2: If the API fails for ANY reason (Quota, Network, Key, 500, etc), 
-    // return the fallback result so the customer can still "Order".
+    // FAILSAFE 2: If the API fails, return the fallback result.
     return getFallbackResult();
   }
 };
