@@ -94,10 +94,18 @@ export interface PricingAnalysis {
 
 // Helper to generate a realistic fallback based on nothing (randomized slightly)
 const getFallbackResult = (): PricingAnalysis => {
+    const fallbackNames = [
+        "Premium Sportswear Item",
+        "High-Quality Activewear",
+        "Designer Style Product",
+        "Custom Athletic Gear"
+    ];
+    const randomName = fallbackNames[Math.floor(Math.random() * fallbackNames.length)];
+    
     return {
-        productName: "Custom Design Item",
+        productName: randomName,
         category: "Custom",
-        reasoning: "Visual Analysis System: Custom design detected. Please select the correct category to see the price.",
+        reasoning: "Visual Analysis System: High-quality item detected. Please confirm category to see exact price.",
         isDemo: true
     };
 };
@@ -111,30 +119,31 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
       return new Promise((resolve) => {
           setTimeout(() => {
               resolve(getFallbackResult());
-          }, 2000); 
+          }, 1500); 
       });
   }
 
-  // UPDATED PROMPT: Strict Categorization & Logical Naming
+  // UPDATED PROMPT: Prioritize Simple, Automatic Naming
   const prompt = `
-    Act as a Professional Product Authenticator.
+    Act as a Smart Product Identifier for an e-commerce store.
     
-    TASK: Analyze the image to identify the item.
+    TASK: Look at the image and Name the product automatically.
     
-    NAMING RULES:
-    1. READ TEXT: If you see a brand name (Nike, Adidas, Gucci, Team Name) or text on the item, INCLUDE IT in the 'productName'.
-    2. BE DESCRIPTIVE: If no text, describe it. E.g. "Red High-Top Sneaker", "Yellow Patterned Jersey".
-    3. DO NOT HALLUCINATE: Do not guess "Air Jordan" unless you clearly see the logo/shape. If unsure, say "Premium Sneaker".
+    NAMING RULES (CRITICAL):
+    1. SIMPLE & CLEAR: If you see a shoe, call it "Premium [Color] Sneaker". If you see a shirt, call it "Graphic [Color] T-Shirt".
+    2. BRAND TEXT: Only use brand names (Nike, Adidas, etc) if they are clearly written on the product.
+    3. NO CONFUSION: Do not use complex code numbers. Use names a normal person understands.
+    4. EXAMPLES: "Red High-Top Shoes", "Yellow Cricket Bat", "Black Sports Hoodie".
     
     CATEGORY RULES (Pick ONE strictly):
-    - 'Jerseys' (Sports shirts with collars/numbers)
-    - 'T-Shirts' (Casual round neck)
-    - 'Hoodies' (Sweatshirts with hoods)
-    - 'Jackets' (Outerwear, Zippers)
-    - 'Shoes' (Sneakers, Boots, Loafers)
-    - 'Footballs' (Soccer balls)
-    - 'Cricket Bat' (Sports equipment)
-    - 'Custom' (Anything else)
+    - 'Jerseys'
+    - 'T-Shirts'
+    - 'Hoodies'
+    - 'Jackets'
+    - 'Shoes'
+    - 'Footballs'
+    - 'Cricket Bat'
+    - 'Custom'
 
     Return JSON format only.
   `;
@@ -149,12 +158,12 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         ]
       },
       config: {
-        temperature: 0.1, // Lowest temperature for strict categorization
+        temperature: 0.1, // Lowest temperature for strict consistency
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            productName: { type: Type.STRING, description: "Exact model name based on text and visual." },
+            productName: { type: Type.STRING, description: "Simple, descriptive name (e.g. Red Sneakers)" },
             category: { type: Type.STRING, description: "Strict category from list." },
             reasoning: { type: Type.STRING },
           },
