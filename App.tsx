@@ -1,8 +1,5 @@
-
-
 import React from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useAppContext } from './context/AppContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
@@ -14,24 +11,29 @@ import Contact from './pages/Contact';
 import AutoPricing from './pages/AutoPricing';
 import AIStylist from './components/AIStylist';
 
+const AppContent: React.FC = () => {
+  const { route } = useAppContext();
+  const path = route.split('?')[0];
+
+  if (path === '/' || path === '') return <Home />;
+  if (path === '/shop') return <Shop />;
+  if (path === '/smart-pricing') return <AutoPricing />;
+  if (path === '/cart') return <Cart />;
+  if (path === '/checkout') return <Checkout />;
+  if (path === '/blog') return <Blog />;
+  if (path === '/contact') return <Contact />;
+  if (path.startsWith('/product/')) return <ProductDetails />;
+  
+  return <Home />;
+};
+
 const App: React.FC = () => {
   return (
     <AppProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/smart-pricing" element={<AutoPricing />} />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
-        </Layout>
-        <AIStylist />
-      </Router>
+      <Layout>
+        <AppContent />
+      </Layout>
+      <AIStylist />
     </AppProvider>
   );
 };

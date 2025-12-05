@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
 
 const Shop: React.FC = () => {
-  const { t } = useAppContext();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+  const { t, route, navigate } = useAppContext();
+  
+  // Extract query params from hash route
+  const queryString = route.split('?')[1] || '';
+  const searchParams = new URLSearchParams(queryString);
   const initialCategory = searchParams.get('category') || 'All';
 
   const [activeCategory, setActiveCategory] = useState(initialCategory);
@@ -17,11 +18,20 @@ const Shop: React.FC = () => {
     return PRODUCTS.filter(p => p.category === activeCategory);
   }, [activeCategory]);
 
-  React.useEffect(() => {
-     setActiveCategory(searchParams.get('category') || 'All');
-  }, [location.search]);
+  useEffect(() => {
+     const params = new URLSearchParams(route.split('?')[1] || '');
+     setActiveCategory(params.get('category') || 'All');
+  }, [route]);
 
   const categories = ['All', 'Men', 'Women', 'Kids'];
+
+  const handleCategoryClick = (cat: string) => {
+    if (cat === 'All') {
+        navigate('/shop');
+    } else {
+        navigate(`/shop?category=${cat}`);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -31,10 +41,7 @@ const Shop: React.FC = () => {
           {categories.map(cat => (
             <button
               key={cat}
-              onClick={() => {
-                  // Just local state for simplicity, though could update URL
-                  setActiveCategory(cat);
-              }}
+              onClick={() => handleCategoryClick(cat)}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
                 activeCategory === cat 
                   ? 'bg-black text-white shadow-md' 

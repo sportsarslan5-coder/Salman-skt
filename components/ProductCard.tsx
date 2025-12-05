@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Eye } from 'lucide-react';
 import { Product } from '../types';
 import { useAppContext } from '../context/AppContext';
@@ -24,13 +23,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         
         {/* Overlay Actions */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-          <Link 
-            to={`/product/${product.id}`}
-            className="bg-white text-black p-3 rounded-full hover:bg-accent hover:text-black transition-all transform hover:scale-110 shadow-lg"
+          <a 
+            href={`#/product/${product.id}`}
+            className="bg-white text-black p-3 rounded-full hover:bg-accent hover:text-black transition-all transform hover:scale-110 shadow-lg flex items-center justify-center"
             title="View Details"
           >
             <Eye size={20} />
-          </Link>
+          </a>
           <button
             onClick={(e) => {
                 e.preventDefault();
@@ -62,9 +61,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
         
-        <Link to={`/product/${product.id}`} className="block group-hover:text-accent transition-colors duration-200">
+        <a href={`#/product/${product.id}`} className="block group-hover:text-accent transition-colors duration-200">
           <h3 className="text-lg font-bold text-primary leading-tight mb-1 line-clamp-1">{product.name}</h3>
-        </Link>
+        </a>
         
         <div className="flex items-center justify-between mt-2">
           <span className="text-lg font-bold text-primary">{convertPrice(product.priceUSD)}</span>

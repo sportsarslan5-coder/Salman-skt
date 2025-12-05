@@ -1,16 +1,17 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, ShoppingCart, ArrowLeft, CheckCircle, MessageCircle, Shield, RefreshCcw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS, WHATSAPP_NUMBER } from '../constants';
 import ProductCard from '../components/ProductCard';
 
 const ProductDetails: React.FC = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { t, convertPrice, addToCart } = useAppContext();
-  const product = PRODUCTS.find(p => p.id === Number(id));
+  const { t, convertPrice, addToCart, navigate, route } = useAppContext();
+  
+  // Extract ID from route: /product/:id
+  const idStr = route.split('/product/')[1]?.split('?')[0];
+  const id = idStr ? Number(idStr) : null;
+  
+  const product = PRODUCTS.find(p => p.id === id);
   const [selectedSize, setSelectedSize] = useState<string>('');
 
   const relatedProducts = useMemo(() => {
@@ -23,7 +24,7 @@ const ProductDetails: React.FC = () => {
   useEffect(() => {
     if (product) {
       document.title = `${product.name} | Salman SKT`;
-      window.scrollTo(0, 0);
+      // Window scroll is handled in AppContext, but we can ensure it here if needed
     }
   }, [product]);
 
@@ -75,9 +76,9 @@ const ProductDetails: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8 animate-fade-in">
         <nav className="flex items-center gap-3 text-sm text-gray-500 mb-12">
-            <Link to="/" className="hover:text-black transition-colors">Home</Link>
+            <a href="#/" className="hover:text-black transition-colors">Home</a>
             <span className="text-gray-300">/</span>
-            <Link to="/shop" className="hover:text-black transition-colors">Shop</Link>
+            <a href="#/shop" className="hover:text-black transition-colors">Shop</a>
             <span className="text-gray-300">/</span>
             <span className="text-black font-medium truncate">{product.name}</span>
         </nav>
@@ -202,7 +203,7 @@ const ProductDetails: React.FC = () => {
               <div>
                 <div className="flex justify-between items-end mb-8">
                     <h2 className="text-3xl font-bold">You May Also Like</h2>
-                    <Link to="/shop" className="text-sm font-bold border-b border-black pb-1">View Store</Link>
+                    <a href="#/shop" className="text-sm font-bold border-b border-black pb-1">View Store</a>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                   {relatedProducts.map(p => (

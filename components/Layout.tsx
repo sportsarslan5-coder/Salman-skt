@@ -1,19 +1,14 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, X, Search, MessageCircle, Instagram, Facebook, Twitter, ArrowUp, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { WHATSAPP_NUMBER } from '../constants';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { 
-    t, cart, language, setLanguage, currency, setCurrency, isRTL 
+    t, cart, language, setLanguage, currency, setCurrency, isRTL, route, navigate 
   } = useAppContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,7 +21,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location]);
+  }, [route]);
 
   const navLinks = [
     { name: 'home', path: '/' },
@@ -40,10 +35,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   const isActive = (path: string) => {
+    const currentPath = route.split('?')[0];
+    const currentQuery = route.split('?')[1] || '';
     if (path.includes('?')) {
-        return location.search.includes(path.split('?')[1]);
+        return currentQuery.includes(path.split('?')[1]);
     }
-    return location.pathname === path && location.search === '';
+    return currentPath === path && !currentQuery;
   };
 
   return (
@@ -106,21 +103,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </button>
 
             {/* Logo */}
-            <Link to="/" className="text-2xl font-black tracking-tighter uppercase flex items-center gap-1">
+            <a href="#/" className="text-2xl font-black tracking-tighter uppercase flex items-center gap-1">
               SALMAN<span className="text-accent">SKT</span>
-            </Link>
+            </a>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-6 xl:gap-8">
               {navLinks.map((link) => (
-                <Link
+                <a
                   key={link.name}
-                  to={link.path}
+                  href={`#${link.path}`}
                   className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-accent flex items-center gap-1 ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
                 >
                   {link.name === 'smartPricing' && <Sparkles size={14} className="text-accent" />}
                   {t(link.name)}
-                </Link>
+                </a>
               ))}
             </div>
 
@@ -132,14 +129,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </button>
 
               {/* Cart */}
-              <Link to="/cart" className="relative group hover:text-accent transition-colors">
+              <a href="#/cart" className="relative group hover:text-accent transition-colors">
                 <ShoppingBag size={22} strokeWidth={1.5} />
                 {cart.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-accent text-black text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full">
                     {cart.reduce((a, b) => a + b.quantity, 0)}
                   </span>
                 )}
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -151,9 +148,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
           <div className={`fixed inset-y-0 ${isRTL ? 'right-0' : 'left-0'} w-[80%] max-w-sm bg-white shadow-2xl p-6 flex flex-col`}>
              <div className="flex justify-between items-center mb-8">
-                <Link to="/" className="text-2xl font-black tracking-tighter uppercase">
+                <a href="#/" className="text-2xl font-black tracking-tighter uppercase">
                   SALMAN<span className="text-accent">SKT</span>
-                </Link>
+                </a>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
                   <X size={24} />
                 </button>
@@ -161,14 +158,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
              <div className="flex flex-col gap-6 flex-1 overflow-y-auto">
                {navLinks.map((link) => (
-                  <Link
+                  <a
                     key={link.name}
-                    to={link.path}
+                    href={`#${link.path}`}
                     className={`text-lg font-bold uppercase tracking-wider flex items-center gap-2 ${isActive(link.path) ? 'text-accent' : 'text-black'}`}
                   >
                      {link.name === 'smartPricing' && <Sparkles size={16} className="text-accent" />}
                     {t(link.name)}
-                  </Link>
+                  </a>
                 ))}
              </div>
 
@@ -193,9 +190,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
-              <Link to="/" className="text-3xl font-black tracking-tighter uppercase mb-6 block">
+              <a href="#/" className="text-3xl font-black tracking-tighter uppercase mb-6 block">
                 SALMAN<span className="text-accent">SKT</span>
-              </Link>
+              </a>
               <p className="text-gray-400 max-w-sm mb-6 leading-relaxed">
                 Premium sneakers and streetwear for the modern generation. Sialkot's finest fashion destination.
               </p>
@@ -209,10 +206,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div>
               <h4 className="font-bold text-lg mb-6">{t('shop')}</h4>
               <ul className="space-y-4 text-gray-400">
-                <li><Link to="/smart-pricing" className="hover:text-accent transition-colors flex items-center gap-2"><Sparkles size={14} /> Smart Pricing</Link></li>
-                <li><Link to="/shop?category=Men" className="hover:text-white transition-colors">Men's Collection</Link></li>
-                <li><Link to="/shop?category=Women" className="hover:text-white transition-colors">Women's Collection</Link></li>
-                <li><Link to="/shop?category=Kids" className="hover:text-white transition-colors">Kids' Collection</Link></li>
+                <li><a href="#/smart-pricing" className="hover:text-accent transition-colors flex items-center gap-2"><Sparkles size={14} /> Smart Pricing</a></li>
+                <li><a href="#/shop?category=Men" className="hover:text-white transition-colors">Men's Collection</a></li>
+                <li><a href="#/shop?category=Women" className="hover:text-white transition-colors">Women's Collection</a></li>
+                <li><a href="#/shop?category=Kids" className="hover:text-white transition-colors">Kids' Collection</a></li>
               </ul>
             </div>
 
@@ -220,8 +217,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                <h4 className="font-bold text-lg mb-6">{t('contact')}</h4>
                <ul className="space-y-4 text-gray-400">
                  <li><a href={`https://wa.me/${WHATSAPP_NUMBER}`} className="hover:text-white transition-colors">WhatsApp Support</a></li>
-                 <li><Link to="/contact" className="hover:text-white transition-colors">Store Location</Link></li>
-                 <li><Link to="/contact" className="hover:text-white transition-colors">Email Us</Link></li>
+                 <li><a href="#/contact" className="hover:text-white transition-colors">Store Location</a></li>
+                 <li><a href="#/contact" className="hover:text-white transition-colors">Email Us</a></li>
                </ul>
             </div>
           </div>

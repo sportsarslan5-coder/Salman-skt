@@ -1,7 +1,5 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Truck, Star, TrendingUp, Award, Sparkles } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Truck, Award, TrendingUp } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
@@ -43,18 +41,18 @@ const Home: React.FC = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in-up delay-300">
-                <Link 
-                  to="/shop" 
+                <a 
+                  href="#/shop" 
                   className="inline-flex items-center justify-center bg-accent text-black px-10 py-4 rounded-full font-bold text-lg hover:bg-white transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(255,215,0,0.4)]"
                 >
                   {t('buyNow')} <ArrowRight className="ml-2" size={20} />
-                </Link>
-                <Link 
-                  to="/shop?category=Men" 
+                </a>
+                <a 
+                  href="#/shop?category=Men" 
                   className="inline-flex items-center justify-center bg-white/10 backdrop-blur-md border border-white/30 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-all"
                 >
                   View Men's Collection
-                </Link>
+                </a>
               </div>
             </div>
           </div>
@@ -83,8 +81,8 @@ const Home: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-[600px] md:h-[500px]">
             {['Men', 'Women', 'Kids'].map((cat, index) => (
-              <Link 
-                to={`/shop?category=${cat}`} 
+              <a 
+                href={`#/shop?category=${cat}`} 
                 key={cat} 
                 className={`group relative overflow-hidden rounded-3xl cursor-pointer shadow-2xl h-full ${index === 1 ? 'md:-mt-8 md:mb-8' : ''}`}
               >
@@ -105,7 +103,7 @@ const Home: React.FC = () => {
                     Explore the latest collection
                   </p>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         </div>
@@ -126,9 +124,9 @@ const Home: React.FC = () => {
                 </div>
                 <h2 className="text-4xl md:text-5xl font-black text-primary">{t('dealOfTheDay')}</h2>
             </div>
-            <Link to="/shop" className="group flex items-center gap-2 font-bold text-primary hover:text-accent transition-colors border-b-2 border-transparent hover:border-accent pb-1">
+            <a href="#/shop" className="group flex items-center gap-2 font-bold text-primary hover:text-accent transition-colors border-b-2 border-transparent hover:border-accent pb-1">
               View All Products <ArrowRight size={20} className="transform group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

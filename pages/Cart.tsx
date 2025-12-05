@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Trash2, Minus, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
@@ -12,9 +11,9 @@ const Cart: React.FC = () => {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
         <h2 className="text-2xl font-bold mb-4">{t('emptyCart')}</h2>
-        <Link to="/shop" className="text-accent underline hover:text-black">
+        <a href="#/shop" className="text-accent underline hover:text-black">
           Start Shopping
-        </Link>
+        </a>
       </div>
     );
   }
@@ -83,9 +82,9 @@ const Cart: React.FC = () => {
             <span>{t('total')}</span>
             <span>{convertPrice(totalUSD)}</span>
           </div>
-          <Link to="/checkout" className="block w-full bg-black text-white text-center py-4 rounded-full font-bold hover:bg-accent transition-colors">
+          <a href="#/checkout" className="block w-full bg-black text-white text-center py-4 rounded-full font-bold hover:bg-accent transition-colors">
             Proceed to Checkout
-          </Link>
+          </a>
         </div>
       </div>
     </div>

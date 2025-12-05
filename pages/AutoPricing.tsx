@@ -1,24 +1,49 @@
-
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Check, RefreshCw, AlertTriangle, Settings, Info } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
 import { Product } from '../types';
 
 const AutoPricing: React.FC = () => {
-  const { t, convertPrice, addToCart } = useAppContext();
-  const navigate = useNavigate();
+  const { t, convertPrice, addToCart, navigate } = useAppContext();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
   
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedSize, setSelectedSize] = useState('');
+  const [availableSizes, setAvailableSizes] = useState<string[]>(['S', 'M', 'L', 'XL']); // Default
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Dynamic Sizing Logic based on Category
+  useEffect(() => {
+    if (result) {
+        const cat = result.category.toLowerCase();
+        let sizes: string[] = [];
+
+        if (cat.includes('shoe') || cat.includes('footwear') || cat.includes('sneaker')) {
+            sizes = ['US 7', 'US 8', 'US 9', 'US 10', 'US 11', 'US 12'];
+            setSelectedSize('US 9');
+        } else if (cat.includes('bat') || cat.includes('cricket')) {
+            sizes = ['Harrow', 'Short Handle', 'Long Handle'];
+            setSelectedSize('Short Handle');
+        } else if (cat.includes('ball') || cat.includes('football') || cat.includes('volleyball')) {
+            sizes = ['Standard Size 5'];
+            setSelectedSize('Standard Size 5');
+        } else if (cat.includes('kid')) {
+            sizes = ['2Y', '3Y', '4Y', '5Y', 'XS', 'S'];
+            setSelectedSize('3Y');
+        } else {
+            // Default clothing
+            sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+            setSelectedSize('M');
+        }
+        setAvailableSizes(sizes);
+    }
+  }, [result]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -56,8 +81,6 @@ const AutoPricing: React.FC = () => {
       const data = await analyzeProductImage(base64Data, mimeType);
       setResult(data);
     } catch (err) {
-      // This block should technically rarely be reached now due to failsafes in service
-      // But if it does, we just reset.
       console.error("Critical Failure:", err);
       setAnalyzing(false);
     } finally {
@@ -80,15 +103,14 @@ const AutoPricing: React.FC = () => {
   const handleAddToCart = () => {
     if (!result || !selectedImage) return;
 
-    // Create a temporary "Custom" product object to fit the cart structure
     const customProduct: Product = {
-        id: Date.now(), // Unique ID for this custom item
-        name: result.productName, // Use specific name
-        category: 'Men', // Defaulting to generic
+        id: Date.now(),
+        name: result.productName,
+        category: 'Men', 
         priceUSD: result.price,
         image: selectedImage,
         description: result.reasoning,
-        sizes: ['S', 'M', 'L', 'XL'],
+        sizes: availableSizes,
         rating: 5.0,
         reviews: 0
     };
@@ -100,7 +122,10 @@ const AutoPricing: React.FC = () => {
   const handleWhatsApp = () => {
     if (!result) return;
     const priceDisplay = convertPrice(result.price);
-    const message = `*INQUIRY FROM SMART PRICING*%0a----------------------------%0aI want to order this item:%0a✨ *${result.productName}*%0a📂 Category: ${result.category}%0a💰 Est. Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Qty: ${quantity}%0a----------------------------%0a(I am sending the image of this product now...)`;
+    
+    // Detailed message to compensate for lack of auto-image
+    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${result.productName}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a(I have the image ready to send)`;
+    
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
 
@@ -111,8 +136,6 @@ const AutoPricing: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const sizes = ['S', 'M', 'L', 'XL'];
-
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -122,7 +145,7 @@ const AutoPricing: React.FC = () => {
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-primary mb-4">SMART PRICING SYSTEM</h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Upload a photo. Our AI identifies the exact item, gives you a price, and lets you order immediately.
+            Upload a photo. Our AI identifies the exact model, gives you a price, and lets you order immediately.
           </p>
         </div>
 
@@ -173,8 +196,8 @@ const AutoPricing: React.FC = () => {
             {analyzing && (
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                     <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
-                    <p className="font-bold text-lg animate-pulse">Analyzing Product...</p>
-                    <p className="text-sm text-gray-500">Identifying specific style & price</p>
+                    <p className="font-bold text-lg animate-pulse">Scanning Product...</p>
+                    <p className="text-sm text-gray-500">Identifying model & specs</p>
                 </div>
             )}
           </div>
@@ -190,7 +213,7 @@ const AutoPricing: React.FC = () => {
                     <div className="space-y-6">
                         {/* Header Info */}
                         <div>
-                            <p className="text-sm text-gray-400 uppercase tracking-widest font-bold">Identified Item</p>
+                            <p className="text-sm text-gray-400 uppercase tracking-widest font-bold">Identified Model</p>
                             <h2 className="text-3xl font-black text-primary leading-tight">{result.productName}</h2>
                             <div className="flex items-center gap-2 mt-2">
                                 <span className="text-xs font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded uppercase tracking-wider">{result.category}</span>
@@ -208,16 +231,16 @@ const AutoPricing: React.FC = () => {
                             
                             {/* Size Selector */}
                             <div>
-                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size</span>
-                                <div className="flex gap-2">
-                                    {sizes.map(size => (
+                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size ({result.category})</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {availableSizes.map(size => (
                                         <button
                                             key={size}
                                             onClick={() => setSelectedSize(size)}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
+                                            className={`flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all border ${
                                                 selectedSize === size 
-                                                ? 'bg-black text-white shadow-md' 
-                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                                ? 'bg-black text-white border-black shadow-md' 
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-black'
                                             }`}
                                         >
                                             {size}
@@ -266,14 +289,19 @@ const AutoPricing: React.FC = () => {
                                 onClick={handleAddToCart}
                                 className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-accent hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg transform hover:scale-[1.02]"
                             >
-                                <ShoppingCart size={20} /> Add to Cart / Order Now
+                                <ShoppingCart size={20} /> Add to Cart
                             </button>
-                            <button 
-                                onClick={handleWhatsApp}
-                                className="w-full bg-green-50 text-green-600 py-3 rounded-xl font-bold text-sm hover:bg-green-100 transition-all flex items-center justify-center gap-2 border border-green-200"
-                            >
-                                <MessageCircle size={18} /> Order via WhatsApp (Send Image)
-                            </button>
+                            <div className="relative group">
+                                <button 
+                                    onClick={handleWhatsApp}
+                                    className="w-full bg-green-50 text-green-600 py-3 rounded-xl font-bold text-sm hover:bg-green-100 transition-all flex items-center justify-center gap-2 border border-green-200"
+                                >
+                                    <MessageCircle size={18} /> Order on WhatsApp
+                                </button>
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                    Remember to paste the image in chat!
+                                </div>
+                            </div>
                         </div>
                     </div>
                  </div>
@@ -285,9 +313,9 @@ const AutoPricing: React.FC = () => {
                         <p className="font-bold uppercase tracking-widest text-xs mb-2">How it works:</p>
                         <ul className="list-disc pl-4 space-y-1">
                             <li>Upload Photo</li>
-                            <li>AI Names the Exact Item</li>
-                            <li>See Price & Select Size</li>
-                            <li>Order via Cart or WhatsApp</li>
+                            <li>AI Identifies the <strong>Exact Model</strong></li>
+                            <li>Select <strong>Correct Size</strong> (US, EU, etc.)</li>
+                            <li>Order instantly</li>
                         </ul>
                     </div>
                 </div>

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, CartItem, Language, Currency } from '../types';
 import { TRANSLATIONS, EXCHANGE_RATE_PKR } from '../constants';
@@ -16,6 +15,9 @@ interface AppContextType {
   t: (key: string) => string;
   convertPrice: (priceUSD: number) => string;
   isRTL: boolean;
+  // Custom Router
+  route: string;
+  navigate: (path: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -24,6 +26,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [language, setLanguage] = useState<Language>('en');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [cart, setCart] = useState<CartItem[]>([]);
+  
+  // Custom Router State (Hash based)
+  const [route, setRoute] = useState<string>(window.location.hash.slice(1) || '/');
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      setRoute(hash || '/');
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const navigate = (path: string) => {
+    window.location.hash = path;
+  };
 
   const isRTL = language === 'ur';
 
@@ -69,7 +88,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     <AppContext.Provider value={{
       language, setLanguage, currency, setCurrency,
       cart, addToCart, removeFromCart, updateQuantity, clearCart,
-      t, convertPrice, isRTL
+      t, convertPrice, isRTL,
+      route, navigate
     }}>
       <div dir={isRTL ? 'rtl' : 'ltr'} className={isRTL ? 'font-urdu' : 'font-sans'}>
         {children}

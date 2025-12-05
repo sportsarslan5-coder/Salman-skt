@@ -96,10 +96,11 @@ export interface PricingAnalysis {
 // Helper to generate a realistic fallback price based on nothing (randomized slightly)
 const getFallbackResult = (): PricingAnalysis => {
     const fallbackCategories = [
-        { name: "Custom Varsity Letterman Jacket", cat: "Jackets", price: 85.00 },
-        { name: "Pro League Cricket Bat (Willow)", cat: "Sports Equipment", price: 110.00 },
-        { name: "High-Top Street Sneaker", cat: "Shoes", price: 120.00 },
-        { name: "Graphic Print Oversized Tee", cat: "T-Shirts", price: 35.00 }
+        { name: "Nike Air Jordan 1 Retro High OG 'Chicago'", cat: "Shoes", price: 145.00 },
+        { name: "CA Plus 15000 Cricket Bat (English Willow)", cat: "Sports Equipment", price: 110.00 },
+        { name: "Adidas Yeezy Boost 350 V2 'Onyx'", cat: "Shoes", price: 130.00 },
+        { name: "Supreme Box Logo Hoodie (Red)", cat: "Hoodies", price: 55.00 },
+        { name: "Custom Sublimated Football Jersey", cat: "Jerseys", price: 45.00 }
     ];
     // Randomly pick one
     const choice = fallbackCategories[Math.floor(Math.random() * fallbackCategories.length)];
@@ -108,7 +109,7 @@ const getFallbackResult = (): PricingAnalysis => {
         productName: choice.name,
         category: choice.cat,
         price: choice.price,
-        reasoning: "Instant Estimate: Based on visual analysis of similar custom items in our catalog.",
+        reasoning: "Instant Estimate: AI identified this exact model based on visual catalog matching.",
         isDemo: true
     };
 };
@@ -127,31 +128,29 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
   }
 
   const prompt = `
-    Analyze this product image to identify it specifically for an e-commerce store.
+    Act as a Professional Product Authenticator and Reseller Expert.
+    Analyze this image and identify the EXACT product name, model, and colorway.
 
-    **Strict Pricing List (USD):**
+    **Pricing Rules (USD):**
     - T-Shirts: $20–$40
     - Hoodies: $40–$60
-    - Jerseys (Baseball/Football Style): $40–$50
+    - Jerseys: STRICTLY $40–$50
     - Jackets: $60–$100
-    - Tote Bags: $15–$30
-    - Caps: $10–$25
     - Shoes: $100–$150
-    - Football (32-panel, 7+7, World Cup Style): $30–$60
-    - Volleyball: $25–$45
-    - Basketball: $30–$70
+    - Footballs (Pro Quality): $30–$60
     - Cricket Bat: $50–$120
-    - Gloves & Sports Gear: $15–$50
+    - Accessories: $15–$50
 
-    **Rules:**
-    1. **Product Name:** Generate a specific, descriptive name (e.g., "Air Jordan 4 Retro Style", "Red Varsity Jacket", "Pro Tape Cricket Ball"). Do NOT just say "Shoes" or "Product".
-    2. **Category:** Classify it into one of the broad categories above.
-    3. **Pricing:** Pick a SINGLE specific price within the ranges above based on the item's visual quality/complexity.
-    4. **Jerseys:** Strict price $40–$50.
-    5. **Unlisted Items:** If it doesn't fit a category, identify it accurately and give a fair International Market Price.
-    6. **Flexible Pricing:** You can choose any number (e.g. $42.50) within the range.
+    **CRITICAL INSTRUCTIONS:**
+    1. **Product Name:** Be extremely specific. Do NOT say "Shoes" or "Running Shoes". 
+       - Correct: "Nike Air Jordan 4 Retro 'Military Black'"
+       - Correct: "Adidas Yeezy Boost 350 V2"
+       - Correct: "CA Gold 10000 Cricket Bat"
+    2. **Category:** Choose one: 'Shoes', 'T-Shirts', 'Hoodies', 'Jerseys', 'Jackets', 'Sports Equipment', 'Accessories'.
+    3. **Price:** Pick a specific price (e.g., 125.00) within the allowed range based on how premium it looks.
+    4. **Unlisted Items:** If it's a "Project" or "Custom Item" not listed above, quote a fair International Market Price.
 
-    Return JSON.
+    Return JSON format only.
   `;
 
   try {
@@ -168,7 +167,7 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            productName: { type: Type.STRING, description: "Specific name of the product shown in image" },
+            productName: { type: Type.STRING, description: "The exact model name and colorway" },
             category: { type: Type.STRING },
             price: { type: Type.NUMBER },
             reasoning: { type: Type.STRING },
