@@ -1,13 +1,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
 import { Product } from '../types';
 
 const AutoPricing: React.FC = () => {
-  const { t, convertPrice, addToCart, navigate } = useAppContext();
+  const { convertPrice, addToCart, navigate } = useAppContext();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
@@ -27,7 +27,7 @@ const AutoPricing: React.FC = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Standard Pricing Rules (Fallback/Manual Correction)
+  // STRICT PRICING RULES (The Single Source of Truth)
   const STANDARD_PRICES: {[key: string]: number} = {
       'Jerseys': 45.00,
       'T-Shirts': 30.00,
@@ -45,8 +45,14 @@ const AutoPricing: React.FC = () => {
   useEffect(() => {
     if (result) {
         setEditableName(result.productName);
-        setCurrentCategory(normalizeCategory(result.category));
-        setCurrentPrice(result.price);
+        
+        // Normalize Category
+        const normalizedCat = normalizeCategory(result.category);
+        setCurrentCategory(normalizedCat);
+        
+        // SET EXACT PRICE based on Category (No AI guessing)
+        const price = STANDARD_PRICES[normalizedCat] || 50.00;
+        setCurrentPrice(price);
     }
   }, [result]);
 
@@ -56,7 +62,7 @@ const AutoPricing: React.FC = () => {
       if (c.includes('jersey')) return 'Jerseys';
       if (c.includes('hoodie')) return 'Hoodies';
       if (c.includes('jacket')) return 'Jackets';
-      if (c.includes('shoe') || c.includes('sneaker')) return 'Shoes';
+      if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot')) return 'Shoes';
       if (c.includes('ball')) return 'Footballs';
       if (c.includes('bat')) return 'Cricket Bat';
       if (c.includes('shirt') || c.includes('tee')) return 'T-Shirts';
@@ -67,10 +73,11 @@ const AutoPricing: React.FC = () => {
   useEffect(() => {
     if (currentCategory) {
         updateSizesForCategory(currentCategory);
-        // Ensure price matches the category rule if it deviates significantly or was manually changed
-        const standardPrice = STANDARD_PRICES[currentCategory];
-        if (standardPrice) {
-            setCurrentPrice(standardPrice);
+        
+        // FORCE UPDATE PRICE based on the selected category
+        const price = STANDARD_PRICES[currentCategory];
+        if (price) {
+            setCurrentPrice(price);
         }
     }
   }, [currentCategory]);
@@ -100,10 +107,7 @@ const AutoPricing: React.FC = () => {
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       const newCat = e.target.value;
       setCurrentCategory(newCat);
-      // Auto-fix price based on category rule
-      if (STANDARD_PRICES[newCat]) {
-          setCurrentPrice(STANDARD_PRICES[newCat]);
-      }
+      // Price updates via useEffect automatically
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +190,7 @@ const AutoPricing: React.FC = () => {
     const priceDisplay = convertPrice(currentPrice);
     
     // Detailed message to compensate for lack of auto-image
-    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${editableName}*%0a📂 Category: ${currentCategory}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
+    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a🛍️ *${editableName}*%0a📂 Category: ${currentCategory}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -320,7 +324,7 @@ const AutoPricing: React.FC = () => {
                                         className="appearance-none bg-gray-100 font-bold text-sm px-4 py-2 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-black"
                                     >
                                         {CATEGORY_OPTIONS.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
+                                            <option key={cat} value={cat}>{cat} (${STANDARD_PRICES[cat]})</option>
                                         ))}
                                     </select>
                                     <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />

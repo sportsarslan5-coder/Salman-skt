@@ -88,20 +88,16 @@ export const chatWithStylist = async (userMessage: string, history: {role: strin
 export interface PricingAnalysis {
   productName: string; // Specific name (e.g. "Air Jordan 4 Retro")
   category: string;    // Broad category (e.g. "Shoes")
-  price: number;
   reasoning: string;
   isDemo?: boolean;
 }
 
-// Helper to generate a realistic fallback price based on nothing (randomized slightly)
+// Helper to generate a realistic fallback based on nothing (randomized slightly)
 const getFallbackResult = (): PricingAnalysis => {
-    // FAILSAFE: Use a generic name so we don't guess "Shoes" when it's a "Bat".
-    // This allows the user to edit the name themselves.
     return {
         productName: "Custom Design Item",
         category: "Custom",
-        price: 50.00, // Safe middle ground
-        reasoning: "Visual Analysis System: Custom design detected. Please edit the name or category if specific identification is required.",
+        reasoning: "Visual Analysis System: Custom design detected. Please select the correct category to see the price.",
         isDemo: true
     };
 };
@@ -115,29 +111,30 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
       return new Promise((resolve) => {
           setTimeout(() => {
               resolve(getFallbackResult());
-          }, 2000); // 2s fake loading delay for realism
+          }, 2000); 
       });
   }
 
-  // UPDATED PROMPT: Text Recognition Focus & Strict Pricing
+  // UPDATED PROMPT: Strict Categorization & Logical Naming
   const prompt = `
     Act as a Professional Product Authenticator.
     
     TASK: Analyze the image to identify the item.
     
-    CRITICAL INSTRUCTIONS:
-    1. READ ANY TEXT (Logos, Brands). If you see "Nike", "Adidas", "Team Names", use them in the 'productName'.
-    2. CATEGORIZE STRICTLY: Is it a 'Jersey', 'T-Shirt', 'Hoodie', 'Shoe', 'Football', or 'Cricket Bat'?
-       - A Jersey usually has a team logo, number, or collar. 
-       - A T-Shirt is simpler.
-    3. PRICING RULES (Use exactly these ranges):
-       - 'Jerseys': $45 (approx range 40-50)
-       - 'T-Shirts': $30 (approx range 20-40)
-       - 'Hoodies': $50 (approx range 40-60)
-       - 'Jackets': $80 (approx range 60-100)
-       - 'Shoes': $125 (approx range 100-150)
-       - 'Footballs': $45 (approx range 30-60)
-       - 'Cricket Bat': $85 (approx range 50-120)
+    NAMING RULES:
+    1. READ TEXT: If you see a brand name (Nike, Adidas, Gucci, Team Name) or text on the item, INCLUDE IT in the 'productName'.
+    2. BE DESCRIPTIVE: If no text, describe it. E.g. "Red High-Top Sneaker", "Yellow Patterned Jersey".
+    3. DO NOT HALLUCINATE: Do not guess "Air Jordan" unless you clearly see the logo/shape. If unsure, say "Premium Sneaker".
+    
+    CATEGORY RULES (Pick ONE strictly):
+    - 'Jerseys' (Sports shirts with collars/numbers)
+    - 'T-Shirts' (Casual round neck)
+    - 'Hoodies' (Sweatshirts with hoods)
+    - 'Jackets' (Outerwear, Zippers)
+    - 'Shoes' (Sneakers, Boots, Loafers)
+    - 'Footballs' (Soccer balls)
+    - 'Cricket Bat' (Sports equipment)
+    - 'Custom' (Anything else)
 
     Return JSON format only.
   `;
@@ -157,12 +154,11 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            productName: { type: Type.STRING, description: "Exact model name." },
-            category: { type: Type.STRING, description: "One of: Jerseys, T-Shirts, Hoodies, Jackets, Shoes, Footballs, Cricket Bat, Custom" },
-            price: { type: Type.NUMBER },
+            productName: { type: Type.STRING, description: "Exact model name based on text and visual." },
+            category: { type: Type.STRING, description: "Strict category from list." },
             reasoning: { type: Type.STRING },
           },
-          required: ["productName", "category", "price", "reasoning"]
+          required: ["productName", "category", "reasoning"]
         }
       }
     });
@@ -181,8 +177,6 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
 
   } catch (error: any) {
     console.error("Image Analysis failed (Swallowed for UI stability)", error);
-    
-    // FAILSAFE 2: If the API fails, return the fallback result.
     return getFallbackResult();
   }
 };
