@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -124,7 +125,7 @@ const AutoPricing: React.FC = () => {
     const priceDisplay = convertPrice(result.price);
     
     // Detailed message to compensate for lack of auto-image
-    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${result.productName}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a(I have the image ready to send)`;
+    const message = `*NEW ORDER INQUIRY*%0a----------------------------%0aI want to buy this item:%0a👟 *${result.productName}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a👉 *I AM SENDING THE IMAGE NOW...*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -197,7 +198,7 @@ const AutoPricing: React.FC = () => {
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                     <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
                     <p className="font-bold text-lg animate-pulse">Scanning Product...</p>
-                    <p className="text-sm text-gray-500">Identifying model & specs</p>
+                    <p className="text-sm text-gray-500">Reading text & identifying model</p>
                 </div>
             )}
           </div>
@@ -299,7 +300,7 @@ const AutoPricing: React.FC = () => {
                                     <MessageCircle size={18} /> Order on WhatsApp
                                 </button>
                                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                    Remember to paste the image in chat!
+                                    Don't forget to paste the image in the chat!
                                 </div>
                             </div>
                         </div>
