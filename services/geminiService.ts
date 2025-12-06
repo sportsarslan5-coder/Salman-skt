@@ -33,6 +33,7 @@ export interface PricingAnalysis {
     category: string;
     reasoning: string;
     dominantColors: string[];
+    complexityScore: number; // 0.0 to 1.0 (Basic to Premium/Custom)
 }
 
 export const analyzeProductImage = async (base64Data: string, mimeType: string): Promise<PricingAnalysis> => {
@@ -48,7 +49,8 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
                     productName: "Premium High-Top Sneaker (Demo)",
                     category: "Shoes",
                     dominantColors: ["Red", "White"],
-                    reasoning: "API Key missing. Displaying demo result."
+                    reasoning: "API Key missing. Displaying demo result.",
+                    complexityScore: 0.8 // Simulating a high-end custom item
                 });
             }, 1500);
         });
@@ -56,36 +58,40 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
 
     const ai = new GoogleGenAI({ apiKey });
 
-    // Strict Categories for the AI to choose from
+    // Strict Categories matching your business rules
     const VALID_CATEGORIES = [
-        'Jerseys', 'T-Shirts', 'Hoodies', 'Jackets', 'Shoes', 
-        'Footballs', 'Cricket Bat', 'Caps'
+        'T-Shirts', 'Hoodies', 'Jerseys', 'Jackets', 'Tote Bags', 'Caps', 'Shoes',
+        'Footballs', 'Volleyball', 'Basketball', 'Cricket Bat', 'Gloves & Sports Gear'
     ];
 
     const prompt = `
-    You are an expert sneakerhead and fashion authenticator.
-    Analyze this product image and identify it with EXTREME SPECIFICITY.
+    You are an expert fashion and sports equipment authenticator.
+    Analyze this product image to determine its Price Category and Complexity.
     
     TASK 1: EXACT PRODUCT NAME
-    - LOOK FOR LOGOS: Nike Swoosh, Adidas Stripes, Jordan Jumpman, Puma, etc.
-    - READ TEXT: If you see "AIR", "FORCE", "YEEZY", "SUPREME", read it.
-    - OUTPUT FORMAT: "Brand + Model + Color" (e.g., "Nike Air Force 1 Low Red", "Adidas Yeezy Boost 350 Black").
-    - IF NO BRAND VISIBLE: Describe the style professionally (e.g., "Premium Leather High-Top Sneakers").
-    - DO NOT use generic terms like "Athletic Gear" or "Footwear". Be specific.
+    - LOOK FOR LOGOS (Nike, Adidas, etc.) and TEXT.
+    - OUTPUT: "Brand + Model/Style + Color".
+    - If no brand, use a descriptive name like "Custom Embroidered Bomber Jacket".
 
     TASK 2: STRICT CATEGORY
-    - You MUST categorize it into one of these: [${VALID_CATEGORIES.join(', ')}].
-    - If it is a sneaker, trainer, boot, or sandal -> "Shoes".
-    - If it is a shirt -> "T-Shirts" or "Jerseys".
+    - You MUST categorize it into exactly one of these: [${VALID_CATEGORIES.join(', ')}].
+    - "Jerseys" includes Baseball/Football style shirts.
+    - "Footballs" means Soccer balls (32-panel, etc).
     
-    TASK 3: DOMINANT COLORS
-    - List the main colors (max 2).
+    TASK 3: COMPLEXITY SCORE (For Pricing)
+    - Determine a score from 0.0 (Basic) to 1.0 (Highly Custom/Premium).
+    - Increase score for: Embroidery, Custom Patterns, Multiple Colors, Premium Materials (Leather, Carbon Fiber), Complicated Designs.
+    - Decrease score for: Plain colors, basic prints, standard materials.
+    
+    TASK 4: DOMINANT COLORS
+    - List max 2 main colors.
 
     Return valid JSON only:
     {
         "productName": "string",
         "category": "string",
         "dominantColors": ["string", "string"],
+        "complexityScore": number,
         "reasoning": "string"
     }
     `;
@@ -138,8 +144,7 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
 
     } catch (error) {
         console.error("AI Analysis Failed:", error);
-        // SAFETY FALLBACK: Guess it's a Shoe if we have to, or a Jersey.
-        // We randomize slightly to avoid looking "stuck".
+        // SAFETY FALLBACK
         const fallbackType = Math.random() > 0.5 ? "Shoes" : "Jerseys";
         const fallbackName = fallbackType === "Shoes" ? "Premium Sport Sneaker" : "Custom Team Jersey";
         
@@ -147,6 +152,7 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
             productName: fallbackName,
             category: fallbackType,
             dominantColors: ["Multi-color"],
+            complexityScore: 0.5,
             reasoning: "AI analysis failed. Please verify details manually."
         };
     }

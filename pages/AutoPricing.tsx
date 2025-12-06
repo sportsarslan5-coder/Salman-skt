@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, CheckCircle, ChevronDown, Palette, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, CheckCircle, ChevronDown, Palette, AlertCircle, Tag } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -29,20 +29,31 @@ const AutoPricing: React.FC = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // STRICT PRICING RULES (The Single Source of Truth)
-  const STANDARD_PRICES: {[key: string]: number} = {
-      'Jerseys': 45.00,
-      'T-Shirts': 30.00,
-      'Hoodies': 50.00,
-      'Jackets': 80.00,
-      'Shoes': 125.00,
-      'Footballs': 45.00,
-      'Cricket Bat': 85.00,
-      'Caps': 15.00,
-      'Custom': 50.00
+  // --- PRICING RULES (Min-Max Ranges) ---
+  interface PriceRange { min: number; max: number; }
+  
+  const PRICE_RULES: {[key: string]: PriceRange} = {
+      // Clothing & Wearables
+      'T-Shirts': { min: 20, max: 40 },
+      'Hoodies': { min: 40, max: 60 },
+      'Jerseys': { min: 30, max: 50 },
+      'Jackets': { min: 60, max: 100 },
+      'Tote Bags': { min: 15, max: 30 },
+      'Caps': { min: 10, max: 25 },
+      'Shoes': { min: 100, max: 150 },
+      
+      // Sports Equipment
+      'Footballs': { min: 30, max: 60 },
+      'Volleyball': { min: 25, max: 45 },
+      'Basketball': { min: 30, max: 70 },
+      'Cricket Bat': { min: 50, max: 120 },
+      'Gloves & Sports Gear': { min: 15, max: 50 },
+      
+      // Fallback
+      'Custom': { min: 40, max: 100 }
   };
 
-  const CATEGORY_OPTIONS = Object.keys(STANDARD_PRICES);
+  const CATEGORY_OPTIONS = Object.keys(PRICE_RULES);
 
   // Sync result to state when analysis finishes
   useEffect(() => {
@@ -54,9 +65,16 @@ const AutoPricing: React.FC = () => {
         setCurrentCategory(normalizedCat);
         setCurrentColors(result.dominantColors || []);
         
-        // SET EXACT PRICE based on Category
-        const price = STANDARD_PRICES[normalizedCat] || 50.00;
-        setCurrentPrice(price);
+        // CALCULATE DYNAMIC PRICE based on Complexity
+        const range = PRICE_RULES[normalizedCat] || PRICE_RULES['Custom'];
+        const score = result.complexityScore || 0.5; // Default to mid-range if missing
+        
+        // Formula: Min + (Difference * Score)
+        // e.g. Jersey (30-50). Complexity 0.0 = $30. Complexity 1.0 = $50.
+        // We round to nearest integer for clean look
+        const calculatedPrice = Math.round(range.min + ((range.max - range.min) * score));
+        
+        setCurrentPrice(calculatedPrice);
         
         // Reset Confirmation
         setIsConfirmed(false);
@@ -68,27 +86,40 @@ const AutoPricing: React.FC = () => {
   const normalizeCategory = (cat: string): string => {
       if (!cat) return 'Custom';
       const c = cat.toLowerCase();
-      // Priority Checks
-      if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot') || c.includes('footwear') || c.includes('trainer')) return 'Shoes';
+      
+      // Exact Matches First
+      for (const key of Object.keys(PRICE_RULES)) {
+          if (c === key.toLowerCase()) return key;
+      }
+
+      // Fuzzy Matches
+      if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot')) return 'Shoes';
       if (c.includes('jersey') || c.includes('kit') || c.includes('uniform')) return 'Jerseys';
-      if (c.includes('hoodie') || c.includes('sweatshirt')) return 'Hoodies';
+      if (c.includes('hoodie') || c.includes('sweat')) return 'Hoodies';
       if (c.includes('jacket') || c.includes('coat')) return 'Jackets';
-      if (c.includes('ball') || c.includes('soccer')) return 'Footballs';
-      if (c.includes('bat') || c.includes('cricket')) return 'Cricket Bat';
+      if (c.includes('bag') || c.includes('tote')) return 'Tote Bags';
       if (c.includes('cap') || c.includes('hat')) return 'Caps';
+      if (c.includes('soccer') || c.includes('footballs')) return 'Footballs';
+      if (c.includes('volley')) return 'Volleyball';
+      if (c.includes('basket')) return 'Basketball';
+      if (c.includes('cricket') || c.includes('bat')) return 'Cricket Bat';
+      if (c.includes('glove') || c.includes('gear')) return 'Gloves & Sports Gear';
       if (c.includes('shirt') || c.includes('tee')) return 'T-Shirts';
+      
       return 'Custom';
   };
 
-  // Update Size & Price when Category Changes
+  // Update Size & Price Range when Category Changes Manually
   useEffect(() => {
     if (currentCategory) {
         updateSizesForCategory(currentCategory);
         
-        // FORCE UPDATE PRICE based on the selected category
-        const price = STANDARD_PRICES[currentCategory];
-        if (price) {
-            setCurrentPrice(price);
+        // If user manually changes category, reset to average price (0.5 complexity)
+        // Only if we aren't loading initial result
+        if (!analyzing && result && normalizeCategory(result.category) !== currentCategory) {
+             const range = PRICE_RULES[currentCategory] || PRICE_RULES['Custom'];
+             const avgPrice = Math.round(range.min + ((range.max - range.min) * 0.5));
+             setCurrentPrice(avgPrice);
         }
     }
   }, [currentCategory]);
@@ -103,12 +134,15 @@ const AutoPricing: React.FC = () => {
         } else if (cat === 'Cricket Bat') {
             sizes = ['Harrow', 'Short Handle', 'Long Handle'];
             defaultSize = 'Short Handle';
-        } else if (cat === 'Footballs') {
-            sizes = ['Standard Size 5'];
-            defaultSize = 'Standard Size 5';
-        } else if (cat === 'Caps') {
+        } else if (['Footballs', 'Volleyball', 'Basketball'].includes(cat)) {
+            sizes = ['Standard Size'];
+            defaultSize = 'Standard Size';
+        } else if (cat === 'Caps' || cat === 'Tote Bags') {
             sizes = ['One Size'];
             defaultSize = 'One Size';
+        } else if (cat === 'Gloves & Sports Gear') {
+             sizes = ['S', 'M', 'L'];
+             defaultSize = 'M';
         } else {
             // Default clothing
             sizes = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -167,7 +201,7 @@ const AutoPricing: React.FC = () => {
         category: 'Men', 
         priceUSD: currentPrice,
         image: selectedImage,
-        description: `Color: ${currentColors.join(', ')}. Auto-identified item.`,
+        description: `Custom Auto-Priced Order. Category: ${currentCategory}. Colors: ${currentColors.join(', ')}.`,
         sizes: availableSizes,
         rating: 5.0,
         reviews: 0
@@ -182,7 +216,7 @@ const AutoPricing: React.FC = () => {
     const colorStr = currentColors.join(', ');
     
     // Detailed WhatsApp Message
-    const message = `*NEW ORDER REQUEST*%0a----------------------------%0aI want to order this exact item I just uploaded:%0a%0a🛍️ *${editableName}*%0a📂 Type: ${currentCategory}%0a🎨 *Color: ${colorStr}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *PLEASE SEE IMAGE ATTACHED*`;
+    const message = `*NEW ORDER REQUEST*%0a----------------------------%0aI want to order this exact item I just uploaded:%0a%0a🛍️ *${editableName}*%0a📂 Type: ${currentCategory}%0a🎨 *Color: ${colorStr}*%0a💰 Estimated Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *PLEASE SEE IMAGE ATTACHED*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -206,7 +240,7 @@ const AutoPricing: React.FC = () => {
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-primary mb-4">SMART PRICING SYSTEM</h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Auto-identify your product, confirm the details, and order instantly.
+            Upload your product. AI detects the item, calculates complexity, and gives you an instant estimated price.
           </p>
         </div>
 
@@ -255,7 +289,7 @@ const AutoPricing: React.FC = () => {
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                     <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
                     <p className="font-bold text-lg animate-pulse">AI Identifying...</p>
-                    <p className="text-sm text-gray-500">Reading Brands & Colors</p>
+                    <p className="text-sm text-gray-500">Checking design complexity...</p>
                 </div>
             )}
           </div>
@@ -273,7 +307,7 @@ const AutoPricing: React.FC = () => {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold mb-2">Analysis Complete</h2>
-                                <p className="text-gray-500">We automatically identified:</p>
+                                <p className="text-gray-500">We identified this item & estimated price:</p>
                             </div>
                             
                             <div className="bg-gray-50 rounded-xl p-4 text-left space-y-3 border border-gray-200">
@@ -290,8 +324,11 @@ const AutoPricing: React.FC = () => {
                                     <span className="font-bold line-clamp-1">{currentColors.join(', ')}</span>
                                 </div>
                                 <div className="flex justify-between border-t pt-2 mt-2">
-                                    <span className="text-gray-500 text-sm">Base Price</span>
-                                    <span className="font-bold text-xl text-primary">{convertPrice(currentPrice)}</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-sm">Estimated Price</span>
+                                        <span className="text-[10px] text-gray-400">Based on design complexity</span>
+                                    </div>
+                                    <span className="font-bold text-2xl text-primary">{convertPrice(currentPrice)}</span>
                                 </div>
                             </div>
 
@@ -338,7 +375,9 @@ const AutoPricing: React.FC = () => {
                                         className="w-full border p-3 rounded-lg bg-white appearance-none"
                                     >
                                         {CATEGORY_OPTIONS.map(cat => (
-                                            <option key={cat} value={cat}>{cat} (${STANDARD_PRICES[cat]})</option>
+                                            <option key={cat} value={cat}>
+                                                {cat} (${PRICE_RULES[cat].min} - ${PRICE_RULES[cat].max})
+                                            </option>
                                         ))}
                                     </select>
                                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
@@ -384,6 +423,14 @@ const AutoPricing: React.FC = () => {
                                 </div>
 
                                 <div className="w-full h-px bg-gray-100"></div>
+
+                                {/* Price Logic Display */}
+                                <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 flex items-start gap-2">
+                                    <Tag size={16} className="text-yellow-600 mt-0.5" />
+                                    <p className="text-xs text-yellow-800">
+                                        <strong>AI Price Adjustment:</strong> Price set within {currentCategory} range based on detected custom design/embroidery.
+                                    </p>
+                                </div>
 
                                 {/* Size Selector */}
                                 <div>
@@ -436,10 +483,10 @@ const AutoPricing: React.FC = () => {
                                 >
                                     <MessageCircle size={18} /> Confirm on WhatsApp
                                 </button>
-                                <div className="bg-yellow-50 p-2 rounded text-center border border-yellow-200">
-                                    <p className="text-[10px] font-bold text-yellow-800 flex items-center justify-center gap-1">
+                                <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-500 flex items-center justify-center gap-1">
                                         <AlertCircle size={12} />
-                                        Important: Paste the image in WhatsApp chat!
+                                        Please paste the uploaded image in WhatsApp!
                                     </p>
                                 </div>
                             </div>
