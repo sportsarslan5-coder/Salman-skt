@@ -66,13 +66,15 @@ const AutoPricing: React.FC = () => {
 
   // Helper to map AI category to our dropdown list
   const normalizeCategory = (cat: string): string => {
+      if (!cat) return 'Custom';
       const c = cat.toLowerCase();
-      if (c.includes('jersey')) return 'Jerseys';
-      if (c.includes('hoodie')) return 'Hoodies';
-      if (c.includes('jacket')) return 'Jackets';
-      if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot')) return 'Shoes';
-      if (c.includes('ball')) return 'Footballs';
-      if (c.includes('bat')) return 'Cricket Bat';
+      // Priority Checks
+      if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot') || c.includes('footwear') || c.includes('trainer')) return 'Shoes';
+      if (c.includes('jersey') || c.includes('kit') || c.includes('uniform')) return 'Jerseys';
+      if (c.includes('hoodie') || c.includes('sweatshirt')) return 'Hoodies';
+      if (c.includes('jacket') || c.includes('coat')) return 'Jackets';
+      if (c.includes('ball') || c.includes('soccer')) return 'Footballs';
+      if (c.includes('bat') || c.includes('cricket')) return 'Cricket Bat';
       if (c.includes('cap') || c.includes('hat')) return 'Caps';
       if (c.includes('shirt') || c.includes('tee')) return 'T-Shirts';
       return 'Custom';
@@ -150,7 +152,6 @@ const AutoPricing: React.FC = () => {
       setResult(data);
     } catch (err) {
       console.error("Critical Failure:", err);
-      // Even on failure, we don't crash, we let the UI handle null or use a fallback logic in service
       setAnalyzing(false);
     } finally {
       setAnalyzing(false);
@@ -254,7 +255,7 @@ const AutoPricing: React.FC = () => {
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                     <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
                     <p className="font-bold text-lg animate-pulse">AI Identifying...</p>
-                    <p className="text-sm text-gray-500">Detecting Colors & Category</p>
+                    <p className="text-sm text-gray-500">Reading Brands & Colors</p>
                 </div>
             )}
           </div>

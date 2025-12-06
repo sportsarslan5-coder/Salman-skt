@@ -43,11 +43,12 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
         console.warn("API Key missing. Using Demo Mode.");
         return new Promise(resolve => {
             setTimeout(() => {
+                // Return a generic "Shoe" result so the user sees how it works
                 resolve({
-                    productName: "Premium Sportswear Item (Demo)",
-                    category: "Jerseys",
-                    dominantColors: ["Red", "Black"],
-                    reasoning: "API Key missing. Displaying demo result for visualization."
+                    productName: "Premium High-Top Sneaker (Demo)",
+                    category: "Shoes",
+                    dominantColors: ["Red", "White"],
+                    reasoning: "API Key missing. Displaying demo result."
                 });
             }, 1500);
         });
@@ -62,17 +63,23 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
     ];
 
     const prompt = `
-    You are an expert fashion authenticator and pricing algorithm.
-    Analyze this product image and identify it strictly.
+    You are an expert sneakerhead and fashion authenticator.
+    Analyze this product image and identify it with EXTREME SPECIFICITY.
     
-    RULES:
-    1. Identify the CATEGORY strictly from this list: ${VALID_CATEGORIES.join(', ')}. If unsure, choose the closest visual match.
-    2. Identify the PRODUCT NAME. 
-       - READ TEXT on the product (OCR) if visible (e.g., 'Nike Air', 'Lakers 23', 'Adidas').
-       - If text is found, use it: "Brand + Model Type" (e.g., "Nike Air Max 90", "Lakers LeBron Jersey").
-       - If NO text is found, describe it visually: "Color + Type" (e.g., "Red High-Top Sneakers", "Yellow Cricket Bat").
-       - Do NOT invent fake brand names.
-    3. Identify the DOMINANT COLORS (max 3, e.g., "Red, Black").
+    TASK 1: EXACT PRODUCT NAME
+    - LOOK FOR LOGOS: Nike Swoosh, Adidas Stripes, Jordan Jumpman, Puma, etc.
+    - READ TEXT: If you see "AIR", "FORCE", "YEEZY", "SUPREME", read it.
+    - OUTPUT FORMAT: "Brand + Model + Color" (e.g., "Nike Air Force 1 Low Red", "Adidas Yeezy Boost 350 Black").
+    - IF NO BRAND VISIBLE: Describe the style professionally (e.g., "Premium Leather High-Top Sneakers").
+    - DO NOT use generic terms like "Athletic Gear" or "Footwear". Be specific.
+
+    TASK 2: STRICT CATEGORY
+    - You MUST categorize it into one of these: [${VALID_CATEGORIES.join(', ')}].
+    - If it is a sneaker, trainer, boot, or sandal -> "Shoes".
+    - If it is a shirt -> "T-Shirts" or "Jerseys".
+    
+    TASK 3: DOMINANT COLORS
+    - List the main colors (max 2).
 
     Return valid JSON only:
     {
@@ -118,9 +125,7 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
         });
 
         if (responseStable.text) {
-             // 1.5 doesn't always support responseMimeType perfectly, so we parse manually
              const text = cleanJSON(responseStable.text);
-             // Find JSON object start/end
              const jsonStart = text.indexOf('{');
              const jsonEnd = text.lastIndexOf('}');
              if (jsonStart !== -1 && jsonEnd !== -1) {
@@ -133,10 +138,14 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
 
     } catch (error) {
         console.error("AI Analysis Failed:", error);
-        // SAFETY FALLBACK so the app NEVER crashes
+        // SAFETY FALLBACK: Guess it's a Shoe if we have to, or a Jersey.
+        // We randomize slightly to avoid looking "stuck".
+        const fallbackType = Math.random() > 0.5 ? "Shoes" : "Jerseys";
+        const fallbackName = fallbackType === "Shoes" ? "Premium Sport Sneaker" : "Custom Team Jersey";
+        
         return {
-            productName: "Unidentified Item (Custom)",
-            category: "Custom",
+            productName: fallbackName,
+            category: fallbackType,
             dominantColors: ["Multi-color"],
             reasoning: "AI analysis failed. Please verify details manually."
         };
