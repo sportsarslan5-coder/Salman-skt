@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown, CheckCircle, AlertCircle, RefreshCw, Palette } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, CheckCircle, ChevronDown, Palette, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -13,7 +13,7 @@ const AutoPricing: React.FC = () => {
   const [result, setResult] = useState<PricingAnalysis | null>(null);
   
   // UX State
-  const [isConfirmed, setIsConfirmed] = useState(false); // New state for "Looks Good"
+  const [isConfirmed, setIsConfirmed] = useState(false); 
   const [isEditingMode, setIsEditingMode] = useState(false);
 
   // Data State
@@ -150,6 +150,7 @@ const AutoPricing: React.FC = () => {
       setResult(data);
     } catch (err) {
       console.error("Critical Failure:", err);
+      // Even on failure, we don't crash, we let the UI handle null or use a fallback logic in service
       setAnalyzing(false);
     } finally {
       setAnalyzing(false);
@@ -157,7 +158,7 @@ const AutoPricing: React.FC = () => {
   };
 
   const handleAddToCart = () => {
-    if (!result || !selectedImage) return;
+    if (!selectedImage) return;
 
     const customProduct: Product = {
         id: Date.now(),
@@ -165,7 +166,7 @@ const AutoPricing: React.FC = () => {
         category: 'Men', 
         priceUSD: currentPrice,
         image: selectedImage,
-        description: `Color: ${currentColors.join(', ')}. ${result.reasoning}`,
+        description: `Color: ${currentColors.join(', ')}. Auto-identified item.`,
         sizes: availableSizes,
         rating: 5.0,
         reviews: 0
@@ -176,7 +177,6 @@ const AutoPricing: React.FC = () => {
   };
 
   const handleWhatsApp = () => {
-    if (!result) return;
     const priceDisplay = convertPrice(currentPrice);
     const colorStr = currentColors.join(', ');
     
@@ -261,8 +261,8 @@ const AutoPricing: React.FC = () => {
 
           {/* Results Section - The Smart Flow */}
           <div className="space-y-6">
-             {result ? (
-                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up relative overflow-hidden flex flex-col h-full">
+             {result || (isEditingMode || isConfirmed) ? (
+                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up relative overflow-hidden flex flex-col h-full min-h-[500px]">
                     
                     {/* Phase 1: Confirmation */}
                     {!isConfirmed && !isEditingMode && (
@@ -278,7 +278,7 @@ const AutoPricing: React.FC = () => {
                             <div className="bg-gray-50 rounded-xl p-4 text-left space-y-3 border border-gray-200">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-500 text-sm">Product</span>
-                                    <span className="font-bold text-right">{editableName}</span>
+                                    <span className="font-bold text-right line-clamp-1">{editableName}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-500 text-sm">Type</span>
@@ -286,7 +286,7 @@ const AutoPricing: React.FC = () => {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-500 text-sm flex items-center gap-1"><Palette size={14}/> Colors</span>
-                                    <span className="font-bold">{currentColors.join(', ')}</span>
+                                    <span className="font-bold line-clamp-1">{currentColors.join(', ')}</span>
                                 </div>
                                 <div className="flex justify-between border-t pt-2 mt-2">
                                     <span className="text-gray-500 text-sm">Base Price</span>
@@ -294,7 +294,7 @@ const AutoPricing: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex gap-3">
+                            <div className="flex gap-3 mt-auto">
                                 <button 
                                     onClick={() => setIsEditingMode(true)}
                                     className="flex-1 py-3 border border-gray-300 rounded-xl font-bold hover:bg-gray-50 text-gray-700"
@@ -330,18 +330,27 @@ const AutoPricing: React.FC = () => {
 
                             <div>
                                 <label className="text-xs font-bold uppercase text-gray-500">Category</label>
-                                <select 
-                                    value={currentCategory}
-                                    onChange={(e) => {
-                                        setCurrentCategory(e.target.value);
-                                        // Price updates via useEffect
-                                    }}
+                                <div className="relative">
+                                    <select 
+                                        value={currentCategory}
+                                        onChange={(e) => setCurrentCategory(e.target.value)}
+                                        className="w-full border p-3 rounded-lg bg-white appearance-none"
+                                    >
+                                        {CATEGORY_OPTIONS.map(cat => (
+                                            <option key={cat} value={cat}>{cat} (${STANDARD_PRICES[cat]})</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="text-xs font-bold uppercase text-gray-500">Detected Colors</label>
+                                <input 
+                                    value={currentColors.join(', ')}
+                                    onChange={(e) => setCurrentColors(e.target.value.split(',').map(s => s.trim()))}
                                     className="w-full border p-3 rounded-lg bg-white"
-                                >
-                                    {CATEGORY_OPTIONS.map(cat => (
-                                        <option key={cat} value={cat}>{cat} (${STANDARD_PRICES[cat]})</option>
-                                    ))}
-                                </select>
+                                />
                             </div>
 
                             <button 
@@ -358,60 +367,62 @@ const AutoPricing: React.FC = () => {
 
                     {/* Phase 2: Configuration & Order (Only after confirmation) */}
                     {isConfirmed && (
-                        <div className="space-y-6">
-                            <div className="flex justify-between items-start">
+                        <div className="flex flex-col h-full justify-between">
+                            <div className="space-y-6">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h2 className="text-2xl font-black leading-tight line-clamp-2">{editableName}</h2>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200">{currentCategory}</span>
+                                            {currentColors.map((c, i) => (
+                                                <span key={i} className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200 flex items-center gap-1"><Palette size={10}/> {c}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setIsConfirmed(false)} className="text-gray-400 hover:text-black"><Edit2 size={18} /></button>
+                                </div>
+
+                                <div className="w-full h-px bg-gray-100"></div>
+
+                                {/* Size Selector */}
                                 <div>
-                                    <h2 className="text-2xl font-black leading-tight">{editableName}</h2>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200">{currentCategory}</span>
-                                        {currentColors.map(c => (
-                                            <span key={c} className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200 flex items-center gap-1"><Palette size={10}/> {c}</span>
+                                    <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {availableSizes.map(size => (
+                                            <button
+                                                key={size}
+                                                onClick={() => setSelectedSize(size)}
+                                                className={`flex-1 min-w-[50px] py-2 rounded-lg text-sm font-bold transition-all border ${
+                                                    selectedSize === size 
+                                                    ? 'bg-black text-white border-black shadow-md' 
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-black'
+                                                }`}
+                                            >
+                                                {size}
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
-                                <button onClick={() => setIsConfirmed(false)} className="text-gray-400 hover:text-black"><Edit2 size={18} /></button>
-                            </div>
 
-                            <div className="w-full h-px bg-gray-100"></div>
-
-                            {/* Size Selector */}
-                            <div>
-                                <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size</span>
-                                <div className="flex flex-wrap gap-2">
-                                    {availableSizes.map(size => (
-                                        <button
-                                            key={size}
-                                            onClick={() => setSelectedSize(size)}
-                                            className={`flex-1 min-w-[50px] py-2 rounded-lg text-sm font-bold transition-all border ${
-                                                selectedSize === size 
-                                                ? 'bg-black text-white border-black shadow-md' 
-                                                : 'bg-white text-gray-600 border-gray-200 hover:border-black'
-                                            }`}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
+                                {/* Quantity */}
+                                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                    <span className="font-bold text-gray-600 text-sm ml-2">Quantity</span>
+                                    <div className="flex items-center gap-4">
+                                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Minus size={14} /></button>
+                                        <span className="font-bold">{quantity}</span>
+                                        <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Plus size={14} /></button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Quantity */}
-                            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
-                                <span className="font-bold text-gray-600 text-sm ml-2">Quantity</span>
-                                <div className="flex items-center gap-4">
-                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Minus size={14} /></button>
-                                    <span className="font-bold">{quantity}</span>
-                                    <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Plus size={14} /></button>
+                                {/* Total */}
+                                <div className="flex justify-between items-end pt-2">
+                                    <span className="text-sm font-bold text-gray-400">Total Estimate</span>
+                                    <h2 className="text-4xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
                                 </div>
-                            </div>
-
-                            {/* Total */}
-                            <div className="flex justify-between items-end pt-2">
-                                <span className="text-sm font-bold text-gray-400">Total Estimate</span>
-                                <h2 className="text-4xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
                             </div>
 
                             {/* Actions */}
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-1 gap-3 mt-6">
                                  <button 
                                     onClick={handleAddToCart}
                                     className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-accent hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg"
@@ -427,7 +438,7 @@ const AutoPricing: React.FC = () => {
                                 <div className="bg-yellow-50 p-2 rounded text-center border border-yellow-200">
                                     <p className="text-[10px] font-bold text-yellow-800 flex items-center justify-center gap-1">
                                         <AlertCircle size={12} />
-                                        Please Attach/Paste the photo in WhatsApp chat!
+                                        Important: Paste the image in WhatsApp chat!
                                     </p>
                                 </div>
                             </div>
