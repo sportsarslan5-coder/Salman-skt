@@ -36,6 +36,75 @@ export const TRANSLATIONS: Translations = {
 };
 
 export const PRODUCTS: Product[] = [
+  // --- NEW PROTEX SERIES (PREMIUM - Capped at $150) ---
+  {
+    id: 101,
+    name: "ProTex Titan Elite V1",
+    category: "Men",
+    priceUSD: 145.00,
+    image: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=800&q=80",
+    description: "The flagship of the ProTex line. Engineered with aerospace-grade materials for maximum durability and explosive energy return on the court.",
+    sizes: ["US 8", "US 9", "US 10", "US 11", "US 12", "US 13"],
+    rating: 5.0,
+    reviews: 2100
+  },
+  {
+    id: 102,
+    name: "ProTex Carbon X-Speed",
+    category: "Men",
+    priceUSD: 148.00,
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+    description: "Features a full-length carbon fiber plate for elite running performance. The lightest shoe in our collection, designed for marathon winners.",
+    sizes: ["US 8", "US 9", "US 10", "US 11"],
+    rating: 4.9,
+    reviews: 1450
+  },
+  {
+    id: 103,
+    name: "ProTex Future High-Top",
+    category: "Men",
+    priceUSD: 149.00,
+    image: "https://images.unsplash.com/photo-1556906781-9a412961d289?w=800&q=80",
+    description: "Limited Edition. A futuristic silhouette with self-adapting fit technology. Premium leather and tech-mesh construction.",
+    sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"],
+    rating: 5.0,
+    reviews: 3200
+  },
+  {
+    id: 104,
+    name: "ProTex Stealth Ops",
+    category: "Men",
+    priceUSD: 135.00,
+    image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&q=80",
+    description: "All-black tactical street wear. Waterproof GORE-TEX lining with rugged grip for any urban environment.",
+    sizes: ["US 8", "US 9", "US 10", "US 11", "US 12"],
+    rating: 4.8,
+    reviews: 980
+  },
+  {
+    id: 105,
+    name: "ProTex Gravity Defier",
+    category: "Women",
+    priceUSD: 135.00,
+    image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&q=80",
+    description: "Maximum cushioning technology makes you feel like you're walking on clouds. Bold colors, bold performance.",
+    sizes: ["US 6", "US 7", "US 8", "US 9"],
+    rating: 4.9,
+    reviews: 1120
+  },
+  {
+    id: 106,
+    name: "ProTex Velocity Max",
+    category: "Men",
+    priceUSD: 125.00,
+    image: "https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=800&q=80",
+    description: "High-impact basketball sneakers with superior ankle support and ProTex Grip technology.",
+    sizes: ["US 8", "US 9", "US 10", "US 11", "US 12", "US 13"],
+    rating: 4.9,
+    reviews: 890
+  },
+  // --- END NEW PROTEX SERIES ---
+
   {
     id: 1,
     name: "Urban Force One",
