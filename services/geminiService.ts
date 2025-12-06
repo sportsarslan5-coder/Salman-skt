@@ -128,14 +128,14 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
     Act as an Expert Product Identifier for an e-commerce store.
     
     TASK: Analyze the image and extract:
-    1. Exact Product Name (e.g. "Red Bull Formula 1 Jersey", "Nike Air Force 1 White").
+    1. Exact Product Name.
     2. The Strict Category from the list below.
-    3. The Dominant Colors (e.g. "Red", "Black", "Gold").
+    3. The Dominant Colors (CRITICAL).
     
     NAMING RULES:
-    - If there is text on the product (like 'Supreme', 'Adidas', Team Names), USE IT in the name.
-    - If no text, describe it visually: "Premium [Color] [Type]".
-    - Keep it short and professional.
+    - If there is text/logo (like 'Supreme', 'Adidas', 'Nike'), USE IT in the name.
+    - If no text, create a name based on VISUALS: "[Color] [Style] [Type]" (e.g. "Red & Black Striped Football Jersey").
+    - Do NOT call it "Product" or "Item". Be specific.
 
     CATEGORY LIST (Pick ONE strictly):
     - 'Jerseys'
@@ -166,12 +166,12 @@ export const analyzeProductImage = async (base64Image: string, mimeType: string)
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            productName: { type: Type.STRING, description: "Simple, descriptive name" },
+            productName: { type: Type.STRING, description: "Specific name including color and brand if visible" },
             category: { type: Type.STRING, description: "Strict category from list." },
             dominantColors: { 
                 type: Type.ARRAY, 
                 items: { type: Type.STRING },
-                description: "List of 1-3 dominant colors"
+                description: "List of dominant colors visible in the product"
             },
             reasoning: { type: Type.STRING },
           },

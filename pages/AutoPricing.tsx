@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, Check, ChevronDown, CheckCircle, AlertCircle, RefreshCw, Palette } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -180,7 +180,8 @@ const AutoPricing: React.FC = () => {
     const priceDisplay = convertPrice(currentPrice);
     const colorStr = currentColors.join(', ');
     
-    const message = `*NEW IMAGE ORDER*%0a----------------------------%0aI want to order this item:%0a🛍️ *${editableName}*%0a📂 Type: ${currentCategory}%0a🎨 Color: ${colorStr}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *IMAGE ATTACHED BELOW*`;
+    // Detailed WhatsApp Message
+    const message = `*NEW ORDER REQUEST*%0a----------------------------%0aI want to order this exact item I just uploaded:%0a%0a🛍️ *${editableName}*%0a📂 Type: ${currentCategory}%0a🎨 *Color: ${colorStr}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *PLEASE SEE IMAGE ATTACHED*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -271,20 +272,20 @@ const AutoPricing: React.FC = () => {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold mb-2">Analysis Complete</h2>
-                                <p className="text-gray-500">We identified the following:</p>
+                                <p className="text-gray-500">We automatically identified:</p>
                             </div>
                             
                             <div className="bg-gray-50 rounded-xl p-4 text-left space-y-3 border border-gray-200">
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center">
                                     <span className="text-gray-500 text-sm">Product</span>
-                                    <span className="font-bold">{editableName}</span>
+                                    <span className="font-bold text-right">{editableName}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center">
                                     <span className="text-gray-500 text-sm">Type</span>
                                     <span className="font-bold text-accent bg-black px-2 rounded text-xs py-0.5">{currentCategory}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 text-sm">Colors</span>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 text-sm flex items-center gap-1"><Palette size={14}/> Colors</span>
                                     <span className="font-bold">{currentColors.join(', ')}</span>
                                 </div>
                                 <div className="flex justify-between border-t pt-2 mt-2">
@@ -361,10 +362,10 @@ const AutoPricing: React.FC = () => {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h2 className="text-2xl font-black leading-tight">{editableName}</h2>
-                                    <div className="flex gap-2 mt-1">
-                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600">{currentCategory}</span>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200">{currentCategory}</span>
                                         {currentColors.map(c => (
-                                            <span key={c} className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600">{c}</span>
+                                            <span key={c} className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200 flex items-center gap-1"><Palette size={10}/> {c}</span>
                                         ))}
                                     </div>
                                 </div>
@@ -423,9 +424,12 @@ const AutoPricing: React.FC = () => {
                                 >
                                     <MessageCircle size={18} /> Confirm on WhatsApp
                                 </button>
-                                <p className="text-[10px] text-center text-gray-400">
-                                    *Please attach the photo in the WhatsApp chat so we can see the design.
-                                </p>
+                                <div className="bg-yellow-50 p-2 rounded text-center border border-yellow-200">
+                                    <p className="text-[10px] font-bold text-yellow-800 flex items-center justify-center gap-1">
+                                        <AlertCircle size={12} />
+                                        Please Attach/Paste the photo in WhatsApp chat!
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     )}
