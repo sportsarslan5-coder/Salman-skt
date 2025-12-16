@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 
 // Robust helper to find the API key in various environments
@@ -45,14 +44,13 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
         console.warn("API Key missing. Using Demo Mode.");
         return new Promise(resolve => {
             setTimeout(() => {
-                // Return a generic "Shoe" result so the user sees how it works
                 resolve({
                     productName: userProvidedName || "Premium High-Top Sneaker (Demo)",
                     category: "Shoes",
                     dominantColors: ["Red", "White"],
                     reasoning: "API Key missing. Displaying demo result.",
                     complexityScore: 0.8,
-                    estimatedPriceUSD: 120
+                    estimatedPriceUSD: 125
                 });
             }, 1500);
         });
@@ -75,16 +73,18 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
     TASK 1: IDENTIFICATION
     - Identify the specific product. Use the User Context to help accuracy.
     - OUTPUT: "productName" (e.g. "Air Jordan 1 Retro High" or "Custom Embroidered Hoodie").
+    - If the User Context is specific (e.g. "Barcelona 2025 Kit"), respect it but refine it to be professional.
 
     TASK 2: CATEGORIZATION
     - Try to categorize into one of: [${VALID_CATEGORIES.join(', ')}].
-    - IF the item does DOES NOT fit these categories (e.g. it's a "Yoga Mat", "Smart Watch", "Tent"), use a generic but accurate category name (e.g. "Fitness Equipment", "Accessories").
+    - IF the item does DOES NOT fit these categories (e.g. it's a "Yoga Mat", "Smart Watch", "Tent", "Electronic"), use a generic but accurate category name.
     
-    TASK 3: COMPLEXITY & PRICING
+    TASK 3: COMPLEXITY & PRICING (THE "INTERNET PRICE" LOGIC)
     - Determine a Complexity Score from 0.0 (Basic) to 1.0 (Premium/Complex).
-    - ESTIMATED PRICE (Critical): Estimate a fair custom manufacturing/retail price in USD for this item. 
-      - If it is a known luxury item, estimate a high-quality replica or custom version price.
+    - ESTIMATED PRICE (Critical): Estimate a fair custom manufacturing OR retail market price in USD for this item. 
+      - If it is a known luxury/hyped item (like a specific sneaker), estimate the market value.
       - If it is a generic item, estimate standard market price.
+      - Be realistic.
     
     TASK 4: DOMINANT COLORS
     - List max 2 main colors.
@@ -100,64 +100,38 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
     }
     `;
 
-    // RETRY LOGIC: Try 2.5 first, then 1.5
     try {
-        // Attempt 1: Gemini 2.5 Flash
-        try {
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: {
-                    parts: [
-                        { inlineData: { mimeType, data: base64Data } },
-                        { text: prompt }
-                    ]
-                },
-                config: {
-                    responseMimeType: 'application/json'
-                }
-            });
-            if (response.text) {
-                return JSON.parse(cleanJSON(response.text));
-            }
-        } catch (e) {
-            console.log("Gemini 2.5 failed, retrying with 1.5...", e);
-        }
-
-        // Attempt 2: Gemini 1.5 Flash (Stable Fallback)
-        const responseStable = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
             contents: {
                 parts: [
                     { inlineData: { mimeType, data: base64Data } },
                     { text: prompt }
                 ]
+            },
+            config: {
+                responseMimeType: 'application/json'
             }
         });
-
-        if (responseStable.text) {
-             const text = cleanJSON(responseStable.text);
-             const jsonStart = text.indexOf('{');
-             const jsonEnd = text.lastIndexOf('}');
-             if (jsonStart !== -1 && jsonEnd !== -1) {
-                 return JSON.parse(text.substring(jsonStart, jsonEnd + 1));
-             }
-             return JSON.parse(text);
-        }
         
-        throw new Error("No response from AI models");
+        if (response.text) {
+            return JSON.parse(cleanJSON(response.text));
+        }
+        throw new Error("No response text");
 
     } catch (error) {
         console.error("AI Analysis Failed:", error);
-        // SAFETY FALLBACK
-        const fallbackType = Math.random() > 0.5 ? "Shoes" : "Jerseys";
-        const fallbackName = userProvidedName || (fallbackType === "Shoes" ? "Premium Sport Sneaker" : "Custom Team Jersey");
+        
+        // Fallback Logic
+        const fallbackType = "Shoes";
+        const fallbackName = userProvidedName || "Custom Sneaker";
         
         return {
             productName: fallbackName,
             category: fallbackType,
             dominantColors: ["Multi-color"],
             complexityScore: 0.5,
-            estimatedPriceUSD: 50,
+            estimatedPriceUSD: 55,
             reasoning: "AI analysis failed. Please verify details manually."
         };
     }

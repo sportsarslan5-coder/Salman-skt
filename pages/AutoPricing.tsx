@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Palette, Tag, Search, ArrowRight, HelpCircle } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Palette, Tag, Search, ArrowRight, HelpCircle, Info, CheckCircle2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -25,29 +24,25 @@ const AutoPricing: React.FC = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- PRICING RULES (Min-Max Ranges) ---
-  interface PriceRange { min: number; max: number; }
-  
-  // These are our standard manufacturing costs/prices
-  const PRICE_RULES: {[key: string]: PriceRange} = {
-      // Clothing & Wearables
-      'T-Shirts': { min: 20, max: 40 },
-      'Hoodies': { min: 40, max: 60 },
-      'Jerseys': { min: 30, max: 50 },
-      'Jackets': { min: 60, max: 100 },
-      'Tote Bags': { min: 15, max: 30 },
-      'Caps': { min: 10, max: 25 },
-      'Shoes': { min: 100, max: 150 },
+  // --- STRICT FIXED PRICES (No Guessing) ---
+  // If the product matches these categories, use THIS exact price.
+  const SHOP_PRICES: {[key: string]: number} = {
+      // Clothing
+      'T-Shirts': 35,
+      'Hoodies': 55,
+      'Jerseys': 40,
+      'Jackets': 85,
+      'Tote Bags': 25,
+      'Caps': 20,
+      'Shoes': 125,
       
       // Sports Equipment
-      'Footballs': { min: 30, max: 60 },
-      'Volleyball': { min: 25, max: 45 },
-      'Basketball': { min: 30, max: 70 },
-      'Cricket Bat': { min: 50, max: 120 },
-      'Gloves & Sports Gear': { min: 15, max: 50 },
+      'Footballs': 45,
+      'Volleyball': 35,
+      'Basketball': 55,
+      'Cricket Bat': 95,
+      'Gloves & Sports Gear': 40,
   };
-
-  const CATEGORY_OPTIONS = Object.keys(PRICE_RULES);
 
   // Helper to map AI category to our dropdown list
   const normalizeCategory = (cat: string): string => {
@@ -55,7 +50,7 @@ const AutoPricing: React.FC = () => {
       const c = cat.toLowerCase();
       
       // Exact Matches First
-      for (const key of Object.keys(PRICE_RULES)) {
+      for (const key of Object.keys(SHOP_PRICES)) {
           if (c === key.toLowerCase()) return key;
       }
 
@@ -63,7 +58,7 @@ const AutoPricing: React.FC = () => {
       if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot')) return 'Shoes';
       if (c.includes('jersey') || c.includes('kit') || c.includes('uniform')) return 'Jerseys';
       if (c.includes('hoodie') || c.includes('sweat')) return 'Hoodies';
-      if (c.includes('jacket') || c.includes('coat')) return 'Jackets';
+      if (c.includes('jacket') || c.includes('coat') || c.includes('upper')) return 'Jackets';
       if (c.includes('bag') || c.includes('tote')) return 'Tote Bags';
       if (c.includes('cap') || c.includes('hat')) return 'Caps';
       if (c.includes('soccer') || c.includes('footballs')) return 'Footballs';
@@ -107,36 +102,33 @@ const AutoPricing: React.FC = () => {
   // Sync result to state when analysis finishes
   useEffect(() => {
     if (result) {
-        // Use the refined product name from AI, or keep user input if AI failed to improve it
+        // 1. Set Name
         if (result.productName && result.productName.length > editableName.length) {
              setEditableName(result.productName);
         }
         
-        // Normalize Category
+        // 2. Set Category & Colors
         const normalizedCat = normalizeCategory(result.category);
         const displayCategory = normalizedCat === 'Unknown' ? result.category : normalizedCat;
         
         setCurrentCategory(displayCategory);
         setCurrentColors(result.dominantColors || []);
         
-        // --- PRICING LOGIC ---
-        let calculatedPrice = 0;
+        // 3. CALCULATE PRICE (Deterministic)
+        let finalPrice = 0;
 
-        if (normalizedCat !== 'Unknown') {
-            // We have a rule for this
-            const range = PRICE_RULES[normalizedCat];
-            const score = result.complexityScore || 0.5;
-            calculatedPrice = Math.round(range.min + ((range.max - range.min) * score));
+        if (normalizedCat !== 'Unknown' && SHOP_PRICES[normalizedCat]) {
+            // CASE A: It's a Shop Item -> Use Fixed Shop Price
+            finalPrice = SHOP_PRICES[normalizedCat];
         } else {
-            // "Pay for it from the internet" logic
-            // Use AI estimated price
-            calculatedPrice = result.estimatedPriceUSD || 50; // Fallback to 50 if AI fails
+            // CASE B: It's Unknown -> Use Internet Price (AI Estimate)
+            finalPrice = result.estimatedPriceUSD || 50; 
         }
 
-        // "Round up the chief" (Round to nearest 5 for cleaner pricing)
-        calculatedPrice = Math.ceil(calculatedPrice / 5) * 5;
+        // 4. Round up the chief (Nearest 5)
+        finalPrice = Math.ceil(finalPrice / 5) * 5;
         
-        setCurrentPrice(calculatedPrice);
+        setCurrentPrice(finalPrice);
     }
   }, [result]);
 
@@ -144,16 +136,16 @@ const AutoPricing: React.FC = () => {
   useEffect(() => {
     if (currentCategory) {
         updateSizesForCategory(currentCategory);
+        // If user manually changes category to a known one, update price instantly
+        if (SHOP_PRICES[currentCategory]) {
+             setCurrentPrice(SHOP_PRICES[currentCategory]);
+        }
     }
   }, [currentCategory]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
-    // Ensure name is entered first (optional but better for UX if they follow instructions)
-    // We don't block them, but the prompt said "first write name".
-    
     processFile(file);
   };
 
@@ -219,7 +211,7 @@ const AutoPricing: React.FC = () => {
     const colorStr = currentColors.join(', ');
     
     // Detailed WhatsApp Message
-    const message = `*NEW ORDER REQUEST*%0a----------------------------%0aI want to order this exact item I just uploaded:%0a%0a🛍️ *${finalName}*%0a📂 Type: ${currentCategory}%0a🎨 *Color: ${colorStr}*%0a💰 Estimated Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *PLEASE SEE IMAGE ATTACHED*`;
+    const message = `*NEW ORDER REQUEST*%0a----------------------------%0aI want to order this exact item I just uploaded:%0a%0a🛍️ *${finalName}*%0a📂 Type: ${currentCategory}%0a🎨 *Color: ${colorStr}*%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *PLEASE SEE IMAGE ATTACHED*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -241,10 +233,10 @@ const AutoPricing: React.FC = () => {
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-primary mb-4">SMART PRICING SYSTEM</h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-             Our AI identifies your product and finds the best market price.
+             Upload your product, and we will set the correct price.
           </p>
           
-          <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm font-medium text-gray-600">
+          <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm font-medium text-gray-600">
              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                  <span className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-xs">1</span>
                  Type Name
@@ -257,7 +249,7 @@ const AutoPricing: React.FC = () => {
              <ArrowRight size={16} className="text-gray-400" />
              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                  <span className="w-6 h-6 bg-accent text-black rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                 Get Price
+                 See Price
              </div>
           </div>
         </div>
@@ -267,18 +259,19 @@ const AutoPricing: React.FC = () => {
           {/* LEFT SIDE: INPUTS & UPLOAD */}
           <div className="space-y-6">
               {/* Step 1: Name Input */}
-              <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
+              <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 relative overflow-hidden group">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-accent"></div>
                   <label className="block text-sm font-bold uppercase text-gray-500 mb-2">
-                    Step 1: What are you looking for?
+                    Step 1: Write Product Name
                   </label>
                   <input 
                     value={editableName}
                     onChange={(e) => setEditableName(e.target.value)}
-                    placeholder="E.g. Barcelona 2025 Kit or Red Leather Jacket"
+                    placeholder="E.g. Black Hoodie"
                     className="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl font-bold focus:border-black focus:ring-0 outline-none transition-colors"
                   />
                   <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                      <HelpCircle size={12} /> This helps the AI find the exact item.
+                      <HelpCircle size={12} /> Write the name so we know what to price.
                   </p>
               </div>
 
@@ -300,8 +293,8 @@ const AutoPricing: React.FC = () => {
                     {analyzing && (
                         <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-4">
                             <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
-                            <p className="font-bold text-lg animate-pulse">Scanning Market...</p>
-                            <p className="text-sm text-gray-500">Checking price for "{editableName || 'item'}"...</p>
+                            <p className="font-bold text-lg animate-pulse">Scanning...</p>
+                            <p className="text-sm text-gray-500">Matching name to price...</p>
                         </div>
                     )}
                 </>
@@ -338,24 +331,44 @@ const AutoPricing: React.FC = () => {
                  <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up flex flex-col h-full">
                     <div className="flex-1 space-y-6">
                         
-                        {/* Price Header */}
-                        <div className="bg-black text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
-                             <div className="absolute top-0 right-0 w-20 h-20 bg-accent rounded-bl-full opacity-20"></div>
-                             <p className="text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Estimated Market Price</p>
-                             <h2 className="text-5xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
-                             <div className="mt-3 flex flex-wrap items-center gap-2">
-                                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold text-white border border-white/10">{currentCategory}</span>
-                                {currentColors.length > 0 && <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold text-white border border-white/10 flex items-center gap-1"><Palette size={10}/> {currentColors[0]}</span>}
+                        {/* RESULT CARD - COMPARISON UI */}
+                        <div className="bg-black text-white p-8 rounded-2xl shadow-lg relative overflow-hidden text-center">
+                             <div className="absolute top-0 right-0 w-32 h-32 bg-accent rounded-bl-full opacity-10"></div>
+                             <div className="absolute bottom-0 left-0 w-32 h-32 bg-gray-800 rounded-tr-full opacity-10"></div>
+                             
+                             {/* VISUAL COMPARISON: NAME -> PRICE */}
+                             <div className="relative z-10 space-y-4">
+                                <div>
+                                    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Product Identified</p>
+                                    <h3 className="text-xl md:text-2xl font-bold leading-tight text-white/90 border-b border-white/20 pb-3 mx-auto max-w-[80%]">
+                                        {editableName || result.productName}
+                                    </h3>
+                                </div>
+                                
+                                <div>
+                                    <p className="text-accent text-[10px] font-bold uppercase tracking-widest mb-1">Official Price</p>
+                                    <h2 className="text-5xl md:text-6xl font-black text-accent tracking-tighter">
+                                        {convertPrice(currentPrice * quantity)}
+                                    </h2>
+                                </div>
+
+                                <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs text-gray-300">
+                                    <CheckCircle2 size={12} className="text-green-400" />
+                                    <span>Verified for {currentCategory}</span>
+                                </div>
                              </div>
                         </div>
 
-                        {/* Analysis Note */}
+                        {/* Analysis Note - "Pay from Internet" Logic Explained */}
                         {normalizeCategory(result.category) === 'Unknown' && (
                             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-blue-800 text-sm flex items-start gap-3">
                                 <Search className="shrink-0 mt-0.5" size={16} />
-                                <p>
-                                    <strong>AI Market Search:</strong> We didn't have a standard price for this, so we checked the market value for "{result.productName}".
-                                </p>
+                                <div>
+                                    <p className="font-bold mb-1">Internet Price Detected</p>
+                                    <p>
+                                        This is a unique item not in our standard list. We found this price from the market internet value.
+                                    </p>
+                                </div>
                             </div>
                         )}
 
