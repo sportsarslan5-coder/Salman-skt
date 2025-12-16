@@ -34,9 +34,10 @@ export interface PricingAnalysis {
     reasoning: string;
     dominantColors: string[];
     complexityScore: number; // 0.0 to 1.0 (Basic to Premium/Custom)
+    estimatedPriceUSD?: number; // AI estimated market price
 }
 
-export const analyzeProductImage = async (base64Data: string, mimeType: string): Promise<PricingAnalysis> => {
+export const analyzeProductImage = async (base64Data: string, mimeType: string, userProvidedName?: string): Promise<PricingAnalysis> => {
     const apiKey = getAPIKey();
     
     // FALLBACK / DEMO MODE if Key is missing
@@ -46,11 +47,12 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
             setTimeout(() => {
                 // Return a generic "Shoe" result so the user sees how it works
                 resolve({
-                    productName: "Premium High-Top Sneaker (Demo)",
+                    productName: userProvidedName || "Premium High-Top Sneaker (Demo)",
                     category: "Shoes",
                     dominantColors: ["Red", "White"],
                     reasoning: "API Key missing. Displaying demo result.",
-                    complexityScore: 0.8 // Simulating a high-end custom item
+                    complexityScore: 0.8,
+                    estimatedPriceUSD: 120
                 });
             }, 1500);
         });
@@ -65,23 +67,24 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
     ];
 
     const prompt = `
-    You are an expert fashion and sports equipment authenticator.
-    Analyze this product image to determine its Price Category and Complexity.
+    You are an expert fashion and sports equipment authenticator and pricing algorithm.
+    User Context (Name/Title): "${userProvidedName || ''}"
     
-    TASK 1: EXACT PRODUCT NAME
-    - LOOK FOR LOGOS (Nike, Adidas, etc.) and TEXT.
-    - OUTPUT: "Brand + Model/Style + Color".
-    - If no brand, use a descriptive name like "Custom Embroidered Bomber Jacket".
+    Analyze this product image.
+    
+    TASK 1: IDENTIFICATION
+    - Identify the specific product. Use the User Context to help accuracy.
+    - OUTPUT: "productName" (e.g. "Air Jordan 1 Retro High" or "Custom Embroidered Hoodie").
 
-    TASK 2: STRICT CATEGORY
-    - You MUST categorize it into exactly one of these: [${VALID_CATEGORIES.join(', ')}].
-    - "Jerseys" includes Baseball/Football style shirts.
-    - "Footballs" means Soccer balls (32-panel, etc).
+    TASK 2: CATEGORIZATION
+    - Try to categorize into one of: [${VALID_CATEGORIES.join(', ')}].
+    - IF the item does DOES NOT fit these categories (e.g. it's a "Yoga Mat", "Smart Watch", "Tent"), use a generic but accurate category name (e.g. "Fitness Equipment", "Accessories").
     
-    TASK 3: COMPLEXITY SCORE (For Pricing)
-    - Determine a score from 0.0 (Basic) to 1.0 (Highly Custom/Premium).
-    - Increase score for: Embroidery, Custom Patterns, Multiple Colors, Premium Materials (Leather, Carbon Fiber), Complicated Designs.
-    - Decrease score for: Plain colors, basic prints, standard materials.
+    TASK 3: COMPLEXITY & PRICING
+    - Determine a Complexity Score from 0.0 (Basic) to 1.0 (Premium/Complex).
+    - ESTIMATED PRICE (Critical): Estimate a fair custom manufacturing/retail price in USD for this item. 
+      - If it is a known luxury item, estimate a high-quality replica or custom version price.
+      - If it is a generic item, estimate standard market price.
     
     TASK 4: DOMINANT COLORS
     - List max 2 main colors.
@@ -92,6 +95,7 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
         "category": "string",
         "dominantColors": ["string", "string"],
         "complexityScore": number,
+        "estimatedPriceUSD": number,
         "reasoning": "string"
     }
     `;
@@ -146,13 +150,14 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string):
         console.error("AI Analysis Failed:", error);
         // SAFETY FALLBACK
         const fallbackType = Math.random() > 0.5 ? "Shoes" : "Jerseys";
-        const fallbackName = fallbackType === "Shoes" ? "Premium Sport Sneaker" : "Custom Team Jersey";
+        const fallbackName = userProvidedName || (fallbackType === "Shoes" ? "Premium Sport Sneaker" : "Custom Team Jersey");
         
         return {
             productName: fallbackName,
             category: fallbackType,
             dominantColors: ["Multi-color"],
             complexityScore: 0.5,
+            estimatedPriceUSD: 50,
             reasoning: "AI analysis failed. Please verify details manually."
         };
     }
