@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Palette, Tag, Search, ArrowRight, HelpCircle, Info, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Palette, Tag, Search, ArrowRight, HelpCircle, Info, CheckCircle2, Edit3 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
-import { WHATSAPP_NUMBER } from '../constants';
+import { WHATSAPP_NUMBER, EXCHANGE_RATE_PKR } from '../constants';
 import { Product } from '../types';
 
 const AutoPricing: React.FC = () => {
-  const { convertPrice, addToCart, navigate } = useAppContext();
+  const { convertPrice, addToCart, navigate, currency } = useAppContext();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
@@ -16,6 +16,7 @@ const AutoPricing: React.FC = () => {
   const [currentCategory, setCurrentCategory] = useState('');
   const [currentColors, setCurrentColors] = useState<string[]>([]);
   const [currentPrice, setCurrentPrice] = useState(0);
+  const [isManualPriceMode, setIsManualPriceMode] = useState(false);
 
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
@@ -129,6 +130,7 @@ const AutoPricing: React.FC = () => {
         finalPrice = Math.ceil(finalPrice / 5) * 5;
         
         setCurrentPrice(finalPrice);
+        setIsManualPriceMode(false); // Reset manual mode on new analysis
     }
   }, [result]);
 
@@ -136,8 +138,8 @@ const AutoPricing: React.FC = () => {
   useEffect(() => {
     if (currentCategory) {
         updateSizesForCategory(currentCategory);
-        // If user manually changes category to a known one, update price instantly
-        if (SHOP_PRICES[currentCategory]) {
+        // If user manually changes category to a known one, update price instantly IF not in manual mode
+        if (SHOP_PRICES[currentCategory] && !isManualPriceMode) {
              setCurrentPrice(SHOP_PRICES[currentCategory]);
         }
     }
@@ -221,7 +223,30 @@ const AutoPricing: React.FC = () => {
     setResult(null);
     setQuantity(1);
     setEditableName('');
+    setIsManualPriceMode(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleManualPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    if (isNaN(val) || val < 0) {
+        setCurrentPrice(0);
+        return;
+    }
+    
+    // Convert input (which is in current currency) back to USD for state
+    if (currency === 'PKR') {
+        setCurrentPrice(val / EXCHANGE_RATE_PKR);
+    } else {
+        setCurrentPrice(val);
+    }
+  };
+
+  const displayManualInputValue = () => {
+      if (currency === 'PKR') {
+          return Math.round(currentPrice * EXCHANGE_RATE_PKR);
+      }
+      return Math.round(currentPrice);
   };
 
   return (
@@ -332,11 +357,10 @@ const AutoPricing: React.FC = () => {
                     <div className="flex-1 space-y-6">
                         
                         {/* RESULT CARD - COMPARISON UI */}
-                        <div className="bg-black text-white p-8 rounded-2xl shadow-lg relative overflow-hidden text-center">
+                        <div className="bg-black text-white p-8 rounded-2xl shadow-lg relative overflow-hidden text-center transition-all duration-300">
                              <div className="absolute top-0 right-0 w-32 h-32 bg-accent rounded-bl-full opacity-10"></div>
                              <div className="absolute bottom-0 left-0 w-32 h-32 bg-gray-800 rounded-tr-full opacity-10"></div>
                              
-                             {/* VISUAL COMPARISON: NAME -> PRICE */}
                              <div className="relative z-10 space-y-4">
                                 <div>
                                     <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Product Identified</p>
@@ -345,28 +369,58 @@ const AutoPricing: React.FC = () => {
                                     </h3>
                                 </div>
                                 
-                                <div>
-                                    <p className="text-accent text-[10px] font-bold uppercase tracking-widest mb-1">Official Price</p>
-                                    <h2 className="text-5xl md:text-6xl font-black text-accent tracking-tighter">
-                                        {convertPrice(currentPrice * quantity)}
-                                    </h2>
-                                </div>
+                                {isManualPriceMode ? (
+                                    <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/20 animate-fade-in-up">
+                                        <label className="block text-xs font-bold uppercase text-accent mb-2">Set Manual Unit Price ({currency})</label>
+                                        <div className="flex items-center justify-center gap-1">
+                                            <span className="text-xl font-bold text-gray-400">{currency === 'PKR' ? '₨' : '$'}</span>
+                                            <input 
+                                                type="number" 
+                                                value={displayManualInputValue()}
+                                                onChange={handleManualPriceChange}
+                                                className="bg-transparent text-4xl font-black text-white w-40 text-center border-b-2 border-accent focus:outline-none placeholder-gray-500"
+                                                autoFocus
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 mt-2">Enter price per item</p>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <p className="text-accent text-[10px] font-bold uppercase tracking-widest mb-1">Official Price</p>
+                                        <h2 className="text-5xl md:text-6xl font-black text-accent tracking-tighter">
+                                            {convertPrice(currentPrice * quantity)}
+                                        </h2>
+                                    </div>
+                                )}
 
-                                <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs text-gray-300">
-                                    <CheckCircle2 size={12} className="text-green-400" />
-                                    <span>Verified for {currentCategory}</span>
-                                </div>
+                                {!isManualPriceMode && (
+                                    <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs text-gray-300">
+                                        <CheckCircle2 size={12} className="text-green-400" />
+                                        <span>Verified for {currentCategory}</span>
+                                    </div>
+                                )}
                              </div>
+                        </div>
+                        
+                        {/* MANUAL OVERRIDE TOGGLE */}
+                        <div className="text-center">
+                            <button 
+                                onClick={() => setIsManualPriceMode(!isManualPriceMode)}
+                                className="inline-flex items-center gap-2 text-xs font-bold underline text-gray-400 hover:text-black transition-colors"
+                            >
+                                <Edit3 size={12} />
+                                {isManualPriceMode ? 'Cancel Custom Price' : 'Set Custom Price Manually'}
+                            </button>
                         </div>
 
                         {/* Analysis Note - "Pay from Internet" Logic Explained */}
-                        {normalizeCategory(result.category) === 'Unknown' && (
+                        {normalizeCategory(result.category) === 'Unknown' && !isManualPriceMode && (
                             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-blue-800 text-sm flex items-start gap-3">
                                 <Search className="shrink-0 mt-0.5" size={16} />
                                 <div>
                                     <p className="font-bold mb-1">Internet Price Detected</p>
                                     <p>
-                                        This is a unique item not in our standard list. We found this price from the market internet value.
+                                        This is a unique item. We estimated the market value. Click "Set Custom Price" above if incorrect.
                                     </p>
                                 </div>
                             </div>
