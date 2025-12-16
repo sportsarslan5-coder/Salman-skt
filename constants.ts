@@ -1,5 +1,3 @@
-
-
 import { Product, BlogPost, Translations } from './types';
 
 export const EXCHANGE_RATE_PKR = 278.5; 
@@ -36,6 +34,18 @@ export const TRANSLATIONS: Translations = {
 };
 
 export const PRODUCTS: Product[] = [
+  // --- NEW ADDITION ---
+  {
+    id: 201,
+    name: "MrBeast Signature Blue Hoodie",
+    category: "Men",
+    priceUSD: 30.00,
+    image: "https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?w=800&q=80",
+    description: "From the Beast Philanthropy Collection. Premium cotton blend blue hoodie featuring the iconic panther logo. 100% of profits go to charity. Soft fleece lining for maximum comfort.",
+    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 50000
+  },
   // --- NEW PROTEX SERIES (PREMIUM - Capped at $150) ---
   {
     id: 101,
