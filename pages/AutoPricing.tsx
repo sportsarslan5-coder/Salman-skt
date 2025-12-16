@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Edit2, CheckCircle, ChevronDown, Palette, AlertCircle, Tag } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Palette, Tag, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
@@ -12,10 +11,6 @@ const AutoPricing: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
   
-  // UX State
-  const [isConfirmed, setIsConfirmed] = useState(false); 
-  const [isEditingMode, setIsEditingMode] = useState(false);
-
   // Data State
   const [editableName, setEditableName] = useState('');
   const [currentCategory, setCurrentCategory] = useState('');
@@ -55,33 +50,6 @@ const AutoPricing: React.FC = () => {
 
   const CATEGORY_OPTIONS = Object.keys(PRICE_RULES);
 
-  // Sync result to state when analysis finishes
-  useEffect(() => {
-    if (result) {
-        setEditableName(result.productName);
-        
-        // Normalize Category
-        const normalizedCat = normalizeCategory(result.category);
-        setCurrentCategory(normalizedCat);
-        setCurrentColors(result.dominantColors || []);
-        
-        // CALCULATE DYNAMIC PRICE based on Complexity
-        const range = PRICE_RULES[normalizedCat] || PRICE_RULES['Custom'];
-        const score = result.complexityScore || 0.5; // Default to mid-range if missing
-        
-        // Formula: Min + (Difference * Score)
-        // e.g. Jersey (30-50). Complexity 0.0 = $30. Complexity 1.0 = $50.
-        // We round to nearest integer for clean look
-        const calculatedPrice = Math.round(range.min + ((range.max - range.min) * score));
-        
-        setCurrentPrice(calculatedPrice);
-        
-        // Reset Confirmation
-        setIsConfirmed(false);
-        setIsEditingMode(false);
-    }
-  }, [result]);
-
   // Helper to map AI category to our dropdown list
   const normalizeCategory = (cat: string): string => {
       if (!cat) return 'Custom';
@@ -108,21 +76,6 @@ const AutoPricing: React.FC = () => {
       
       return 'Custom';
   };
-
-  // Update Size & Price Range when Category Changes Manually
-  useEffect(() => {
-    if (currentCategory) {
-        updateSizesForCategory(currentCategory);
-        
-        // If user manually changes category, reset to average price (0.5 complexity)
-        // Only if we aren't loading initial result
-        if (!analyzing && result && normalizeCategory(result.category) !== currentCategory) {
-             const range = PRICE_RULES[currentCategory] || PRICE_RULES['Custom'];
-             const avgPrice = Math.round(range.min + ((range.max - range.min) * 0.5));
-             setCurrentPrice(avgPrice);
-        }
-    }
-  }, [currentCategory]);
 
   const updateSizesForCategory = (cat: string) => {
         let sizes: string[] = [];
@@ -151,6 +104,40 @@ const AutoPricing: React.FC = () => {
         setAvailableSizes(sizes);
         setSelectedSize(defaultSize);
   };
+
+  // Sync result to state when analysis finishes
+  useEffect(() => {
+    if (result) {
+        setEditableName(''); // Clear name so user can write it
+        
+        // Normalize Category
+        const normalizedCat = normalizeCategory(result.category);
+        setCurrentCategory(normalizedCat);
+        setCurrentColors(result.dominantColors || []);
+        
+        // CALCULATE DYNAMIC PRICE based on Complexity
+        const range = PRICE_RULES[normalizedCat] || PRICE_RULES['Custom'];
+        const score = result.complexityScore || 0.5; // Default to mid-range if missing
+        
+        const calculatedPrice = Math.round(range.min + ((range.max - range.min) * score));
+        
+        setCurrentPrice(calculatedPrice);
+    }
+  }, [result]);
+
+  // Update Size & Price Range when Category Changes Manually
+  useEffect(() => {
+    if (currentCategory) {
+        updateSizesForCategory(currentCategory);
+        
+        // If user manually changes category, recalculate price (using avg complexity 0.5 if manual switch)
+        if (!analyzing && result && normalizeCategory(result.category) !== currentCategory) {
+             const range = PRICE_RULES[currentCategory] || PRICE_RULES['Custom'];
+             const avgPrice = Math.round(range.min + ((range.max - range.min) * 0.5));
+             setCurrentPrice(avgPrice);
+        }
+    }
+  }, [currentCategory]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -194,10 +181,12 @@ const AutoPricing: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedImage) return;
+    
+    const finalName = editableName.trim() || `${currentCategory} (Custom)`;
 
     const customProduct: Product = {
         id: Date.now(),
-        name: editableName,
+        name: finalName,
         category: 'Men', 
         priceUSD: currentPrice,
         image: selectedImage,
@@ -212,11 +201,12 @@ const AutoPricing: React.FC = () => {
   };
 
   const handleWhatsApp = () => {
+    const finalName = editableName.trim() || "Custom Product";
     const priceDisplay = convertPrice(currentPrice);
     const colorStr = currentColors.join(', ');
     
     // Detailed WhatsApp Message
-    const message = `*NEW ORDER REQUEST*%0a----------------------------%0aI want to order this exact item I just uploaded:%0a%0a🛍️ *${editableName}*%0a📂 Type: ${currentCategory}%0a🎨 *Color: ${colorStr}*%0a💰 Estimated Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *PLEASE SEE IMAGE ATTACHED*`;
+    const message = `*NEW ORDER REQUEST*%0a----------------------------%0aI want to order this exact item I just uploaded:%0a%0a🛍️ *${finalName}*%0a📂 Type: ${currentCategory}%0a🎨 *Color: ${colorStr}*%0a💰 Estimated Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}%0a----------------------------%0a📷 *PLEASE SEE IMAGE ATTACHED*`;
     
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
@@ -226,8 +216,6 @@ const AutoPricing: React.FC = () => {
     setResult(null);
     setQuantity(1);
     setEditableName('');
-    setIsConfirmed(false);
-    setIsEditingMode(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -240,7 +228,7 @@ const AutoPricing: React.FC = () => {
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-primary mb-4">SMART PRICING SYSTEM</h1>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Upload your product. AI detects the item, calculates complexity, and gives you an instant estimated price.
+            Upload your product. AI detects the item, calculates the price, and you customize the rest.
           </p>
         </div>
 
@@ -289,215 +277,98 @@ const AutoPricing: React.FC = () => {
                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                     <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
                     <p className="font-bold text-lg animate-pulse">AI Identifying...</p>
-                    <p className="text-sm text-gray-500">Checking design complexity...</p>
+                    <p className="text-sm text-gray-500">Calculating smart price...</p>
                 </div>
             )}
           </div>
 
-          {/* Results Section - The Smart Flow */}
+          {/* Results Section */}
           <div className="space-y-6">
-             {result || (isEditingMode || isConfirmed) ? (
-                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up relative overflow-hidden flex flex-col h-full min-h-[500px]">
-                    
-                    {/* Phase 1: Confirmation */}
-                    {!isConfirmed && !isEditingMode && (
-                        <div className="flex-1 flex flex-col justify-center text-center space-y-6">
-                            <div className="mx-auto w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                                <CheckCircle size={32} />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold mb-2">Analysis Complete</h2>
-                                <p className="text-gray-500">We identified this item & estimated price:</p>
-                            </div>
-                            
-                            <div className="bg-gray-50 rounded-xl p-4 text-left space-y-3 border border-gray-200">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 text-sm">Product</span>
-                                    <span className="font-bold text-right line-clamp-1">{editableName}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 text-sm">Type</span>
-                                    <span className="font-bold text-accent bg-black px-2 rounded text-xs py-0.5">{currentCategory}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 text-sm flex items-center gap-1"><Palette size={14}/> Colors</span>
-                                    <span className="font-bold line-clamp-1">{currentColors.join(', ')}</span>
-                                </div>
-                                <div className="flex justify-between border-t pt-2 mt-2">
-                                    <div className="flex flex-col">
-                                        <span className="text-gray-500 text-sm">Estimated Price</span>
-                                        <span className="text-[10px] text-gray-400">Based on design complexity</span>
-                                    </div>
-                                    <span className="font-bold text-2xl text-primary">{convertPrice(currentPrice)}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3 mt-auto">
-                                <button 
-                                    onClick={() => setIsEditingMode(true)}
-                                    className="flex-1 py-3 border border-gray-300 rounded-xl font-bold hover:bg-gray-50 text-gray-700"
-                                >
-                                    Correct This
-                                </button>
-                                <button 
-                                    onClick={() => setIsConfirmed(true)}
-                                    className="flex-1 py-3 bg-black text-white rounded-xl font-bold hover:bg-accent hover:text-black transition-colors"
-                                >
-                                    Looks Good
-                                </button>
-                            </div>
+             {result ? (
+                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up flex flex-col h-full min-h-[500px]">
+                    <div className="space-y-6 flex-1">
+                        
+                        {/* Price Header */}
+                        <div className="bg-black text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+                             <div className="absolute top-0 right-0 w-20 h-20 bg-accent rounded-bl-full opacity-20"></div>
+                             <p className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wide">Smart Price</p>
+                             <h2 className="text-4xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
+                             <div className="mt-2 flex items-center gap-2">
+                                <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white">{currentCategory}</span>
+                                {currentColors.length > 0 && <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white flex items-center gap-1"><Palette size={10}/> {currentColors[0]}</span>}
+                             </div>
                         </div>
-                    )}
 
-                    {/* Phase 1.5: Editing Mode */}
-                    {isEditingMode && !isConfirmed && (
-                         <div className="flex-1 flex flex-col space-y-4">
-                            <div className="flex justify-between items-center mb-2">
-                                <h3 className="font-bold text-lg">Edit Details</h3>
-                                <button onClick={() => setIsEditingMode(false)} className="text-sm underline text-gray-500">Cancel</button>
-                            </div>
-                            
-                            <div>
-                                <label className="text-xs font-bold uppercase text-gray-500">Product Name</label>
-                                <input 
-                                    value={editableName}
-                                    onChange={(e) => setEditableName(e.target.value)}
-                                    className="w-full border p-3 rounded-lg font-bold"
-                                />
-                            </div>
+                        {/* Name Input */}
+                        <div>
+                            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Product Name / Title</label>
+                            <input 
+                                value={editableName}
+                                onChange={(e) => setEditableName(e.target.value)}
+                                placeholder="E.g. Custom Embroidered Bomber Jacket"
+                                className="w-full border-2 border-gray-200 p-4 rounded-xl font-bold focus:border-black focus:ring-0 outline-none transition-colors"
+                            />
+                        </div>
 
-                            <div>
-                                <label className="text-xs font-bold uppercase text-gray-500">Category</label>
-                                <div className="relative">
-                                    <select 
-                                        value={currentCategory}
-                                        onChange={(e) => setCurrentCategory(e.target.value)}
-                                        className="w-full border p-3 rounded-lg bg-white appearance-none"
+                        {/* Size Selector */}
+                        <div>
+                            <span className="block text-xs font-bold uppercase text-gray-500 mb-2">Select Size</span>
+                            <div className="flex flex-wrap gap-2">
+                                {availableSizes.map(size => (
+                                    <button
+                                        key={size}
+                                        onClick={() => setSelectedSize(size)}
+                                        className={`flex-1 min-w-[60px] py-3 rounded-xl text-sm font-bold transition-all border-2 ${
+                                            selectedSize === size 
+                                            ? 'bg-black text-white border-black shadow-md' 
+                                            : 'bg-white text-gray-600 border-gray-100 hover:border-black'
+                                        }`}
                                     >
-                                        {CATEGORY_OPTIONS.map(cat => (
-                                            <option key={cat} value={cat}>
-                                                {cat} (${PRICE_RULES[cat].min} - ${PRICE_RULES[cat].max})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label className="text-xs font-bold uppercase text-gray-500">Detected Colors</label>
-                                <input 
-                                    value={currentColors.join(', ')}
-                                    onChange={(e) => setCurrentColors(e.target.value.split(',').map(s => s.trim()))}
-                                    className="w-full border p-3 rounded-lg bg-white"
-                                />
-                            </div>
-
-                            <button 
-                                onClick={() => {
-                                    setIsEditingMode(false);
-                                    setIsConfirmed(true);
-                                }}
-                                className="w-full bg-black text-white py-3 rounded-xl font-bold mt-auto"
-                            >
-                                Save & Continue
-                            </button>
-                         </div>
-                    )}
-
-                    {/* Phase 2: Configuration & Order (Only after confirmation) */}
-                    {isConfirmed && (
-                        <div className="flex flex-col h-full justify-between">
-                            <div className="space-y-6">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h2 className="text-2xl font-black leading-tight line-clamp-2">{editableName}</h2>
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200">{currentCategory}</span>
-                                            {currentColors.map((c, i) => (
-                                                <span key={i} className="text-xs bg-gray-100 px-2 py-1 rounded font-bold text-gray-600 border border-gray-200 flex items-center gap-1"><Palette size={10}/> {c}</span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <button onClick={() => setIsConfirmed(false)} className="text-gray-400 hover:text-black"><Edit2 size={18} /></button>
-                                </div>
-
-                                <div className="w-full h-px bg-gray-100"></div>
-
-                                {/* Price Logic Display */}
-                                <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 flex items-start gap-2">
-                                    <Tag size={16} className="text-yellow-600 mt-0.5" />
-                                    <p className="text-xs text-yellow-800">
-                                        <strong>AI Price Adjustment:</strong> Price set within {currentCategory} range based on detected custom design/embroidery.
-                                    </p>
-                                </div>
-
-                                {/* Size Selector */}
-                                <div>
-                                    <span className="text-xs text-gray-500 font-bold uppercase mb-2 block">Select Size</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableSizes.map(size => (
-                                            <button
-                                                key={size}
-                                                onClick={() => setSelectedSize(size)}
-                                                className={`flex-1 min-w-[50px] py-2 rounded-lg text-sm font-bold transition-all border ${
-                                                    selectedSize === size 
-                                                    ? 'bg-black text-white border-black shadow-md' 
-                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-black'
-                                                }`}
-                                            >
-                                                {size}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Quantity */}
-                                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
-                                    <span className="font-bold text-gray-600 text-sm ml-2">Quantity</span>
-                                    <div className="flex items-center gap-4">
-                                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Minus size={14} /></button>
-                                        <span className="font-bold">{quantity}</span>
-                                        <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm"><Plus size={14} /></button>
-                                    </div>
-                                </div>
-
-                                {/* Total */}
-                                <div className="flex justify-between items-end pt-2">
-                                    <span className="text-sm font-bold text-gray-400">Total Estimate</span>
-                                    <h2 className="text-4xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
-                                </div>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="grid grid-cols-1 gap-3 mt-6">
-                                 <button 
-                                    onClick={handleAddToCart}
-                                    className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-accent hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg"
-                                >
-                                    <ShoppingCart size={20} /> Add to Cart
-                                </button>
-                                <button 
-                                    onClick={handleWhatsApp}
-                                    className="w-full bg-green-50 text-green-600 py-3 rounded-xl font-bold text-sm hover:bg-green-100 transition-all flex items-center justify-center gap-2 border border-green-200"
-                                >
-                                    <MessageCircle size={18} /> Confirm on WhatsApp
-                                </button>
-                                <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-500 flex items-center justify-center gap-1">
-                                        <AlertCircle size={12} />
-                                        Please paste the uploaded image in WhatsApp!
-                                    </p>
-                                </div>
+                                        {size}
+                                    </button>
+                                ))}
                             </div>
                         </div>
-                    )}
+
+                        {/* Quantity */}
+                        <div className="flex items-center justify-between">
+                            <span className="font-bold text-gray-500 text-sm">Quantity</span>
+                            <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-accent"><Minus size={16} /></button>
+                                <span className="font-bold w-4 text-center">{quantity}</span>
+                                <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm hover:text-accent"><Plus size={16} /></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="space-y-3 mt-6 pt-6 border-t border-gray-100">
+                         <button 
+                            onClick={handleAddToCart}
+                            className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-accent hover:text-black transition-all flex items-center justify-center gap-2 shadow-lg"
+                        >
+                            <ShoppingCart size={20} /> Add to Cart
+                        </button>
+                        <button 
+                            onClick={handleWhatsApp}
+                            className="w-full bg-green-50 text-green-600 py-3 rounded-xl font-bold text-sm hover:bg-green-100 transition-all flex items-center justify-center gap-2 border border-green-200"
+                        >
+                            <MessageCircle size={18} /> Order on WhatsApp
+                        </button>
+                        
+                        <div className="bg-yellow-50 p-2 rounded-lg text-center border border-yellow-100 flex items-center justify-center gap-1.5">
+                             <Tag size={12} className="text-yellow-600" />
+                             <p className="text-[10px] font-bold text-yellow-800">
+                                Price includes estimated customization costs
+                             </p>
+                        </div>
+                    </div>
                  </div>
              ) : (
                 // Empty State
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-[500px] flex flex-col items-center justify-center text-center text-gray-400 border-dashed">
                     <ImageIcon size={48} className="mb-4 opacity-20" />
-                    <p>Upload an image to identify & order.</p>
+                    <p>Upload an image to get started.</p>
                 </div>
              )}
           </div>
