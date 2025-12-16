@@ -288,6 +288,17 @@ const AutoPricing: React.FC = () => {
                  <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 animate-fade-in-up flex flex-col h-full min-h-[500px]">
                     <div className="space-y-6 flex-1">
                         
+                         {/* Name Input */}
+                        <div>
+                            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Product Name / Title</label>
+                            <input 
+                                value={editableName}
+                                onChange={(e) => setEditableName(e.target.value)}
+                                placeholder="E.g. Custom Embroidered Bomber Jacket"
+                                className="w-full border-2 border-gray-200 p-4 rounded-xl font-bold focus:border-black focus:ring-0 outline-none transition-colors"
+                            />
+                        </div>
+
                         {/* Price Header */}
                         <div className="bg-black text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
                              <div className="absolute top-0 right-0 w-20 h-20 bg-accent rounded-bl-full opacity-20"></div>
@@ -297,17 +308,6 @@ const AutoPricing: React.FC = () => {
                                 <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white">{currentCategory}</span>
                                 {currentColors.length > 0 && <span className="bg-white/20 px-2 py-0.5 rounded text-xs text-white flex items-center gap-1"><Palette size={10}/> {currentColors[0]}</span>}
                              </div>
-                        </div>
-
-                        {/* Name Input */}
-                        <div>
-                            <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Product Name / Title</label>
-                            <input 
-                                value={editableName}
-                                onChange={(e) => setEditableName(e.target.value)}
-                                placeholder="E.g. Custom Embroidered Bomber Jacket"
-                                className="w-full border-2 border-gray-200 p-4 rounded-xl font-bold focus:border-black focus:ring-0 outline-none transition-colors"
-                            />
                         </div>
 
                         {/* Size Selector */}
