@@ -60,8 +60,20 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
 
     // Strict Categories matching your business rules
     const VALID_CATEGORIES = [
-        'T-Shirts', 'Hoodies', 'Jerseys', 'Jackets', 'Tote Bags', 'Caps', 'Shoes',
-        'Footballs', 'Volleyball', 'Basketball', 'Cricket Bat', 'Gloves & Sports Gear'
+        "T-Shirt", "Hoodie", "Jersey", "Jacket", "Tracksuit", "Cap", "Beanie", "Jeans", "Shorts", "Sweatpants", 
+        "Polo Shirt", "Dress Shirt", "Tank Top", "Sweater", "Cardigan", "Vest", "Coat", "Trench Coat", "Blazer", 
+        "Leather Jacket", "Bomber Jacket", "Windbreaker", "Raincoat", "Pajama Set", "Nightwear", "Bathrobe", 
+        "Jumpsuit", "Romper", "Skirt", "Leggings", "Jeggings", "Yoga Pants", "Sports Bra", "Workout Top", 
+        "Compression Shirt", "Base Layer", "Thermal Wear", "Gloves", "Scarf", "Shawl", "Socks (Pack)", "Ankle Socks", 
+        "Sneakers", "Running Shoes", "Leather Boots", "Loafers", "Sandals", "Slippers", "Flip Flops", "Formal Shoes", 
+        "Sunglasses", "Belt", "Watch", "Backpack", "Crossbody Bag", "Duffle Bag", "Laptop Bag", "Wallet", "Tie", 
+        "Bow Tie", "Cufflinks", "Handkerchief", "Rain Boots", "Ski Jacket", "Winter Coat", "Puffer Jacket", 
+        "Down Jacket", "Graphic T-Shirt", "Ripped Jeans", "Cargo Pants", "Denim Jacket", "Faux Fur Coat", 
+        "Camouflage Jacket", "Oversized Hoodie", "Zipper Hoodie", "Half Sleeve Shirt", "Long Sleeve T-Shirt", 
+        "Linen Shirt", "Khaki Pants", "Joggers", "Lounge Wear", "Sleep Shorts", "Sport Shorts", "Baseball Cap", 
+        "Visor Hat", "Fedora Hat", "Bucket Hat", "Custom Jersey", "Team Tracksuit", "Warm Gloves", "Touchscreen Gloves", 
+        "Waterproof Jacket", "Cycling Shorts", "Hiking Boots", "Trail Shoes", "Dress Pants", "Office Shirt", 
+        "Softshell Jacket", "Winter Leggings", "Fashion Hoodie"
     ];
 
     const prompt = `
@@ -76,7 +88,8 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
     - If the User Context is specific (e.g. "Barcelona 2025 Kit"), respect it but refine it to be professional.
 
     TASK 2: CATEGORIZATION
-    - Try to categorize into one of: [${VALID_CATEGORIES.join(', ')}].
+    - Try to categorize into one of the following specific categories:
+    [${VALID_CATEGORIES.join(', ')}]
     - IF the item does DOES NOT fit these categories (e.g. it's a "Yoga Mat", "Smart Watch", "Tent", "Electronic"), use a generic but accurate category name.
     
     TASK 3: COMPLEXITY & PRICING (THE "INTERNET PRICE" LOGIC)
@@ -123,8 +136,8 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
         console.error("AI Analysis Failed:", error);
         
         // Fallback Logic
-        const fallbackType = "Shoes";
-        const fallbackName = userProvidedName || "Custom Sneaker";
+        const fallbackType = "Sneakers";
+        const fallbackName = userProvidedName || "Custom Item";
         
         return {
             productName: fallbackName,

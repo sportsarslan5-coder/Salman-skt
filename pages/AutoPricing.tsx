@@ -26,76 +26,79 @@ const AutoPricing: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // --- STRICT FIXED PRICES (No Guessing) ---
-  // If the product matches these categories, use THIS exact price.
   const SHOP_PRICES: {[key: string]: number} = {
-      // Clothing
-      'T-Shirts': 35,
-      'Hoodies': 55,
-      'Jerseys': 40,
-      'Jackets': 85,
-      'Tote Bags': 25,
-      'Caps': 20,
-      'Shoes': 125,
-      
-      // Sports Equipment
-      'Footballs': 45,
-      'Volleyball': 35,
-      'Basketball': 55,
-      'Cricket Bat': 95,
-      'Gloves & Sports Gear': 40,
+      'T-Shirt': 25, 'Hoodie': 40, 'Jersey': 45, 'Jacket': 60, 'Tracksuit': 70, 
+      'Cap': 15, 'Beanie': 18, 'Jeans': 55, 'Shorts': 30, 'Sweatpants': 35, 
+      'Polo Shirt': 28, 'Dress Shirt': 38, 'Tank Top': 22, 'Sweater': 42, 'Cardigan': 48, 
+      'Vest': 32, 'Coat': 90, 'Trench Coat': 110, 'Blazer': 85, 'Leather Jacket': 120, 
+      'Bomber Jacket': 95, 'Windbreaker': 65, 'Raincoat': 75, 'Pajama Set': 40, 'Nightwear': 38, 
+      'Bathrobe': 50, 'Jumpsuit': 60, 'Romper': 45, 'Skirt': 30, 'Leggings': 28, 
+      'Jeggings': 32, 'Yoga Pants': 35, 'Sports Bra': 30, 'Workout Top': 26, 'Compression Shirt': 34, 
+      'Base Layer': 38, 'Thermal Wear': 40, 'Gloves': 20, 'Scarf': 22, 'Shawl': 28, 
+      'Socks (Pack)': 15, 'Ankle Socks': 10, 'Sneakers': 120, 'Running Shoes': 95, 'Leather Boots': 130, 
+      'Loafers': 85, 'Sandals': 28, 'Slippers': 20, 'Flip Flops': 18, 'Formal Shoes': 110, 
+      'Sunglasses': 35, 'Belt': 25, 'Watch': 60, 'Backpack': 50, 'Crossbody Bag': 40, 
+      'Duffle Bag': 60, 'Laptop Bag': 55, 'Wallet': 22, 'Tie': 15, 'Bow Tie': 18, 
+      'Cufflinks': 30, 'Handkerchief': 10, 'Rain Boots': 48, 'Ski Jacket': 140, 'Winter Coat': 130, 
+      'Puffer Jacket': 100, 'Down Jacket': 115, 'Graphic T-Shirt': 27, 'Ripped Jeans': 60, 'Cargo Pants': 50, 
+      'Denim Jacket': 85, 'Faux Fur Coat': 125, 'Camouflage Jacket': 90, 'Oversized Hoodie': 50, 'Zipper Hoodie': 45, 
+      'Half Sleeve Shirt': 30, 'Long Sleeve T-Shirt': 28, 'Linen Shirt': 40, 'Khaki Pants': 42, 'Joggers': 38, 
+      'Lounge Wear': 55, 'Sleep Shorts': 20, 'Sport Shorts': 26, 'Baseball Cap': 22, 'Visor Hat': 18, 
+      'Fedora Hat': 35, 'Bucket Hat': 25, 'Custom Jersey': 65, 'Team Tracksuit': 75, 'Warm Gloves': 24, 
+      'Touchscreen Gloves': 28, 'Waterproof Jacket': 85, 'Cycling Shorts': 32, 'Hiking Boots': 135, 'Trail Shoes': 110, 
+      'Dress Pants': 50, 'Office Shirt': 36, 'Softshell Jacket': 88, 'Winter Leggings': 40, 'Fashion Hoodie': 52
   };
 
   // Helper to map AI category to our dropdown list
   const normalizeCategory = (cat: string): string => {
       if (!cat) return 'Unknown';
-      const c = cat.toLowerCase();
+      const input = cat.trim();
+      const lowerInput = input.toLowerCase();
       
-      // Exact Matches First
-      for (const key of Object.keys(SHOP_PRICES)) {
-          if (c === key.toLowerCase()) return key;
+      // 1. Exact Match
+      if (SHOP_PRICES[input]) return input;
+
+      // 2. Case Insensitive Exact Match
+      const keys = Object.keys(SHOP_PRICES);
+      for (const key of keys) {
+          if (key.toLowerCase() === lowerInput) return key;
       }
 
-      // Fuzzy Matches
-      if (c.includes('shoe') || c.includes('sneaker') || c.includes('boot')) return 'Shoes';
-      if (c.includes('jersey') || c.includes('kit') || c.includes('uniform')) return 'Jerseys';
-      if (c.includes('hoodie') || c.includes('sweat')) return 'Hoodies';
-      if (c.includes('jacket') || c.includes('coat') || c.includes('upper')) return 'Jackets';
-      if (c.includes('bag') || c.includes('tote')) return 'Tote Bags';
-      if (c.includes('cap') || c.includes('hat')) return 'Caps';
-      if (c.includes('soccer') || c.includes('footballs')) return 'Footballs';
-      if (c.includes('volley')) return 'Volleyball';
-      if (c.includes('basket')) return 'Basketball';
-      if (c.includes('cricket') || c.includes('bat')) return 'Cricket Bat';
-      if (c.includes('glove') || c.includes('gear')) return 'Gloves & Sports Gear';
-      if (c.includes('shirt') || c.includes('tee')) return 'T-Shirts';
+      // 3. Partial Match (Prioritize longer keys to catch specific items first, e.g., "Down Jacket" before "Jacket")
+      const sortedKeys = keys.sort((a, b) => b.length - a.length);
+      for (const key of sortedKeys) {
+          if (lowerInput.includes(key.toLowerCase())) return key;
+      }
       
+      // 4. Fallback for generic terms
+      if (lowerInput.includes('shoe') || lowerInput.includes('footwear')) return 'Sneakers';
+      if (lowerInput.includes('bag')) return 'Backpack';
+      if (lowerInput.includes('shirt') && !lowerInput.includes('t-shirt')) return 'T-Shirt';
+
       return 'Unknown';
   };
 
   const updateSizesForCategory = (cat: string) => {
-        let sizes: string[] = [];
-        let defaultSize = '';
+        const lowerCat = cat.toLowerCase();
+        let sizes: string[] = ['S', 'M', 'L', 'XL', 'XXL'];
+        let defaultSize = 'M';
 
-        if (cat === 'Shoes') {
+        // Footwear Logic
+        if (['shoe', 'sneaker', 'boot', 'sandal', 'slipper', 'flip flop', 'loafer'].some(k => lowerCat.includes(k))) {
             sizes = ['US 7', 'US 8', 'US 9', 'US 10', 'US 11', 'US 12'];
             defaultSize = 'US 9';
-        } else if (cat === 'Cricket Bat') {
-            sizes = ['Harrow', 'Short Handle', 'Long Handle'];
-            defaultSize = 'Short Handle';
-        } else if (['Footballs', 'Volleyball', 'Basketball'].includes(cat)) {
-            sizes = ['Standard Size'];
-            defaultSize = 'Standard Size';
-        } else if (cat === 'Caps' || cat === 'Tote Bags') {
+        } 
+        // Accessories (One Size)
+        else if (['cap', 'hat', 'beanie', 'visor', 'bag', 'backpack', 'wallet', 'watch', 'sunglass', 'belt', 'tie', 'cufflink', 'scarf', 'shawl', 'handkerchief'].some(k => lowerCat.includes(k))) {
             sizes = ['One Size'];
             defaultSize = 'One Size';
-        } else if (cat === 'Gloves & Sports Gear') {
+        }
+        // Small Accessories (S/M/L)
+        else if (['glove', 'sock'].some(k => lowerCat.includes(k))) {
              sizes = ['S', 'M', 'L'];
              defaultSize = 'M';
-        } else {
-            // Default clothing
-            sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-            defaultSize = 'M';
         }
+        
         setAvailableSizes(sizes);
         setSelectedSize(defaultSize);
   };
@@ -103,10 +106,13 @@ const AutoPricing: React.FC = () => {
   // Sync result to state when analysis finishes
   useEffect(() => {
     if (result) {
-        // 1. Set Name
-        if (result.productName && result.productName.length > editableName.length) {
-             setEditableName(result.productName);
+        // 1. Set Name with strict "Z" suffix requirement
+        let finalName = result.productName || "Custom Item";
+        // Ensure we add the Z if it's not already there (though AI generates new names mostly)
+        if (!finalName.endsWith(" Z")) {
+            finalName = `${finalName} Z`;
         }
+        setEditableName(finalName);
         
         // 2. Set Category & Colors
         const normalizedCat = normalizeCategory(result.category);
@@ -119,16 +125,15 @@ const AutoPricing: React.FC = () => {
         let finalPrice = 0;
 
         if (normalizedCat !== 'Unknown' && SHOP_PRICES[normalizedCat]) {
-            // CASE A: It's a Shop Item -> Use Fixed Shop Price
+            // CASE A: It's a Shop Item -> Use Fixed Shop Price EXACTLY (No rounding)
             finalPrice = SHOP_PRICES[normalizedCat];
         } else {
             // CASE B: It's Unknown -> Use Internet Price (AI Estimate)
             finalPrice = result.estimatedPriceUSD || 50; 
+            // Round up the chief (Nearest 5) only for unknown items
+            finalPrice = Math.ceil(finalPrice / 5) * 5;
         }
 
-        // 4. Round up the chief (Nearest 5)
-        finalPrice = Math.ceil(finalPrice / 5) * 5;
-        
         setCurrentPrice(finalPrice);
         setIsManualPriceMode(false); // Reset manual mode on new analysis
     }
@@ -189,7 +194,9 @@ const AutoPricing: React.FC = () => {
   const handleAddToCart = () => {
     if (!selectedImage) return;
     
-    const finalName = editableName.trim() || `${currentCategory} (Custom)`;
+    // Ensure name includes the Z if user edited it out, or trust the user edit? 
+    // The requirement says "There should also be a Z with the name", so we default to state.
+    const finalName = editableName.trim() || `${currentCategory} Z`;
 
     const customProduct: Product = {
         id: Date.now(),
@@ -208,7 +215,7 @@ const AutoPricing: React.FC = () => {
   };
 
   const handleWhatsApp = () => {
-    const finalName = editableName.trim() || "Custom Product";
+    const finalName = editableName.trim() || "Custom Product Z";
     const priceDisplay = convertPrice(currentPrice);
     const colorStr = currentColors.join(', ');
     
@@ -292,7 +299,7 @@ const AutoPricing: React.FC = () => {
                   <input 
                     value={editableName}
                     onChange={(e) => setEditableName(e.target.value)}
-                    placeholder="E.g. Black Hoodie"
+                    placeholder="E.g. Black Hoodie Z"
                     className="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-xl font-bold focus:border-black focus:ring-0 outline-none transition-colors"
                   />
                   <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
@@ -365,7 +372,7 @@ const AutoPricing: React.FC = () => {
                                 <div>
                                     <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Product Identified</p>
                                     <h3 className="text-xl md:text-2xl font-bold leading-tight text-white/90 border-b border-white/20 pb-3 mx-auto max-w-[80%]">
-                                        {editableName || result.productName}
+                                        {editableName}
                                     </h3>
                                 </div>
                                 
