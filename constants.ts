@@ -53,7 +53,7 @@ export const PRODUCTS: Product[] = [
     category: "Men",
     priceUSD: 145.00,
     image: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=800&q=80",
-    description: "The flagship of the ProTex line. Engineered with aerospace-grade materials for maximum durability and explosive energy return on the court.",
+    description: "The flagship of the ProTex line. Available in Onyx Black & Gold. Engineered with aerospace-grade materials for maximum durability and explosive energy return on the court.",
     sizes: ["US 8", "US 9", "US 10", "US 11", "US 12", "US 13"],
     rating: 5.0,
     reviews: 2100
@@ -64,7 +64,7 @@ export const PRODUCTS: Product[] = [
     category: "Men",
     priceUSD: 148.00,
     image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
-    description: "Features a full-length carbon fiber plate for elite running performance. The lightest shoe in our collection, designed for marathon winners.",
+    description: "Features a full-length carbon fiber plate for elite running performance. Comes in Racing Red & White. The lightest shoe in our collection, designed for marathon winners.",
     sizes: ["US 8", "US 9", "US 10", "US 11"],
     rating: 4.9,
     reviews: 1450
@@ -75,7 +75,7 @@ export const PRODUCTS: Product[] = [
     category: "Men",
     priceUSD: 149.00,
     image: "https://images.unsplash.com/photo-1556906781-9a412961d289?w=800&q=80",
-    description: "Limited Edition. A futuristic silhouette with self-adapting fit technology. Premium leather and tech-mesh construction.",
+    description: "Limited Edition. A futuristic silhouette with self-adapting fit technology. Available in Cyber Silver & Neon Blue. Premium leather and tech-mesh construction.",
     sizes: ["US 7", "US 8", "US 9", "US 10", "US 11", "US 12"],
     rating: 5.0,
     reviews: 3200
@@ -86,7 +86,7 @@ export const PRODUCTS: Product[] = [
     category: "Men",
     priceUSD: 135.00,
     image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800&q=80",
-    description: "All-black tactical street wear. Waterproof GORE-TEX lining with rugged grip for any urban environment.",
+    description: "All-black tactical street wear with Graphite Grey accents. Waterproof GORE-TEX lining with rugged grip for any urban environment.",
     sizes: ["US 8", "US 9", "US 10", "US 11", "US 12"],
     rating: 4.8,
     reviews: 980
@@ -97,7 +97,7 @@ export const PRODUCTS: Product[] = [
     category: "Women",
     priceUSD: 135.00,
     image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&q=80",
-    description: "Maximum cushioning technology makes you feel like you're walking on clouds. Bold colors, bold performance.",
+    description: "Maximum cushioning technology. Available in Royal Purple & Teal. Makes you feel like you're walking on clouds. Bold colors, bold performance.",
     sizes: ["US 6", "US 7", "US 8", "US 9"],
     rating: 4.9,
     reviews: 1120
