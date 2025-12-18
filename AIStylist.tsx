@@ -25,7 +25,7 @@ const AIStylist: React.FC = () => {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
-    // Prepare history for Gemini
+    // Prepare history for Gemini (excluding last user message which is passed separately)
     const history = messages.map(m => ({
       role: m.role === 'bot' ? 'model' : 'user',
       parts: [{ text: m.text }]
