@@ -10,14 +10,14 @@ export const TRANSLATIONS: Translations = {
   contact: { en: 'Contact', ur: 'رابطہ کریں' },
   cart: { en: 'Cart', ur: 'ٹوکری' },
   checkout: { en: 'Checkout', ur: 'چیک آؤٹ' },
-  search: { en: 'Search sneakers...', ur: 'جوتے تلاش کریں...' },
+  search: { en: 'Search products...', ur: 'مصنوعات تلاش کریں...' },
   men: { en: 'Men', ur: 'مرد' },
   women: { en: 'Women', ur: 'خواتین' },
   kids: { en: 'Kids', ur: 'بچے' },
-  buyNow: { en: 'Shop Best Sellers', ur: 'سب سے زیادہ فروخت ہونے والے خریدیں' },
-  heroTitle: { en: 'America\'s Favorite Kicks', ur: 'امریکہ کے پسندیدہ جوتے' },
-  heroSubtitle: { en: 'Top trending styles. Iconic looks. Unbeatable prices ($50 - $100).', ur: 'سرفہرست رجحان ساز انداز۔ مشہور نظر۔ ناقابل شکست قیمتیں ($50 - $100)۔' },
-  dealOfTheDay: { en: 'Top Best Sellers', ur: 'ٹاپ بہترین فروخت کنندگان' },
+  buyNow: { en: 'Shop Best Sellers', ur: 'بہترین اشیاء خریدیں' },
+  heroTitle: { en: 'Premium Fashion Z', ur: 'پریمیم فیشن زیڈ' },
+  heroSubtitle: { en: 'High-quality apparel, jackets, and accessories. Experience the PROTEX difference.', ur: 'اعلیٰ معیار کے ملبوسات، جیکٹس اور لوازمات۔ پروٹیکس کے فرق کا تجربہ کریں۔' },
+  dealOfTheDay: { en: 'Catalog Masterlist', ur: 'کیٹلاگ کی فہرست' },
   addToCart: { en: 'Add to Cart', ur: 'ٹوکری میں شامل کریں' },
   reviews: { en: 'Customer Reviews', ur: 'کسٹمر کے جائزے' },
   emptyCart: { en: 'Your cart is empty', ur: 'آپ کی ٹوکری خالی ہے' },
@@ -25,10 +25,10 @@ export const TRANSLATIONS: Translations = {
   placeOrder: { en: 'Place Order on WhatsApp', ur: 'واٹس ایپ پر آرڈر کریں' },
   contactUs: { en: 'Contact Us', ur: 'ہم سے رابطہ کریں' },
   sendMessage: { en: 'Send Message', ur: 'پیغام بھیجیں' },
-  aiStylist: { en: 'AI Sneaker Expert', ur: 'AI جوتوں کا ماہر' },
-  stylistIntro: { en: 'Hi! Looking for running shoes or casual kicks? I can help.', ur: 'ہائے! کیا آپ دوڑنے والے جوتے یا آرام دہ جوتے تلاش کر رہے ہیں؟ میں مدد کر سکتا ہوں۔' },
+  aiStylist: { en: 'Fashion Expert Z', ur: 'فیشن ایکسپرٹ زیڈ' },
+  stylistIntro: { en: 'Hi! I am your Sialkot Shop expert. Looking for a jacket or a specific fit? Ask me!', ur: 'ہائے! میں آپ کا سیالکوٹ شاپ ایکسپرٹ ہوں۔ جیکٹ یا مخصوص فٹ تلاش کر رہے ہیں؟ مجھ سے پوچھیں!' },
   typing: { en: 'Expert is typing...', ur: 'ماہر لکھ رہا ہے...' },
-  footerText: { en: '© 2024 Salman SKT. All rights reserved.', ur: '© 2024 سلمان سیالکوٹ۔ جملہ حقوق محفوظ ہیں۔' },
+  footerText: { en: '© 2024 Sialkot Shop. All rights reserved.', ur: '© 2024 سیالکوٹ شاپ۔ جملہ حقوق محفوظ ہیں۔' },
   subscribe: { en: 'Subscribe', ur: 'سبسکرائب' },
   smartPricing: { en: 'Smart Pricing', ur: 'اسمارٹ قیمت' },
 };
@@ -57,46 +57,119 @@ const generateProducts = (): Product[] => {
     { name: "Dress Pants", price: 50 }, { name: "Office Shirt", price: 36 }, { name: "Softshell Jacket", price: 88 }, { name: "Winter Leggings", price: 40 }, { name: "Fashion Hoodie", price: 52 }
   ];
 
+  const IMAGE_MAP: { [key: string]: string } = {
+    "T-Shirt": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+    "Hoodie": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
+    "Jersey": "https://images.unsplash.com/photo-1580087444194-03552a41d082?w=800&q=80",
+    "Jacket": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=800&q=80",
+    "Tracksuit": "https://images.unsplash.com/photo-1483721310020-03333e577078?w=800&q=80",
+    "Cap": "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&q=80",
+    "Beanie": "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=800&q=80",
+    "Jeans": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
+    "Shorts": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80",
+    "Sweatpants": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
+    "Polo Shirt": "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&q=80",
+    "Dress Shirt": "https://images.unsplash.com/photo-1598033129183-c4f50c7176c8?w=800&q=80",
+    "Tank Top": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
+    "Sweater": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80",
+    "Cardigan": "https://images.unsplash.com/photo-1574282893982-ff1675ba4900?w=800&q=80",
+    "Vest": "https://images.unsplash.com/photo-1621072156002-e2fccbc0b17d?w=800&q=80",
+    "Coat": "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800&q=80",
+    "Trench Coat": "https://images.unsplash.com/photo-1580657018910-c7b75b9400d7?w=800&q=80",
+    "Blazer": "https://images.unsplash.com/photo-1594932224828-b4b0573fe2f8?w=800&q=80",
+    "Leather Jacket": "https://images.unsplash.com/photo-1520975954732-35dd22299614?w=800&q=80",
+    "Bomber Jacket": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&q=80",
+    "Windbreaker": "https://images.unsplash.com/photo-1622445272461-c6580cab8755?w=800&q=80",
+    "Raincoat": "https://images.unsplash.com/photo-1559551409-dadc959f76b8?w=800&q=80",
+    "Pajama Set": "https://images.unsplash.com/photo-1590611380053-da6447011f45?w=800&q=80",
+    "Nightwear": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80",
+    "Bathrobe": "https://images.unsplash.com/photo-1560010976-b6e2d6776b26?w=800&q=80",
+    "Jumpsuit": "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800&q=80",
+    "Romper": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&q=80",
+    "Skirt": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=800&q=80",
+    "Leggings": "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&q=80",
+    "Jeggings": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&q=80",
+    "Yoga Pants": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80",
+    "Sports Bra": "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&q=80",
+    "Workout Top": "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&q=80",
+    "Compression Shirt": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
+    "Base Layer": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80",
+    "Thermal Wear": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80",
+    "Gloves": "https://images.unsplash.com/photo-1590483734724-38813735741f?w=800&q=80",
+    "Scarf": "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=800&q=80",
+    "Shawl": "https://images.unsplash.com/photo-1627855014049-94038676f6b5?w=800&q=80",
+    "Socks (Pack)": "https://images.unsplash.com/photo-1582966298636-a1d08e432474?w=800&q=80",
+    "Ankle Socks": "https://images.unsplash.com/photo-1619024304443-41c304671391?w=800&q=80",
+    "Sneakers": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+    "Running Shoes": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&q=80",
+    "Leather Boots": "https://images.unsplash.com/photo-1520639889410-1eb419ef5162?w=800&q=80",
+    "Loafers": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&q=80",
+    "Sandals": "https://images.unsplash.com/photo-1562273103-91b74032d164?w=800&q=80",
+    "Slippers": "https://images.unsplash.com/photo-1591348113547-7563d1a65971?w=800&q=80",
+    "Flip Flops": "https://images.unsplash.com/photo-1561909848-977d0617f275?w=800&q=80",
+    "Formal Shoes": "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=800&q=80",
+    "Sunglasses": "https://images.unsplash.com/photo-1511499767350-a1590fdb2863?w=800&q=80",
+    "Belt": "https://images.unsplash.com/photo-1624222247344-550fb8ec5521?w=800&q=80",
+    "Watch": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800&q=80",
+    "Backpack": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&q=80",
+    "Crossbody Bag": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&q=80",
+    "Duffle Bag": "https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&q=80",
+    "Laptop Bag": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=800&q=80",
+    "Wallet": "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&q=80",
+    "Tie": "https://images.unsplash.com/photo-1589756823851-4144360e221f?w=800&q=80",
+    "Bow Tie": "https://images.unsplash.com/photo-1572946261541-0f707f15239a?w=800&q=80",
+    "Cufflinks": "https://images.unsplash.com/photo-1630154030638-96a29774619d?w=800&q=80",
+    "Handkerchief": "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&q=80",
+    "Rain Boots": "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=800&q=80",
+    "Ski Jacket": "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80",
+    "Winter Coat": "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80",
+    "Puffer Jacket": "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80",
+    "Down Jacket": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80",
+    "Graphic T-Shirt": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+    "Ripped Jeans": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
+    "Cargo Pants": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80",
+    "Denim Jacket": "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=800&q=80",
+    "Faux Fur Coat": "https://images.unsplash.com/photo-1517441581617-12444e8ce930?w=800&q=80",
+    "Camouflage Jacket": "https://images.unsplash.com/photo-1622445272461-c6580cab8755?w=800&q=80",
+    "Oversized Hoodie": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
+    "Zipper Hoodie": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
+    "Half Sleeve Shirt": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+    "Long Sleeve T-Shirt": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80",
+    "Linen Shirt": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
+    "Khaki Pants": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80",
+    "Joggers": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
+    "Lounge Wear": "https://images.unsplash.com/photo-1590611380053-da6447011f45?w=800&q=80",
+    "Sleep Shorts": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80",
+    "Sport Shorts": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80",
+    "Baseball Cap": "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&q=80",
+    "Visor Hat": "https://images.unsplash.com/photo-1521369909029-2afed882baee?w=800&q=80",
+    "Fedora Hat": "https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?w=800&q=80",
+    "Bucket Hat": "https://images.unsplash.com/photo-1597040610200-057482813636?w=800&q=80",
+    "Custom Jersey": "https://images.unsplash.com/photo-1580087444194-03552a41d082?w=800&q=80",
+    "Team Tracksuit": "https://images.unsplash.com/photo-1483721310020-03333e577078?w=800&q=80",
+    "Warm Gloves": "https://images.unsplash.com/photo-1590483734724-38813735741f?w=800&q=80",
+    "Touchscreen Gloves": "https://images.unsplash.com/photo-1590483734724-38813735741f?w=800&q=80",
+    "Waterproof Jacket": "https://images.unsplash.com/photo-1559551409-dadc959f76b8?w=800&q=80",
+    "Cycling Shorts": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80",
+    "Hiking Boots": "https://images.unsplash.com/photo-1520639889410-1eb419ef5162?w=800&q=80",
+    "Trail Shoes": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&q=80",
+    "Dress Pants": "https://images.unsplash.com/photo-1594932224828-b4b0573fe2f8?w=800&q=80",
+    "Office Shirt": "https://images.unsplash.com/photo-1598033129183-c4f50c7176c8?w=800&q=80",
+    "Softshell Jacket": "https://images.unsplash.com/photo-1622445272461-c6580cab8755?w=800&q=80",
+    "Winter Leggings": "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&q=80",
+    "Fashion Hoodie": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80"
+  };
+
   return rawList.map((item, index) => {
     const name = item.name;
     const lowerName = name.toLowerCase();
     let category: 'Men' | 'Women' | 'Kids' = 'Men';
-    let image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80"; // Default T-shirt
 
-    // Category Identification
     if (['skirt', 'leggings', 'bra', 'yoga', 'jeggings', 'shawl', 'romper', 'bathrobe', 'nightwear'].some(k => lowerName.includes(k))) {
       category = 'Women';
     }
 
-    // High Accuracy Image Mapping
-    if (lowerName === "t-shirt") image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80";
-    else if (lowerName.includes("polo")) image = "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&q=80";
-    else if (lowerName.includes("dress shirt") || lowerName.includes("office shirt")) image = "https://images.unsplash.com/photo-1598033129183-c4f50c7176c8?w=800&q=80";
-    else if (lowerName.includes("tank top") || lowerName.includes("workout top")) image = "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80";
-    else if (lowerName.includes("hoodie")) image = "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80";
-    else if (lowerName.includes("sweater") || lowerName.includes("cardigan")) image = "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80";
-    else if (lowerName === "leather jacket") image = "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&q=80";
-    else if (lowerName.includes("trench coat")) image = "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&q=80";
-    else if (lowerName.includes("blazer")) image = "https://images.unsplash.com/photo-1594932224828-b4b0573fe2f8?w=800&q=80";
-    else if (lowerName.includes("bomber")) image = "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&q=80";
-    else if (lowerName.includes("denim jacket")) image = "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=800&q=80";
-    else if (lowerName.includes("puffer") || lowerName.includes("down jacket")) image = "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80";
-    else if (lowerName.includes("tracksuit") || lowerName.includes("jersey")) image = "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&q=80";
-    else if (lowerName.includes("jeans")) image = "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&q=80";
-    else if (lowerName.includes("shorts")) image = "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80";
-    else if (lowerName.includes("sweatpants") || lowerName.includes("joggers")) image = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
-    else if (lowerName === "sneakers" || lowerName.includes("running")) image = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80";
-    else if (lowerName.includes("boots")) image = "https://images.unsplash.com/photo-1520639889410-1eb419ef5162?w=800&q=80";
-    else if (lowerName.includes("formal shoes") || lowerName.includes("loafers")) image = "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&q=80";
-    else if (lowerName.includes("sandals") || lowerName.includes("flip flops")) image = "https://images.unsplash.com/photo-1562273103-91b74032d164?w=800&q=80";
-    else if (lowerName.includes("cap") || lowerName.includes("hat")) image = "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&q=80";
-    else if (lowerName.includes("beanie")) image = "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=800&q=80";
-    else if (lowerName.includes("backpack") || lowerName.includes("bag")) image = "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&q=80";
-    else if (lowerName.includes("watch")) image = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800&q=80";
-    else if (lowerName.includes("sunglasses")) image = "https://images.unsplash.com/photo-1511499767350-a1590fdb2863?w=800&q=80";
-    else if (lowerName.includes("wallet") || lowerName.includes("belt")) image = "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&q=80";
-
-    // "PROTEX" Logic: Apply branding to protective/technical items
+    const image = IMAGE_MAP[name] || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80";
     const isProtex = lowerName.includes("jacket") || lowerName.includes("coat") || lowerName.includes("boots") || lowerName.includes("waterproof") || lowerName.includes("ski");
 
     return {
@@ -105,12 +178,12 @@ const generateProducts = (): Product[] => {
       category: category,
       priceUSD: item.price,
       image: image,
-      description: `Premium Salman SKT ${name}. ${isProtex ? 'Featuring PROTEX weather-protection technology.' : 'Ultra-breathable premium fabric.'}`,
+      description: `Official Sialkot Shop ${name} Z collection. ${isProtex ? 'Engineered with PROTEX weather-resistance technology.' : 'Crafted from premium sustainable materials.'}`,
       sizes: category === 'Men' || category === 'Women' ? ["S", "M", "L", "XL", "XXL"] : ["US 1Y", "US 2Y", "US 3Y"],
-      rating: parseFloat((4.5 + (Math.random() * 0.4)).toFixed(1)), // Fix precision
-      reviews: Math.floor(Math.random() * 500) + 10,
-      isProtex: isProtex // Custom flag for UI badge
-    } as any;
+      rating: parseFloat((4.6 + (Math.random() * 0.3)).toFixed(1)),
+      reviews: Math.floor(Math.random() * 450) + 50,
+      isProtex: isProtex
+    };
   });
 };
 
@@ -121,16 +194,16 @@ export const PRODUCTS: Product[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "Top 5 Styles of 2024",
-    summary: "A breakdown of the best-selling items in America this year and why they are so popular.",
-    date: "Oct 12, 2024",
+    title: "Mastering the Layered Look",
+    summary: "Discover how to combine our PROTEX jackets with standard apparel for the ultimate versatile outfit.",
+    date: "Dec 12, 2024",
     image: "https://images.unsplash.com/photo-1607522370275-f14bc3a5d288?w=800&q=80"
   },
   {
     id: 2,
-    title: "How to Style Canvas High-Tops",
-    summary: "From dresses to denim, learn how to pair your classic canvas kicks with any outfit.",
-    date: "Sep 28, 2024",
-    image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=800&q=80"
+    title: "The Science of PROTEX Fabrics",
+    summary: "A deep dive into the technology behind our weather-resistant collection and why it matters for Sialkot's fashion.",
+    date: "Nov 28, 2024",
+    image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
   }
 ];
