@@ -8,6 +8,7 @@ export interface Product {
   sizes: string[];
   rating: number;
   reviews: number;
+  isProtex?: boolean; // New flag for premium protective items
 }
 
 export interface CartItem extends Product {

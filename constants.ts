@@ -33,7 +33,6 @@ export const TRANSLATIONS: Translations = {
   smartPricing: { en: 'Smart Pricing', ur: 'اسمارٹ قیمت' },
 };
 
-// Helper to generate IDs and assign images/categories for the 100 items
 const generateProducts = (): Product[] => {
   const rawList = [
     { name: "T-Shirt", price: 25 }, { name: "Hoodie", price: 40 }, { name: "Jersey", price: 45 }, { name: "Jacket", price: 60 }, { name: "Tracksuit", price: 70 },
@@ -62,66 +61,68 @@ const generateProducts = (): Product[] => {
     const name = item.name;
     const lowerName = name.toLowerCase();
     let category: 'Men' | 'Women' | 'Kids' = 'Men';
-    let image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80"; // Default shirt
+    let image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80"; // Default T-shirt
 
-    // Category Logic
-    if (['skirt', 'leggings', 'bra', 'yoga', 'jeggings', 'dress', 'shawl', 'romper'].some(k => lowerName.includes(k))) {
+    // Category Identification
+    if (['skirt', 'leggings', 'bra', 'yoga', 'jeggings', 'shawl', 'romper', 'bathrobe', 'nightwear'].some(k => lowerName.includes(k))) {
       category = 'Women';
-    } else if (['little', 'junior', 'kids', 'baby'].some(k => lowerName.includes(k))) {
-      category = 'Kids';
     }
 
-    // Image Logic based on keywords
-    if (lowerName.includes('hoodie') || lowerName.includes('sweater') || lowerName.includes('cardigan')) {
-      image = "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80";
-    } else if (lowerName.includes('jacket') || lowerName.includes('coat') || lowerName.includes('windbreaker') || lowerName.includes('blazer')) {
-      image = "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&q=80";
-    } else if (lowerName.includes('shoe') || lowerName.includes('sneaker') || lowerName.includes('boot') || lowerName.includes('loafer') || lowerName.includes('sandal')) {
-      image = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80";
-    } else if (lowerName.includes('jeans') || lowerName.includes('pants') || lowerName.includes('shorts') || lowerName.includes('joggers')) {
-      image = "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&q=80";
-    } else if (lowerName.includes('cap') || lowerName.includes('hat') || lowerName.includes('beanie')) {
-      image = "https://images.unsplash.com/photo-1534215754734-18e55d13e346?w=800&q=80";
-    } else if (lowerName.includes('bag') || lowerName.includes('backpack') || lowerName.includes('wallet')) {
-      image = "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&q=80";
-    } else if (lowerName.includes('watch')) {
-      image = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800&q=80";
-    }
+    // High Accuracy Image Mapping
+    if (lowerName === "t-shirt") image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80";
+    else if (lowerName.includes("polo")) image = "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&q=80";
+    else if (lowerName.includes("dress shirt") || lowerName.includes("office shirt")) image = "https://images.unsplash.com/photo-1598033129183-c4f50c7176c8?w=800&q=80";
+    else if (lowerName.includes("tank top") || lowerName.includes("workout top")) image = "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80";
+    else if (lowerName.includes("hoodie")) image = "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80";
+    else if (lowerName.includes("sweater") || lowerName.includes("cardigan")) image = "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80";
+    else if (lowerName === "leather jacket") image = "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&q=80";
+    else if (lowerName.includes("trench coat")) image = "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&q=80";
+    else if (lowerName.includes("blazer")) image = "https://images.unsplash.com/photo-1594932224828-b4b0573fe2f8?w=800&q=80";
+    else if (lowerName.includes("bomber")) image = "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&q=80";
+    else if (lowerName.includes("denim jacket")) image = "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=800&q=80";
+    else if (lowerName.includes("puffer") || lowerName.includes("down jacket")) image = "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80";
+    else if (lowerName.includes("tracksuit") || lowerName.includes("jersey")) image = "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&q=80";
+    else if (lowerName.includes("jeans")) image = "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&q=80";
+    else if (lowerName.includes("shorts")) image = "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=800&q=80";
+    else if (lowerName.includes("sweatpants") || lowerName.includes("joggers")) image = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
+    else if (lowerName === "sneakers" || lowerName.includes("running")) image = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80";
+    else if (lowerName.includes("boots")) image = "https://images.unsplash.com/photo-1520639889410-1eb419ef5162?w=800&q=80";
+    else if (lowerName.includes("formal shoes") || lowerName.includes("loafers")) image = "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=800&q=80";
+    else if (lowerName.includes("sandals") || lowerName.includes("flip flops")) image = "https://images.unsplash.com/photo-1562273103-91b74032d164?w=800&q=80";
+    else if (lowerName.includes("cap") || lowerName.includes("hat")) image = "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&q=80";
+    else if (lowerName.includes("beanie")) image = "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=800&q=80";
+    else if (lowerName.includes("backpack") || lowerName.includes("bag")) image = "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&q=80";
+    else if (lowerName.includes("watch")) image = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800&q=80";
+    else if (lowerName.includes("sunglasses")) image = "https://images.unsplash.com/photo-1511499767350-a1590fdb2863?w=800&q=80";
+    else if (lowerName.includes("wallet") || lowerName.includes("belt")) image = "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&q=80";
+
+    // "PROTEX" Logic: Apply branding to protective/technical items
+    const isProtex = lowerName.includes("jacket") || lowerName.includes("coat") || lowerName.includes("boots") || lowerName.includes("waterproof") || lowerName.includes("ski");
 
     return {
       id: 1000 + index,
-      name: name,
+      name: `${name} Z`,
       category: category,
       priceUSD: item.price,
       image: image,
-      description: `Premium quality ${name} from our latest Salman SKT collection. Built for comfort and style.`,
+      description: `Premium Salman SKT ${name}. ${isProtex ? 'Featuring PROTEX weather-protection technology.' : 'Ultra-breathable premium fabric.'}`,
       sizes: category === 'Men' || category === 'Women' ? ["S", "M", "L", "XL", "XXL"] : ["US 1Y", "US 2Y", "US 3Y"],
-      rating: 4.5 + (Math.random() * 0.5),
-      reviews: Math.floor(Math.random() * 500) + 10
-    };
+      rating: parseFloat((4.5 + (Math.random() * 0.4)).toFixed(1)), // Fix precision
+      reviews: Math.floor(Math.random() * 500) + 10,
+      isProtex: isProtex // Custom flag for UI badge
+    } as any;
   });
 };
 
 export const PRODUCTS: Product[] = [
-  {
-    id: 201,
-    name: "MrBeast Signature Blue Hoodie",
-    category: "Men",
-    priceUSD: 30.00,
-    image: "https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?w=800&q=80",
-    description: "From the Beast Philanthropy Collection. Premium cotton blend blue hoodie featuring the iconic panther logo. 100% of profits go to charity.",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-    rating: 5.0,
-    reviews: 50000
-  },
   ...generateProducts()
 ];
 
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "Top 5 Sneakers of 2024",
-    summary: "A breakdown of the best-selling shoes in America this year and why they are so popular.",
+    title: "Top 5 Styles of 2024",
+    summary: "A breakdown of the best-selling items in America this year and why they are so popular.",
     date: "Oct 12, 2024",
     image: "https://images.unsplash.com/photo-1607522370275-f14bc3a5d288?w=800&q=80"
   },
