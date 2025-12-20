@@ -10,7 +10,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { convertPrice, addToCart, t } = useAppContext();
   
-  const is3DItem = product.description.toLowerCase().includes('3d');
+  const is3DItem = product.description.toLowerCase().includes('3d sublimation');
 
   return (
     <div className="group relative flex flex-col h-full bg-white">
@@ -20,7 +20,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           src={product.image} 
           alt={product.name} 
           loading="lazy"
-          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
         />
         
         {/* Overlay Actions */}
@@ -54,7 +54,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
             {product.isProtex && (
                 <div className="bg-black text-accent text-[9px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter shadow-sm border border-accent/30 flex items-center gap-1 w-fit">
-                    <ShieldCheck size={10} /> PROTEX PREMIUM
+                    <ShieldCheck size={10} /> PROTEX ELITE
                 </div>
             )}
             {product.rating >= 4.9 && (
