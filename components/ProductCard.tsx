@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, ShoppingCart, Eye, ShieldCheck } from 'lucide-react';
+import { Star, ShoppingCart, Eye, ShieldCheck, Box } from 'lucide-react';
 import { Product } from '../types';
 import { useAppContext } from '../context/AppContext';
 
@@ -9,6 +9,8 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { convertPrice, addToCart, t } = useAppContext();
+  
+  const is3DItem = product.description.toLowerCase().includes('3d');
 
   return (
     <div className="group relative flex flex-col h-full bg-white">
@@ -45,14 +47,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.rating >= 4.8 && (
-                <div className="bg-accent text-black text-[9px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter shadow-sm w-fit">
-                    BEST SELLER
+            {is3DItem && (
+                <div className="bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter shadow-sm w-fit flex items-center gap-1">
+                    <Box size={10} /> 3D PRINTED
                 </div>
             )}
             {product.isProtex && (
                 <div className="bg-black text-accent text-[9px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter shadow-sm border border-accent/30 flex items-center gap-1 w-fit">
                     <ShieldCheck size={10} /> PROTEX PREMIUM
+                </div>
+            )}
+            {product.rating >= 4.9 && (
+                <div className="bg-accent text-black text-[9px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter shadow-sm w-fit">
+                    BEST SELLER
                 </div>
             )}
         </div>

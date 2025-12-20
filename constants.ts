@@ -15,9 +15,9 @@ export const TRANSLATIONS: Translations = {
   women: { en: 'Women', ur: 'خواتین' },
   kids: { en: 'Kids', ur: 'بچے' },
   buyNow: { en: 'Shop Best Sellers', ur: 'بہترین اشیاء خریدیں' },
-  heroTitle: { en: 'Premium Fashion Z', ur: 'پریمیم فیشن زیڈ' },
-  heroSubtitle: { en: 'High-quality apparel, jackets, and accessories. Experience the PROTEX difference.', ur: 'اعلیٰ معیار کے ملبوسات، جیکٹس اور لوازمات۔ پروٹیکس کے فرق کا تجربہ کریں۔' },
-  dealOfTheDay: { en: 'Catalog Masterlist', ur: 'کیٹلاگ کی فہرست' },
+  heroTitle: { en: 'Sialkot Shop 3D Z', ur: 'سیالکوٹ شاپ تھری ڈی زیڈ' },
+  heroSubtitle: { en: 'High-quality 3D printed apparel and PROTEX premium protective gear.', ur: 'اعلیٰ معیار کے 3D پرنٹ شدہ ملبوسات اور PROTEX پریمیم حفاظتی گیئر۔' },
+  dealOfTheDay: { en: 'Top Trending', ur: 'ٹاپ ٹرینڈنگ' },
   addToCart: { en: 'Add to Cart', ur: 'ٹوکری میں شامل کریں' },
   reviews: { en: 'Customer Reviews', ur: 'کسٹمر کے جائزے' },
   emptyCart: { en: 'Your cart is empty', ur: 'آپ کی ٹوکری خالی ہے' },
@@ -25,10 +25,10 @@ export const TRANSLATIONS: Translations = {
   placeOrder: { en: 'Place Order on WhatsApp', ur: 'واٹس ایپ پر آرڈر کریں' },
   contactUs: { en: 'Contact Us', ur: 'ہم سے رابطہ کریں' },
   sendMessage: { en: 'Send Message', ur: 'پیغام بھیجیں' },
-  aiStylist: { en: 'Fashion Expert Z', ur: 'فیشن ایکسپرٹ زیڈ' },
-  stylistIntro: { en: 'Hi! I am your Sialkot Shop expert. Looking for a jacket or a specific fit? Ask me!', ur: 'ہائے! میں آپ کا سیالکوٹ شاپ ایکسپرٹ ہوں۔ جیکٹ یا مخصوص فٹ تلاش کر رہے ہیں؟ مجھ سے پوچھیں!' },
+  aiStylist: { en: 'AI Fashion Expert', ur: 'AI فیشن ایکسپرٹ' },
+  stylistIntro: { en: 'Hi! I am your 3D apparel specialist. Ask me about custom fits or PROTEX gear.', ur: 'ہائے! میں آپ کا 3D ملبوسات کا ماہر ہوں۔ اپنی مرضی کے مطابق فٹ یا پروٹیکس گیئر کے بارے میں مجھ سے پوچھیں۔' },
   typing: { en: 'Expert is typing...', ur: 'ماہر لکھ رہا ہے...' },
-  footerText: { en: '© 2024 Sialkot Shop. All rights reserved.', ur: '© 2024 سیالکوٹ شاپ۔ جملہ حقوق محفوظ ہیں۔' },
+  footerText: { en: '© 2024 Salman SKT. All rights reserved.', ur: '© 2024 سلمان سیالکوٹ۔ جملہ حقوق محفوظ ہیں۔' },
   subscribe: { en: 'Subscribe', ur: 'سبسکرائب' },
   smartPricing: { en: 'Smart Pricing', ur: 'اسمارٹ قیمت' },
 };
@@ -91,7 +91,7 @@ const generateProducts = (): Product[] => {
     "Jeggings": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=800&q=80",
     "Yoga Pants": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80",
     "Sports Bra": "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&q=80",
-    "Workout Top": "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&q=80",
+    "Workout Top": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
     "Compression Shirt": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
     "Base Layer": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80",
     "Thermal Wear": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80",
@@ -125,15 +125,15 @@ const generateProducts = (): Product[] => {
     "Winter Coat": "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80",
     "Puffer Jacket": "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80",
     "Down Jacket": "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80",
-    "Graphic T-Shirt": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+    "Graphic T-Shirt": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&q=80",
     "Ripped Jeans": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&q=80",
     "Cargo Pants": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80",
-    "Denim Jacket": "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=800&q=80",
+    "Denim Jacket": "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=800&q=80",
     "Faux Fur Coat": "https://images.unsplash.com/photo-1517441581617-12444e8ce930?w=800&q=80",
-    "Camouflage Jacket": "https://images.unsplash.com/photo-1622445272461-c6580cab8755?w=800&q=80",
+    "Camouflage Jacket": "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?w=800&q=80",
     "Oversized Hoodie": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
-    "Zipper Hoodie": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
-    "Half Sleeve Shirt": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+    "Zipper Hoodie": "https://images.unsplash.com/photo-1513373319109-eb154073eb0b?w=800&q=80",
+    "Half Sleeve Shirt": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
     "Long Sleeve T-Shirt": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80",
     "Linen Shirt": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&q=80",
     "Khaki Pants": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&q=80",
@@ -167,10 +167,13 @@ const generateProducts = (): Product[] => {
 
     if (['skirt', 'leggings', 'bra', 'yoga', 'jeggings', 'shawl', 'romper', 'bathrobe', 'nightwear'].some(k => lowerName.includes(k))) {
       category = 'Women';
+    } else if (['kids', 'junior', 'little', 'youth'].some(k => lowerName.includes(k))) {
+      category = 'Kids';
     }
 
     const image = IMAGE_MAP[name] || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80";
     const isProtex = lowerName.includes("jacket") || lowerName.includes("coat") || lowerName.includes("boots") || lowerName.includes("waterproof") || lowerName.includes("ski");
+    const is3D = lowerName.includes("t-shirt") || lowerName.includes("jersey") || lowerName.includes("hoodie") || lowerName.includes("tracksuit") || lowerName.includes("polo");
 
     return {
       id: 1000 + index,
@@ -178,10 +181,10 @@ const generateProducts = (): Product[] => {
       category: category,
       priceUSD: item.price,
       image: image,
-      description: `Official Sialkot Shop ${name} Z collection. ${isProtex ? 'Engineered with PROTEX weather-resistance technology.' : 'Crafted from premium sustainable materials.'}`,
+      description: `Premium Salman SKT ${name} Z collection. ${is3D ? 'Features High-Density 3D Printed textures for a lifelike finish.' : ''} ${isProtex ? 'Engineered with PROTEX weather-resistance for maximum durability.' : 'Crafted from sustainable premium fabrics.'}`,
       sizes: category === 'Men' || category === 'Women' ? ["S", "M", "L", "XL", "XXL"] : ["US 1Y", "US 2Y", "US 3Y"],
-      rating: parseFloat((4.6 + (Math.random() * 0.3)).toFixed(1)),
-      reviews: Math.floor(Math.random() * 450) + 50,
+      rating: parseFloat((4.7 + (Math.random() * 0.3)).toFixed(1)),
+      reviews: Math.floor(Math.random() * 950) + 150,
       isProtex: isProtex
     };
   });
@@ -194,16 +197,16 @@ export const PRODUCTS: Product[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "Mastering the Layered Look",
-    summary: "Discover how to combine our PROTEX jackets with standard apparel for the ultimate versatile outfit.",
-    date: "Dec 12, 2024",
-    image: "https://images.unsplash.com/photo-1607522370275-f14bc3a5d288?w=800&q=80"
+    title: "The Art of 3D Printing in Fashion",
+    summary: "Exploring how Sialkot Shop utilizes advanced 3D sublimation to create the world's most detailed athletic apparel.",
+    date: "Dec 15, 2024",
+    image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
   },
   {
     id: 2,
-    title: "The Science of PROTEX Fabrics",
-    summary: "A deep dive into the technology behind our weather-resistant collection and why it matters for Sialkot's fashion.",
-    date: "Nov 28, 2024",
-    image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
+    title: "PROTEX: Shielding You From The Elements",
+    summary: "A deep dive into the multi-layer technology behind our weather-resistant PROTEX collection.",
+    date: "Nov 30, 2024",
+    image: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80"
   }
 ];
