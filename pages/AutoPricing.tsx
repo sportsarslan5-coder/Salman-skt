@@ -62,14 +62,14 @@ const AutoPricing: React.FC = () => {
   }, [searchTerm]);
 
   const handleProductSelect = (item: {name: string, price: number}) => {
-    setEditableName(`${item.name} Z`);
+    setEditableName(item.name);
     setCurrentCategory(item.name);
     setCurrentPrice(item.price);
     updateSizesForCategory(item.name);
     
     if (!result) {
         setResult({
-            productName: `${item.name} Z`,
+            productName: item.name,
             category: item.name,
             reasoning: "Selected from official catalog.",
             dominantColors: ["Standard"],
@@ -113,7 +113,6 @@ const AutoPricing: React.FC = () => {
   useEffect(() => {
     if (result && !editableName.includes(result.productName)) {
         let finalName = result.productName || "Custom Item";
-        if (!finalName.endsWith(" Z")) finalName = `${finalName} Z`;
         setEditableName(finalName);
         
         const normalizedCat = normalizeCategory(result.category);
@@ -154,7 +153,7 @@ const AutoPricing: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedImage && !result) return;
-    const finalName = editableName.trim() || `${currentCategory} Z`;
+    const finalName = editableName.trim() || currentCategory;
     const customProduct: Product = {
         id: Date.now(),
         name: finalName,
@@ -182,7 +181,7 @@ const AutoPricing: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-black text-primary mb-4 uppercase tracking-tighter">
-            Smart Pricing <span className="text-accent">Z</span>
+            Smart Pricing
           </h1>
           <p className="text-gray-500 max-w-xl mx-auto">Select a product or upload a photo to get the official premium price.</p>
         </div>
@@ -236,7 +235,7 @@ const AutoPricing: React.FC = () => {
                           <input 
                             value={editableName}
                             onChange={(e) => setEditableName(e.target.value)}
-                            placeholder="E.g. T-Shirt Z"
+                            placeholder="E.g. T-Shirt"
                             className="w-full bg-transparent font-bold focus:outline-none"
                           />
                       </div>
