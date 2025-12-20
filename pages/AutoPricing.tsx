@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, Image as ImageIcon, ShoppingCart, Minus, Plus, Search, ArrowRight, HelpCircle, CheckCircle2, Edit3, ChevronDown, Filter } from 'lucide-react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, ShoppingCart, Minus, Plus, Search, CheckCircle2, Edit3, ChevronDown, Filter } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
-import { WHATSAPP_NUMBER, EXCHANGE_RATE_PKR } from '../constants';
+import { WHATSAPP_NUMBER } from '../constants';
 import { Product } from '../types';
 
 const AutoPricing: React.FC = () => {
-  const { convertPrice, addToCart, navigate, currency } = useAppContext();
+  const { convertPrice, addToCart, navigate } = useAppContext();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
@@ -15,9 +15,7 @@ const AutoPricing: React.FC = () => {
   // Data State
   const [editableName, setEditableName] = useState('');
   const [currentCategory, setCurrentCategory] = useState('');
-  const [currentColors, setCurrentColors] = useState<string[]>([]);
   const [currentPrice, setCurrentPrice] = useState(0);
-  const [isManualPriceMode, setIsManualPriceMode] = useState(false);
 
   // Order Configuration State
   const [quantity, setQuantity] = useState(1);
@@ -67,10 +65,8 @@ const AutoPricing: React.FC = () => {
     setEditableName(`${item.name} Z`);
     setCurrentCategory(item.name);
     setCurrentPrice(item.price);
-    setIsManualPriceMode(false);
     updateSizesForCategory(item.name);
     
-    // Simulate a successful analysis result if we click a name
     if (!result) {
         setResult({
             productName: `${item.name} Z`,
@@ -93,10 +89,6 @@ const AutoPricing: React.FC = () => {
       for (const key of keys) {
           if (key.toLowerCase() === lowerInput) return key;
       }
-      const sortedKeys = keys.sort((a, b) => b.length - a.length);
-      for (const key of sortedKeys) {
-          if (lowerInput.includes(key.toLowerCase())) return key;
-      }
       return 'Unknown';
   };
 
@@ -113,10 +105,6 @@ const AutoPricing: React.FC = () => {
             sizes = ['One Size'];
             defaultSize = 'One Size';
         }
-        else if (['glove', 'sock'].some(k => lowerCat.includes(k))) {
-             sizes = ['S', 'M', 'L'];
-             defaultSize = 'M';
-        }
         
         setAvailableSizes(sizes);
         setSelectedSize(defaultSize);
@@ -131,7 +119,6 @@ const AutoPricing: React.FC = () => {
         const normalizedCat = normalizeCategory(result.category);
         const displayCategory = normalizedCat === 'Unknown' ? result.category : normalizedCat;
         setCurrentCategory(displayCategory);
-        setCurrentColors(result.dominantColors || []);
         
         let finalPrice = 0;
         if (normalizedCat !== 'Unknown' && SHOP_PRICES[normalizedCat]) {
@@ -141,17 +128,12 @@ const AutoPricing: React.FC = () => {
             finalPrice = Math.ceil(finalPrice / 5) * 5;
         }
         setCurrentPrice(finalPrice);
-        setIsManualPriceMode(false);
     }
   }, [result]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    processFile(file);
-  };
-
-  const processFile = (file: File) => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result as string;
@@ -198,30 +180,26 @@ const AutoPricing: React.FC = () => {
   return (
     <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-black text-primary mb-4 uppercase tracking-tighter">
             Smart Pricing <span className="text-accent">Z</span>
           </h1>
-          <p className="text-gray-500 max-w-xl mx-auto">Pick a product or upload a photo to get the official price instantly.</p>
+          <p className="text-gray-500 max-w-xl mx-auto">Select a product or upload a photo to get the official premium price.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* LEFT: Quick Search Catalog (4/12) */}
           <div className="lg:col-span-4 bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col h-[700px]">
               <div className="p-6 bg-black text-white">
                   <div className="flex items-center gap-2 mb-4">
                       <Filter size={18} className="text-accent" />
-                      <h3 className="font-bold uppercase tracking-wider text-sm">Quick Pick Catalog</h3>
+                      <h3 className="font-bold uppercase tracking-wider text-sm">Quick Catalog</h3>
                   </div>
                   <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                       <input 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search 100+ items..."
+                        placeholder="Search items..."
                         className="w-full bg-white/10 border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-accent outline-none text-white placeholder:text-gray-500"
                       />
                   </div>
@@ -242,26 +220,17 @@ const AutoPricing: React.FC = () => {
                                   <span className="font-bold text-sm">{item.name}</span>
                                   <span className="text-[10px] text-gray-400 uppercase tracking-widest">{idx + 1} of 100</span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                  <span className="text-xs font-black text-gray-400 group-hover:text-black transition-colors">${item.price}</span>
-                                  <ChevronDown size={14} className="text-gray-300 -rotate-90" />
-                              </div>
+                              <ChevronDown size={14} className="text-gray-300 -rotate-90" />
                           </button>
                       ))}
-                      {filteredCatalog.length === 0 && (
-                          <div className="p-8 text-center text-gray-400 italic text-sm">No items match your search.</div>
-                      )}
                   </div>
               </div>
           </div>
 
-          {/* RIGHT: Analysis & Preview (8/12) */}
           <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Upload Section */}
               <div className="space-y-6">
                   <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
-                      <label className="block text-xs font-bold uppercase text-gray-400 mb-3">Selected Item Name</label>
+                      <label className="block text-xs font-bold uppercase text-gray-400 mb-3">Product Name</label>
                       <div className="flex items-center gap-2 bg-gray-50 border-2 border-gray-100 p-4 rounded-xl">
                           <Edit3 size={18} className="text-gray-400" />
                           <input 
@@ -290,10 +259,6 @@ const AutoPricing: React.FC = () => {
                               <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
                                   <Camera size={40} />
                               </div>
-                              <div>
-                                  <p className="font-bold text-lg">Add Product Photo</p>
-                                  <p className="text-xs text-gray-400">Required for official verification</p>
-                              </div>
                               <button onClick={() => fileInputRef.current?.click()} className="bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-accent hover:text-black transition-all shadow-lg">Upload Image</button>
                           </div>
                       )}
@@ -301,36 +266,25 @@ const AutoPricing: React.FC = () => {
                   </div>
               </div>
 
-              {/* Price & Action Section */}
               <div className="flex flex-col h-full">
                   {result || currentPrice > 0 ? (
                       <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 flex flex-col h-full animate-fade-in-up">
                           <div className="flex-1 space-y-8">
                               <div className="bg-black text-white p-8 rounded-3xl text-center relative overflow-hidden">
-                                  <div className="absolute top-0 right-0 w-24 h-24 bg-accent rounded-bl-full opacity-10"></div>
                                   <div className="relative z-10">
                                       <p className="text-accent text-[10px] font-bold uppercase tracking-widest mb-1">Official Catalog Price</p>
                                       <h2 className="text-6xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
-                                      <div className="mt-4 inline-flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full text-xs font-bold">
-                                          <CheckCircle2 size={14} className="text-green-400" />
-                                          <span>Verified Unit: ${currentPrice}</span>
-                                      </div>
                                   </div>
                               </div>
-
                               <div className="space-y-4">
-                                  <div>
-                                      <label className="block text-[10px] font-bold uppercase text-gray-400 mb-3 tracking-widest">Configuration</label>
-                                      <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                          <span className="font-bold text-sm">Size: {selectedSize}</span>
-                                          <div className="flex gap-1">
-                                              {availableSizes.slice(0, 3).map(s => (
-                                                  <button key={s} onClick={() => setSelectedSize(s)} className={`w-8 h-8 rounded-lg text-[10px] font-bold border transition-all ${selectedSize === s ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-black'}`}>{s}</button>
-                                              ))}
-                                          </div>
+                                  <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                      <span className="font-bold text-sm">Size: {selectedSize}</span>
+                                      <div className="flex gap-1">
+                                          {availableSizes.slice(0, 3).map(s => (
+                                              <button key={s} onClick={() => setSelectedSize(s)} className={`w-8 h-8 rounded-lg text-[10px] font-bold border transition-all ${selectedSize === s ? 'bg-black text-white border-black' : 'bg-white border-gray-200'}`}>{s}</button>
+                                          ))}
                                       </div>
                                   </div>
-
                                   <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100">
                                       <span className="font-bold text-sm">Quantity</span>
                                       <div className="flex items-center gap-4 bg-white px-3 py-1.5 rounded-xl border border-gray-100">
@@ -341,26 +295,19 @@ const AutoPricing: React.FC = () => {
                                   </div>
                               </div>
                           </div>
-
                           <div className="space-y-3 mt-8">
                               <button onClick={handleAddToCart} className="w-full bg-black text-white py-4 rounded-2xl font-bold text-lg hover:bg-accent hover:text-black transition-all shadow-xl flex items-center justify-center gap-2">
                                   <ShoppingCart size={20} /> Checkout Now
-                              </button>
-                              <button onClick={handleWhatsApp} className="w-full bg-green-50 text-green-600 py-3 rounded-2xl font-bold text-sm hover:bg-green-100 transition-all flex items-center justify-center gap-2 border border-green-200">
-                                  <MessageCircle size={18} /> Confirm on WhatsApp
                               </button>
                           </div>
                       </div>
                   ) : (
                       <div className="bg-white rounded-3xl p-12 shadow-sm border-2 border-dashed border-gray-100 h-full flex flex-col items-center justify-center text-center">
-                          <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                              <Sparkles size={30} className="text-gray-200" />
-                          </div>
-                          <p className="text-gray-400 font-medium max-w-[200px]">Select a product from the list to see pricing</p>
+                          <Sparkles size={30} className="text-gray-200 mb-4" />
+                          <p className="text-gray-400 font-medium">Select a product to view the premium price</p>
                       </div>
                   )}
               </div>
-
           </div>
         </div>
       </div>

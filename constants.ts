@@ -10,13 +10,13 @@ export const TRANSLATIONS: Translations = {
   contact: { en: 'Contact', ur: 'رابطہ کریں' },
   cart: { en: 'Cart', ur: 'ٹوکری' },
   checkout: { en: 'Checkout', ur: 'چیک آؤٹ' },
-  search: { en: 'Search 3D products...', ur: 'مصنوعات تلاش کریں...' },
+  search: { en: 'Search products...', ur: 'مصنوعات تلاش کریں...' },
   men: { en: 'Men', ur: 'مرد' },
   women: { en: 'Women', ur: 'خواتین' },
   kids: { en: 'Kids', ur: 'بچے' },
-  buyNow: { en: 'Shop 3D Collection', ur: '3D کلیکشن خریدیں' },
-  heroTitle: { en: 'Sialkot Shop 3D Z', ur: 'سیالکوٹ شاپ تھری ڈی زیڈ' },
-  heroSubtitle: { en: 'High-definition 3D sublimation apparel and PROTEX premium protective gear.', ur: 'ہائی ڈیفینیشن تھری ڈی سبلیمیشن ملبوسات اور پروٹیکس پریمیم حفاظتی گیئر۔' },
+  buyNow: { en: 'Shop Z Collection', ur: 'زیڈ کلیکشن خریدیں' },
+  heroTitle: { en: 'Sialkot Shop Z', ur: 'سیالکوٹ شاپ زیڈ' },
+  heroSubtitle: { en: 'Premium quality apparel, technical sportswear, and PROTEX protective gear.', ur: 'اعلیٰ معیار کے ملبوسات، تکنیکی اسپورٹس ویئر، اور پروٹیکس حفاظتی گیئر۔' },
   dealOfTheDay: { en: 'Trending Now', ur: 'اب ٹرینڈ ہو رہا ہے' },
   addToCart: { en: 'Add to Cart', ur: 'ٹوکری میں شامل کریں' },
   reviews: { en: 'Customer Reviews', ur: 'کسٹمر کے جائزے' },
@@ -25,8 +25,8 @@ export const TRANSLATIONS: Translations = {
   placeOrder: { en: 'Place Order on WhatsApp', ur: 'واٹس ایپ پر آرڈر کریں' },
   contactUs: { en: 'Contact Us', ur: 'ہم سے رابطہ کریں' },
   sendMessage: { en: 'Send Message', ur: 'پیغام بھیجیں' },
-  aiStylist: { en: '3D Style Expert', ur: '3D اسٹائل ماہر' },
-  stylistIntro: { en: 'Hi! I am your Sialkot Shop expert. Looking for 3D printed jerseys or PROTEX jackets?', ur: 'ہائے! میں آپ کا سیالکوٹ شاپ ایکسپرٹ ہوں۔ کیا آپ 3D جرسی یا پروٹیکس جیکٹ تلاش کر رہے ہیں؟' },
+  aiStylist: { en: 'Style Expert Z', ur: 'اسٹائل ماہر زیڈ' },
+  stylistIntro: { en: 'Hi! I am your Sialkot Shop expert. Looking for premium jerseys or PROTEX jackets?', ur: 'ہائے! میں آپ کا سیالکوٹ شاپ ایکسپرٹ ہوں۔ کیا آپ پریمیم جرسی یا پروٹیکس جیکٹ تلاش کر رہے ہیں؟' },
   typing: { en: 'Expert is typing...', ur: 'ماہر لکھ رہا ہے...' },
   footerText: { en: '© 2024 Salman SKT. All rights reserved.', ur: '© 2024 سلمان سیالکوٹ۔ جملہ حقوق محفوظ ہیں۔' },
   subscribe: { en: 'Subscribe', ur: 'سبسکرائب' },
@@ -149,15 +149,14 @@ const generateProducts = (): Product[] => {
     }
 
     const isProtex = lowerName.includes("jacket") || lowerName.includes("coat") || lowerName.includes("boots") || lowerName.includes("waterproof") || lowerName.includes("ski");
-    const is3D = lowerName.includes("t-shirt") || lowerName.includes("jersey") || lowerName.includes("hoodie") || lowerName.includes("tracksuit") || lowerName.includes("polo");
 
     return {
       id: 1000 + index,
-      name: `${name} 3D Z`,
+      name: `${name} Z`,
       category: category,
       priceUSD: item.price,
       image: item.img,
-      description: `Official Salman SKT ${name} 3D Z collection. ${is3D ? 'Featuring high-definition 3D sublimation textures for a hyper-realistic finish.' : ''} ${isProtex ? 'Equipped with PROTEX elite weather-resistance technology for maximum durability in all conditions.' : 'Crafted from premium, sustainably sourced Sialkot grade materials.'}`,
+      description: `Official Salman SKT ${name} Z collection. ${isProtex ? 'Equipped with PROTEX elite weather-resistance technology for maximum durability in all conditions.' : 'Crafted from premium, sustainably sourced Sialkot grade materials.'}`,
       sizes: category === 'Men' || category === 'Women' ? ["S", "M", "L", "XL", "XXL"] : ["US 1Y", "US 2Y", "US 3Y"],
       rating: parseFloat((4.7 + (Math.random() * 0.3)).toFixed(1)),
       reviews: Math.floor(Math.random() * 950) + 150,
@@ -173,8 +172,8 @@ export const PRODUCTS: Product[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "Revolutionizing 3D Sublimation",
-    summary: "Discover how Sialkot Shop is setting new global standards in high-definition printed apparel.",
+    title: "Sialkot's Premium Manufacturing",
+    summary: "Discover how Sialkot Shop is setting new global standards in high-quality sports and fashion apparel.",
     date: "Dec 18, 2024",
     image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
   },
