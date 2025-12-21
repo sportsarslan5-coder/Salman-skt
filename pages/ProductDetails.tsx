@@ -1,30 +1,28 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Star, ShoppingCart, ArrowLeft, CheckCircle, MessageCircle, Shield, RefreshCcw } from 'lucide-react';
+import { Star, ShoppingCart, MessageCircle, Shield, RefreshCcw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { PRODUCTS, WHATSAPP_NUMBER } from '../constants';
+import { WHATSAPP_NUMBER } from '../constants';
 import ProductCard from '../components/ProductCard';
 
 const ProductDetails: React.FC = () => {
-  const { t, convertPrice, addToCart, navigate, route } = useAppContext();
+  const { t, convertPrice, addToCart, navigate, route, products } = useAppContext();
   
-  // Extract ID from route: /product/:id
   const idStr = route.split('/product/')[1]?.split('?')[0];
   const id = idStr ? Number(idStr) : null;
   
-  const product = PRODUCTS.find(p => p.id === id);
+  const product = products.find(p => p.id === id);
   const [selectedSize, setSelectedSize] = useState<string>('');
 
   const relatedProducts = useMemo(() => {
     if (!product) return [];
-    return PRODUCTS
+    return products
       .filter(p => p.category === product.category && p.id !== product.id)
       .slice(0, 4);
-  }, [product]);
+  }, [product, products]);
 
   useEffect(() => {
     if (product) {
       document.title = `${product.name} | Salman SKT`;
-      // Window scroll is handled in AppContext, but we can ensure it here if needed
     }
   }, [product]);
 
@@ -84,9 +82,8 @@ const ProductDetails: React.FC = () => {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
-            {/* Image Gallery */}
             <div className="space-y-4">
-                <div className="rounded-3xl overflow-hidden bg-gray-100 aspect-square shadow-sm">
+                <div className="rounded-3xl overflow-hidden bg-gray-100 aspect-square shadow-sm border border-gray-100">
                     <img 
                       src={product.image} 
                       alt={product.name} 
@@ -95,7 +92,6 @@ const ProductDetails: React.FC = () => {
                 </div>
             </div>
 
-            {/* Info */}
             <div className="flex flex-col justify-center">
                 <div className="mb-6">
                    <span className="text-accent font-bold uppercase tracking-widest text-xs mb-2 block">{product.category} Series</span>
@@ -167,7 +163,6 @@ const ProductDetails: React.FC = () => {
             </div>
         </div>
 
-        {/* Reviews & Related */}
         <div className="border-t border-gray-100 pt-16">
             <h2 className="text-2xl font-bold mb-10">Customer Reviews <span className="text-gray-400 font-normal text-lg ml-2">({product.reviews})</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">

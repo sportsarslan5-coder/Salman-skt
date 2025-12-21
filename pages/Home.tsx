@@ -1,12 +1,11 @@
 import React from 'react';
 import { ArrowRight, ShieldCheck, Truck, Award, TrendingUp } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
 
 const Home: React.FC = () => {
-  const { t } = useAppContext();
-  const featuredProducts = PRODUCTS.slice(0, 4); // Show 4 products for better grid balance
+  const { t, products } = useAppContext();
+  const featuredProducts = products.slice(0, 4);
 
   return (
     <div className="overflow-x-hidden">
@@ -58,20 +57,17 @@ const Home: React.FC = () => {
           </div>
         </div>
         
-        {/* Scroll Indicator */}
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-white/50 animate-bounce">
            <div className="w-[1px] h-12 bg-gradient-to-b from-accent to-transparent mx-auto"></div>
         </div>
       </div>
 
-      {/* Marquee Brands (Decorative) */}
       <div className="bg-accent py-4 overflow-hidden whitespace-nowrap relative">
         <div className="inline-block animate-marquee text-black font-bold text-lg tracking-widest uppercase">
            • BUY 5 ITEMS GET 1 FREE • Premium Quality • Free Shipping • 30 Day Returns • Secure Payment • 24/7 Support • BUY 5 ITEMS GET 1 FREE • Premium Quality • Free Shipping • 30 Day Returns
         </div>
       </div>
 
-      {/* Categories Section */}
       <div className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 space-y-4 animate-fade-in-up">
@@ -109,9 +105,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Featured Products */}
       <div className="bg-secondary py-24 relative overflow-hidden">
-        {/* Decorative Background Blobs */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
@@ -139,7 +133,6 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Trust Features - Modernized */}
       <div className="py-24 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">

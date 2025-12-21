@@ -1,12 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { PRODUCTS } from '../constants';
 import ProductCard from '../components/ProductCard';
 
 const Shop: React.FC = () => {
-  const { t, route, navigate } = useAppContext();
+  const { t, route, navigate, products } = useAppContext();
   
-  // Extract query params from hash route
   const queryString = route.split('?')[1] || '';
   const searchParams = new URLSearchParams(queryString);
   const initialCategory = searchParams.get('category') || 'All';
@@ -14,9 +12,9 @@ const Shop: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
 
   const filteredProducts = useMemo(() => {
-    if (activeCategory === 'All') return PRODUCTS;
-    return PRODUCTS.filter(p => p.category === activeCategory);
-  }, [activeCategory]);
+    if (activeCategory === 'All') return products;
+    return products.filter(p => p.category === activeCategory);
+  }, [activeCategory, products]);
 
   useEffect(() => {
      const params = new URLSearchParams(route.split('?')[1] || '');

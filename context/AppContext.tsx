@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, CartItem, Language, Currency } from '../types';
 import { TRANSLATIONS, EXCHANGE_RATE_PKR } from '../constants';
+import { dbService } from '../services/dbService';
 
 interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   currency: Currency;
   setCurrency: (curr: Currency) => void;
+  products: Product[];
+  refreshProducts: () => void;
   cart: CartItem[];
   addToCart: (product: Product, size: string, quantity?: number) => void;
   removeFromCart: (id: number, size: string) => void;
@@ -15,7 +18,9 @@ interface AppContextType {
   t: (key: string) => string;
   convertPrice: (priceUSD: number) => string;
   isRTL: boolean;
-  // Custom Router
+  isAdmin: boolean;
+  loginAsAdmin: (pass: string) => boolean;
+  logoutAdmin: () => void;
   route: string;
   navigate: (path: string) => void;
 }
@@ -26,9 +31,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [language, setLanguage] = useState<Language>('en');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isAdmin, setIsAdmin] = useState(sessionStorage.getItem('admin_session') === 'active');
   
-  // Custom Router State (Hash based)
   const [route, setRoute] = useState<string>(window.location.hash.slice(1) || '/');
+
+  useEffect(() => {
+    setProducts(dbService.getProducts());
+  }, []);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -42,6 +52,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const navigate = (path: string) => {
     window.location.hash = path;
+  };
+
+  const refreshProducts = () => {
+    setProducts(dbService.getProducts());
+  };
+
+  const loginAsAdmin = (pass: string) => {
+    // Standard secure-ish check for demo purposes
+    if (pass === 'admin123') {
+      setIsAdmin(true);
+      sessionStorage.setItem('admin_session', 'active');
+      return true;
+    }
+    return false;
+  };
+
+  const logoutAdmin = () => {
+    setIsAdmin(false);
+    sessionStorage.removeItem('admin_session');
+    navigate('/');
   };
 
   const isRTL = language === 'ur';
@@ -87,8 +117,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   return (
     <AppContext.Provider value={{
       language, setLanguage, currency, setCurrency,
+      products, refreshProducts,
       cart, addToCart, removeFromCart, updateQuantity, clearCart,
       t, convertPrice, isRTL,
+      isAdmin, loginAsAdmin, logoutAdmin,
       route, navigate
     }}>
       <div dir={isRTL ? 'rtl' : 'ltr'} className={isRTL ? 'font-urdu' : 'font-sans'}>

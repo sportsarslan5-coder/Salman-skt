@@ -8,7 +8,19 @@ export interface Product {
   sizes: string[];
   rating: number;
   reviews: number;
-  isProtex?: boolean; // New flag for premium protective items
+  isProtex?: boolean;
+}
+
+export interface Order {
+  id: string;
+  customerName: string;
+  phone: string;
+  city: string;
+  address: string;
+  items: { productName: string, price: number, quantity: number, size: string }[];
+  total: number;
+  status: 'Pending' | 'Completed' | 'Cancelled';
+  date: string;
 }
 
 export interface CartItem extends Product {
