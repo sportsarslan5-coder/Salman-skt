@@ -17,7 +17,8 @@ export interface Order {
   phone: string;
   city: string;
   address: string;
-  items: { productName: string, price: number, quantity: number, size: string }[];
+  email: string;
+  items: { productName: string, price: number, quantity: number, size: string, image: string }[];
   total: number;
   status: 'Pending' | 'Completed' | 'Cancelled';
   date: string;

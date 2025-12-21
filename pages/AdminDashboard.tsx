@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Package, ShoppingBag, Plus, Edit, Trash2, X, Check, Save, 
   ChevronRight, Camera, DollarSign, LayoutDashboard, LogOut, Search,
-  AlertCircle, Eye, Box
+  AlertCircle, Eye, Box, MapPin, User, Mail, Phone, Calendar
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { dbService } from '../services/dbService';
@@ -13,6 +13,7 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
   const [orders, setOrders] = useState<Order[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -32,7 +33,7 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     setOrders(dbService.getOrders());
-  }, []);
+  }, [activeTab]);
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -194,15 +195,21 @@ const AdminDashboard: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 font-black">{convertPrice(order.total)}</td>
                         <td className="px-6 py-4">
-                          <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-[10px] font-black uppercase">{order.status}</span>
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                            order.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                            order.status === 'Cancelled' ? 'bg-red-100 text-red-700' : 
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {order.status}
+                          </span>
                         </td>
                         <td className="px-6 py-4 text-xs text-gray-500">{new Date(order.date).toLocaleDateString()}</td>
                         <td className="px-6 py-4">
                           <button 
-                            onClick={() => alert(`Address: ${order.address}, ${order.city}\nItems: ${order.items.map(i => `${i.productName} (x${i.quantity})`).join(', ')}`)}
-                            className="text-gray-400 hover:text-black transition-colors"
+                            onClick={() => setViewingOrder(order)}
+                            className="bg-black text-white p-2 rounded-lg shadow-sm hover:bg-accent hover:text-black transition-all"
                           >
-                            <Eye size={18} />
+                            <Eye size={16} />
                           </button>
                         </td>
                       </tr>
@@ -215,7 +222,114 @@ const AdminDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Edit/Add Modal */}
+      {/* Order Details Modal */}
+      {viewingOrder && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setViewingOrder(null)}></div>
+          <div className="relative bg-white w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b flex justify-between items-center bg-gray-50">
+              <div className="flex items-center gap-3">
+                 <ShoppingBag className="text-accent" />
+                 <h2 className="text-xl font-black uppercase tracking-tighter">Order #{viewingOrder.id.slice(-6)}</h2>
+              </div>
+              <button onClick={() => setViewingOrder(null)}><X size={24} /></button>
+            </div>
+            
+            <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Customer Info Card */}
+                  <div className="lg:col-span-1 space-y-6">
+                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                           <User size={14} /> Customer Profile
+                        </h3>
+                        <div className="space-y-4">
+                           <div className="flex flex-col">
+                              <span className="text-lg font-bold">{viewingOrder.customerName}</span>
+                              <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
+                                 <Mail size={14} /> {viewingOrder.email || 'N/A'}
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
+                                 <Phone size={14} /> {viewingOrder.phone}
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                           <MapPin size={14} /> Shipping Address
+                        </h3>
+                        <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                           {viewingOrder.address}, {viewingOrder.city}
+                        </p>
+                     </div>
+
+                     <div className="bg-black text-white p-6 rounded-2xl shadow-xl">
+                        <div className="flex justify-between items-center mb-2">
+                           <span className="text-xs font-bold text-gray-400 uppercase">Total Amount</span>
+                           <Calendar size={14} className="text-accent" />
+                        </div>
+                        <div className="text-3xl font-black text-accent">{convertPrice(viewingOrder.total)}</div>
+                        <p className="text-[10px] text-gray-400 mt-2">Ordered on {new Date(viewingOrder.date).toLocaleString()}</p>
+                     </div>
+                  </div>
+
+                  {/* Product List */}
+                  <div className="lg:col-span-2 space-y-4">
+                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Items Ordered</h3>
+                     <div className="space-y-3">
+                        {viewingOrder.items.map((item, idx) => (
+                           <div key={idx} className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm group hover:border-accent transition-colors">
+                              <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
+                                 <img src={item.image} alt={item.productName} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                              </div>
+                              <div className="flex-1">
+                                 <h4 className="font-bold text-sm leading-tight">{item.productName}</h4>
+                                 <div className="flex items-center gap-4 mt-2">
+                                    <div className="bg-gray-100 px-2 py-0.5 rounded text-[10px] font-black text-gray-500 uppercase">Size: {item.size}</div>
+                                    <div className="bg-gray-100 px-2 py-0.5 rounded text-[10px] font-black text-gray-500 uppercase">Qty: {item.quantity}</div>
+                                 </div>
+                              </div>
+                              <div className="text-right">
+                                 <div className="font-black text-sm">{convertPrice(item.price * item.quantity)}</div>
+                                 <div className="text-[10px] text-gray-400 mt-1">{convertPrice(item.price)} each</div>
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+
+                     <div className="mt-8 flex gap-3">
+                        <button 
+                           onClick={() => {
+                              const orders = dbService.getOrders().map(o => o.id === viewingOrder.id ? {...o, status: 'Completed' as const} : o);
+                              localStorage.setItem('skt_shop_orders_v1', JSON.stringify(orders));
+                              setViewingOrder(null);
+                           }}
+                           className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all flex items-center justify-center gap-2"
+                        >
+                           <Check size={18} /> Mark Completed
+                        </button>
+                        <button 
+                           onClick={() => {
+                              if(confirm('Delete this order?')) {
+                                 dbService.deleteOrder(viewingOrder.id);
+                                 setViewingOrder(null);
+                              }
+                           }}
+                           className="bg-red-50 text-red-600 px-6 py-3 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all flex items-center gap-2 border border-red-100"
+                        >
+                           <Trash2 size={18} /> Delete Order
+                        </button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Edit/Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)}></div>

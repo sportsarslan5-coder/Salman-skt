@@ -25,18 +25,20 @@ const Checkout: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 1. Save to Database (Admin Panel Tracking)
+    // 1. Save to Database (Admin Panel Tracking with Images)
     const newOrder: Order = {
       id: `ord_${Date.now()}`,
       customerName: formData.name,
       phone: formData.phone,
       city: formData.city,
+      email: formData.email,
       address: `${formData.homeNumber}, ${formData.neighborhood}`,
       items: cart.map(item => ({
         productName: item.name,
         price: item.priceUSD,
         quantity: item.quantity,
-        size: item.selectedSize
+        size: item.selectedSize,
+        image: item.image // Critical: Capture the image URL/Base64 for the admin
       })),
       total: totalUSD,
       status: 'Pending',
