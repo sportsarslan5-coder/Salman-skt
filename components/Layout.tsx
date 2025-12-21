@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Menu, X, Search, MessageCircle, Instagram, Facebook, Twitter, ArrowUp, Sparkles } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, MessageCircle, Instagram, Facebook, Twitter, ArrowUp, Sparkles, Lock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { WHATSAPP_NUMBER } from '../constants';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { 
-    t, cart, language, setLanguage, currency, setCurrency, isRTL, route, navigate 
+    t, cart, language, setLanguage, currency, setCurrency, isRTL, route, navigate, isAdmin 
   } = useAppContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -26,7 +26,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navLinks = [
     { name: 'home', path: '/' },
     { name: 'shop', path: '/shop' },
-    { name: 'smartPricing', path: '/smart-pricing' }, // Added new link
+    { name: 'smartPricing', path: '/smart-pricing' }, 
     { name: 'men', path: '/shop?category=Men' },
     { name: 'women', path: '/shop?category=Women' },
     { name: 'kids', path: '/shop?category=Kids' },
@@ -214,11 +214,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
 
             <div>
-               <h4 className="font-bold text-lg mb-6">{t('contact')}</h4>
+               <h4 className="font-bold text-lg mb-6">Support & Staff</h4>
                <ul className="space-y-4 text-gray-400">
                  <li><a href={`https://wa.me/${WHATSAPP_NUMBER}`} className="hover:text-white transition-colors">WhatsApp Support</a></li>
                  <li><a href="#/contact" className="hover:text-white transition-colors">Store Location</a></li>
-                 <li><a href="#/contact" className="hover:text-white transition-colors">Email Us</a></li>
+                 <li><a href="#/admin" className="text-accent/60 hover:text-accent transition-colors flex items-center gap-2"><Lock size={12} /> Admin Login</a></li>
                </ul>
             </div>
           </div>
