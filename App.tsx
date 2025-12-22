@@ -15,9 +15,11 @@ import AIStylist from './components/AIStylist';
 
 const AppContent: React.FC = () => {
   const { route, isAdmin } = useAppContext();
+  
+  // Clean route for matching
   const path = route.split('?')[0];
 
-  // Admin Routes
+  // Admin Routes (Independent of main layout)
   if (path === '/admin/login') return <AdminLogin />;
   if (path === '/admin') {
     return isAdmin ? <AdminDashboard /> : <AdminLogin />;
@@ -27,7 +29,7 @@ const AppContent: React.FC = () => {
   return (
     <Layout>
       {(() => {
-        if (path === '/' || path === '') return <Home />;
+        if (path === '/' || path === '' || path === '#/') return <Home />;
         if (path === '/shop') return <Shop />;
         if (path === '/smart-pricing') return <AutoPricing />;
         if (path === '/cart') return <Cart />;
@@ -35,6 +37,8 @@ const AppContent: React.FC = () => {
         if (path === '/blog') return <Blog />;
         if (path === '/contact') return <Contact />;
         if (path.startsWith('/product/')) return <ProductDetails />;
+        
+        // Default Fallback
         return <Home />;
       })()}
     </Layout>
