@@ -8,10 +8,15 @@ import { Product, Order } from '../types';
  * VITE_SUPABASE_ANON_KEY
  */
 
-// @ts-ignore
-const SUPABASE_URL = (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_URL : '') || '';
-// @ts-ignore
-const SUPABASE_ANON_KEY = (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_ANON_KEY : '') || '';
+const getEnv = (key: string) => {
+  if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
+  // @ts-ignore
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) return import.meta.env[key];
+  return '';
+};
+
+const SUPABASE_URL = getEnv('VITE_SUPABASE_URL');
+const SUPABASE_ANON_KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
 const isConfigured = SUPABASE_URL.length > 0 && !SUPABASE_URL.includes('your-project-id');
 
@@ -54,9 +59,9 @@ export const dbService = {
   saveProduct: async (product: Partial<Product>) => {
     if (!supabase) throw new Error("Database not configured");
     
-    // Remove ID if it's empty to allow Supabase to generate a UUID
     const cleanProduct = { ...product };
-    if (!cleanProduct.id) delete cleanProduct.id;
+    // Let Supabase handle ID generation if it's a new product
+    if (!cleanProduct.id || cleanProduct.id.length < 10) delete cleanProduct.id;
 
     const { data, error } = await supabase
       .from('products')

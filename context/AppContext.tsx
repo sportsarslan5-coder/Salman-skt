@@ -13,8 +13,10 @@ interface AppContextType {
   refreshProducts: () => Promise<void>;
   cart: CartItem[];
   addToCart: (product: Product, size: string, quantity?: number) => void;
-  removeFromCart: (id: number, size: string) => void;
-  updateQuantity: (id: number, size: string, qty: number) => void;
+  // Fix: changed id type from number to string to match Product.id
+  removeFromCart: (id: string, size: string) => void;
+  // Fix: changed id type from number to string to match Product.id
+  updateQuantity: (id: string, size: string, qty: number) => void;
   clearCart: () => void;
   t: (key: string) => string;
   convertPrice: (priceUSD: number) => string;
@@ -93,6 +95,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addToCart = (product: Product, size: string, quantity: number = 1) => {
     setCart(prev => {
+      // Comparison between strings (item.id and product.id)
       const existing = prev.find(item => item.id === product.id && item.selectedSize === size);
       if (existing) {
         return prev.map(item => 
@@ -105,11 +108,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const removeFromCart = (id: number, size: string) => {
+  // Fix: updated id type to string
+  const removeFromCart = (id: string, size: string) => {
     setCart(prev => prev.filter(item => !(item.id === id && item.selectedSize === size)));
   };
 
-  const updateQuantity = (id: number, size: string, qty: number) => {
+  // Fix: updated id type to string
+  const updateQuantity = (id: string, size: string, qty: number) => {
     if (qty < 1) return;
     setCart(prev => prev.map(item => 
       item.id === id && item.selectedSize === size ? { ...item, quantity: qty } : item
