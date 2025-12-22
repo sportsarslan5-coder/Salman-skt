@@ -2,16 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Package, ShoppingBag, Plus, Edit, Trash2, X, Check, Save, 
   ChevronRight, Camera, DollarSign, LayoutDashboard, LogOut, Search,
-  AlertCircle, Eye, Box, MapPin, User, Mail, Phone, Calendar
+  AlertCircle, Eye, Box, MapPin, User, Mail, Phone, Calendar, Loader2,
+  Database, Wifi, WifiOff
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { dbService } from '../services/dbService';
 import { Product, Order } from '../types';
 
 const AdminDashboard: React.FC = () => {
-  const { products, refreshProducts, logoutAdmin, convertPrice } = useAppContext();
+  const { products, refreshProducts, isLoading, logoutAdmin, convertPrice } = useAppContext();
   const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [dbStatus, setDbStatus] = useState<{success: boolean, message: string} | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -31,8 +34,23 @@ const AdminDashboard: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const checkConnection = async () => {
+    const status = await dbService.checkConnection();
+    setDbStatus(status);
+  };
+
+  const loadOrders = async () => {
+    setIsDataLoading(true);
+    const data = await dbService.getOrders();
+    setOrders(data);
+    setIsDataLoading(false);
+  };
+
   useEffect(() => {
-    setOrders(dbService.getOrders());
+    checkConnection();
+    if (activeTab === 'orders') {
+      loadOrders();
+    }
   }, [activeTab]);
 
   const handleEdit = (product: Product) => {
@@ -41,16 +59,24 @@ const AdminDashboard: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Permanently delete this product?')) {
-      dbService.deleteProduct(id);
-      refreshProducts();
+  const handleDelete = async (id: number) => {
+    if (confirm('Permanently delete this product from global database?')) {
+      setIsDataLoading(true);
+      try {
+        await dbService.deleteProduct(id);
+        await refreshProducts();
+      } catch (e: any) {
+        alert(`Cloud delete failed: ${e.message}`);
+      } finally {
+        setIsDataLoading(false);
+      }
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.image) return alert('Please fill required fields');
     
+    setIsDataLoading(true);
     const productToSave: Product = {
       ...formData as Product,
       id: editingProduct ? editingProduct.id : Date.now(),
@@ -58,11 +84,17 @@ const AdminDashboard: React.FC = () => {
       reviews: formData.reviews || 0
     };
 
-    dbService.saveProduct(productToSave);
-    refreshProducts();
-    setShowAddModal(false);
-    setEditingProduct(null);
-    setFormData({ name: '', priceUSD: 0, category: 'Men', description: '', image: '', sizes: ["S", "M", "L", "XL"] });
+    try {
+      await dbService.saveProduct(productToSave);
+      await refreshProducts();
+      setShowAddModal(false);
+      setEditingProduct(null);
+      setFormData({ name: '', priceUSD: 0, category: 'Men', description: '', image: '', sizes: ["S", "M", "L", "XL"] });
+    } catch (e: any) {
+      alert(`Cloud sync failed: ${e.message}. Ensure your "products" table exists in Supabase.`);
+    } finally {
+      setIsDataLoading(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,6 +135,17 @@ const AdminDashboard: React.FC = () => {
           </button>
         </nav>
 
+        {/* DB Connection Status */}
+        <div className="mt-6 mb-6 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
+           <div className="flex items-center gap-2 mb-1">
+              {dbStatus?.success ? <Wifi size={14} className="text-green-500" /> : <WifiOff size={14} className="text-red-500" />}
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Cloud Status</span>
+           </div>
+           <p className={`text-[10px] leading-tight ${dbStatus?.success ? 'text-gray-300' : 'text-red-400 font-bold'}`}>
+              {dbStatus ? dbStatus.message : 'Checking connectivity...'}
+           </p>
+        </div>
+
         <button 
           onClick={logoutAdmin}
           className="mt-auto flex items-center gap-3 px-4 py-3 text-red-400 font-bold hover:bg-red-400/10 rounded-xl transition-all"
@@ -118,13 +161,20 @@ const AdminDashboard: React.FC = () => {
             <h1 className="text-3xl font-black uppercase tracking-tighter">
               {activeTab === 'products' ? 'Product Inventory' : 'Customer Orders'}
             </h1>
-            <p className="text-gray-500 text-sm">Real-time Dashboard Management</p>
+            <p className="text-gray-500 text-sm">Global Cloud Database Management</p>
           </div>
           
+          {(isLoading || isDataLoading) && (
+            <div className="flex items-center gap-2 text-accent font-bold animate-pulse">
+                <Loader2 className="animate-spin" /> Syncing Cloud...
+            </div>
+          )}
+
           {activeTab === 'products' && (
             <button 
+              disabled={isLoading || isDataLoading}
               onClick={() => { setShowAddModal(true); setEditingProduct(null); }}
-              className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-accent hover:text-black transition-all shadow-lg"
+              className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-accent hover:text-black transition-all shadow-lg disabled:opacity-50"
             >
               <Plus size={18} /> Add Product
             </button>
@@ -165,10 +215,10 @@ const AdminDashboard: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.length === 0 ? (
+            {orders.length === 0 && !isDataLoading ? (
               <div className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-gray-100">
                 <Box size={48} className="mx-auto text-gray-200 mb-4" />
-                <p className="text-gray-400 font-bold">No orders recorded yet.</p>
+                <p className="text-gray-400 font-bold">No global orders recorded yet.</p>
               </div>
             ) : (
               <div className="overflow-hidden bg-white rounded-3xl border border-gray-100 shadow-sm">
@@ -237,7 +287,6 @@ const AdminDashboard: React.FC = () => {
             
             <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Customer Info Card */}
                   <div className="lg:col-span-1 space-y-6">
                      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -255,7 +304,6 @@ const AdminDashboard: React.FC = () => {
                            </div>
                         </div>
                      </div>
-
                      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                            <MapPin size={14} /> Shipping Address
@@ -264,7 +312,6 @@ const AdminDashboard: React.FC = () => {
                            {viewingOrder.address}, {viewingOrder.city}
                         </p>
                      </div>
-
                      <div className="bg-black text-white p-6 rounded-2xl shadow-xl">
                         <div className="flex justify-between items-center mb-2">
                            <span className="text-xs font-bold text-gray-400 uppercase">Total Amount</span>
@@ -274,8 +321,6 @@ const AdminDashboard: React.FC = () => {
                         <p className="text-[10px] text-gray-400 mt-2">Ordered on {new Date(viewingOrder.date).toLocaleString()}</p>
                      </div>
                   </div>
-
-                  {/* Product List */}
                   <div className="lg:col-span-2 space-y-4">
                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Items Ordered</h3>
                      <div className="space-y-3">
@@ -298,23 +343,32 @@ const AdminDashboard: React.FC = () => {
                            </div>
                         ))}
                      </div>
-
                      <div className="mt-8 flex gap-3">
                         <button 
-                           onClick={() => {
-                              const orders = dbService.getOrders().map(o => o.id === viewingOrder.id ? {...o, status: 'Completed' as const} : o);
-                              localStorage.setItem('skt_shop_orders_v1', JSON.stringify(orders));
-                              setViewingOrder(null);
+                           onClick={async () => {
+                              setIsDataLoading(true);
+                              try {
+                                const order = {...viewingOrder, status: 'Completed' as const};
+                                await dbService.saveOrder(order);
+                                await loadOrders();
+                                setViewingOrder(null);
+                              } catch (e: any) { alert(`Failed to update: ${e.message}`); }
+                              finally { setIsDataLoading(false); }
                            }}
                            className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all flex items-center justify-center gap-2"
                         >
                            <Check size={18} /> Mark Completed
                         </button>
                         <button 
-                           onClick={() => {
-                              if(confirm('Delete this order?')) {
-                                 dbService.deleteOrder(viewingOrder.id);
-                                 setViewingOrder(null);
+                           onClick={async () => {
+                              if(confirm('Delete this order permanently?')) {
+                                 setIsDataLoading(true);
+                                 try {
+                                    await dbService.deleteOrder(viewingOrder.id);
+                                    await loadOrders();
+                                    setViewingOrder(null);
+                                 } catch (e: any) { alert(`Failed to delete: ${e.message}`); }
+                                 finally { setIsDataLoading(false); }
                               }
                            }}
                            className="bg-red-50 text-red-600 px-6 py-3 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all flex items-center gap-2 border border-red-100"
@@ -413,10 +467,11 @@ const AdminDashboard: React.FC = () => {
             <div className="p-6 bg-gray-50 border-t flex justify-end gap-3">
               <button onClick={() => setShowAddModal(false)} className="px-6 py-3 font-bold text-gray-500 hover:text-black">Cancel</button>
               <button 
+                disabled={isDataLoading}
                 onClick={handleSave}
-                className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-accent hover:text-black transition-all shadow-xl flex items-center gap-2"
+                className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-accent hover:text-black transition-all shadow-xl flex items-center gap-2 disabled:opacity-50"
               >
-                <Save size={18} /> Save Product
+                {isDataLoading ? <Loader2 className="animate-spin" /> : <Save size={18} />} Save Product
               </button>
             </div>
           </div>

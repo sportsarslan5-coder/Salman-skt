@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { CreditCard, CheckCircle, MessageCircle, MapPin, User } from 'lucide-react';
+import { CreditCard, CheckCircle, MessageCircle, MapPin, User, Loader2 } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '../constants';
 import { dbService } from '../services/dbService';
 import { Order } from '../types';
 
 const Checkout: React.FC = () => {
   const { cart, convertPrice, clearCart, t } = useAppContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     city: '',
@@ -22,10 +23,11 @@ const Checkout: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // 1. Save to Database (Admin Panel Tracking with Images)
+    // 1. Save to Global Database (Admin Panel Tracking with Images)
     const newOrder: Order = {
       id: `ord_${Date.now()}`,
       customerName: formData.name,
@@ -38,24 +40,30 @@ const Checkout: React.FC = () => {
         price: item.priceUSD,
         quantity: item.quantity,
         size: item.selectedSize,
-        image: item.image // Critical: Capture the image URL/Base64 for the admin
+        image: item.image
       })),
       total: totalUSD,
       status: 'Pending',
       date: new Date().toISOString()
     };
 
-    dbService.saveOrder(newOrder);
+    try {
+      await dbService.saveOrder(newOrder);
 
-    // 2. Construct WhatsApp Message
-    const orderItems = cart.map((item, index) => `${index + 1}. ${item.name} (Size: ${item.selectedSize}, Qty: ${item.quantity})`).join('%0a');
-    const total = convertPrice(totalUSD);
-    
-    const message = `*NEW ORDER REQUEST - SALMAN SKT*%0a----------------------------%0a*ORDER ID: #${newOrder.id.slice(-6)}*%0a----------------------------%0a*CUSTOMER DETAILS:*%0a👤 Name: ${formData.name}%0a📧 Email: ${formData.email}%0a🏙️ City: ${formData.city}%0a🏘️ Neighborhood: ${formData.neighborhood}%0a🏠 Address: ${formData.homeNumber}%0a📞 Phone: ${formData.phone}%0a----------------------------%0a*ORDER ITEMS:*%0a${orderItems}%0a----------------------------%0a*TOTAL PRICE:* ${total}%0a----------------------------%0aPlease confirm my order.`;
-    
-    // 3. Cleanup and Redirect
-    clearCart();
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+      // 2. Construct WhatsApp Message
+      const orderItems = cart.map((item, index) => `${index + 1}. ${item.name} (Size: ${item.selectedSize}, Qty: ${item.quantity})`).join('%0a');
+      const total = convertPrice(totalUSD);
+      
+      const message = `*NEW ORDER REQUEST - SALMAN SKT*%0a----------------------------%0a*ORDER ID: #${newOrder.id.slice(-6)}*%0a----------------------------%0a*CUSTOMER DETAILS:*%0a👤 Name: ${formData.name}%0a📧 Email: ${formData.email}%0a🏙️ City: ${formData.city}%0a🏘️ Neighborhood: ${formData.neighborhood}%0a🏠 Address: ${formData.homeNumber}%0a📞 Phone: ${formData.phone}%0a----------------------------%0a*ORDER ITEMS:*%0a${orderItems}%0a----------------------------%0a*TOTAL PRICE:* ${total}%0a----------------------------%0aPlease confirm my order.`;
+      
+      // 3. Cleanup and Redirect
+      clearCart();
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+    } catch (error) {
+      alert('Global order placement failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (cart.length === 0) {
@@ -64,8 +72,8 @@ const Checkout: React.FC = () => {
              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
                   <CheckCircle size={40} />
               </div>
-            <h2 className="text-3xl font-bold mb-2">Order Success</h2>
-            <p className="text-gray-600 mb-8">Your order details have been sent to our admin team and WhatsApp.</p>
+            <h2 className="text-3xl font-bold mb-2">Order Received</h2>
+            <p className="text-gray-600 mb-8">Your order details have been saved globally. Our team is reviewing it now.</p>
             <a href="/" className="bg-black text-white px-8 py-3 rounded-full hover:bg-accent hover:text-black transition-colors">
                 Return Home
             </a>
@@ -82,7 +90,7 @@ const Checkout: React.FC = () => {
             <div className="bg-green-50 border border-green-200 p-4 rounded-lg flex items-start gap-3">
                 <MessageCircle className="text-green-600 mt-1" />
                 <p className="text-sm text-green-800">
-                    <strong>Direct Order:</strong> Your details will be saved securely and verified via WhatsApp.
+                    <strong>Global Order:</strong> Your details will be saved to our cloud database and verified via WhatsApp.
                 </p>
             </div>
 
@@ -164,8 +172,13 @@ const Checkout: React.FC = () => {
                 </div>
             </div>
 
-            <button type="submit" className="w-full bg-black text-white py-5 rounded-full font-bold text-lg hover:bg-accent hover:text-black transition-all mt-6 flex items-center justify-center gap-2 shadow-xl transform hover:scale-[1.02] duration-200">
-                <MessageCircle size={24} /> Confirm & Place Order
+            <button 
+              disabled={isSubmitting}
+              type="submit" 
+              className="w-full bg-black text-white py-5 rounded-full font-bold text-lg hover:bg-accent hover:text-black transition-all mt-6 flex items-center justify-center gap-2 shadow-xl transform hover:scale-[1.02] duration-200 disabled:opacity-50"
+            >
+                {isSubmitting ? <Loader2 className="animate-spin" /> : <MessageCircle size={24} />} 
+                {isSubmitting ? 'Syncing Global Order...' : 'Confirm & Place Order'}
             </button>
         </form>
 

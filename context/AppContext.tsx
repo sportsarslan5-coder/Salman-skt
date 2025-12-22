@@ -9,7 +9,8 @@ interface AppContextType {
   currency: Currency;
   setCurrency: (curr: Currency) => void;
   products: Product[];
-  refreshProducts: () => void;
+  isLoading: boolean;
+  refreshProducts: () => Promise<void>;
   cart: CartItem[];
   addToCart: (product: Product, size: string, quantity?: number) => void;
   removeFromCart: (id: number, size: string) => void;
@@ -32,12 +33,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currency, setCurrency] = useState<Currency>('USD');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(sessionStorage.getItem('admin_session') === 'active');
   
   const [route, setRoute] = useState<string>(window.location.hash.slice(1) || '/');
 
+  const refreshProducts = async () => {
+    setIsLoading(true);
+    const data = await dbService.getProducts();
+    setProducts(data);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    setProducts(dbService.getProducts());
+    refreshProducts();
   }, []);
 
   useEffect(() => {
@@ -54,12 +63,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     window.location.hash = path;
   };
 
-  const refreshProducts = () => {
-    setProducts(dbService.getProducts());
-  };
-
   const loginAsAdmin = (pass: string) => {
-    // Standard secure-ish check for demo purposes
     if (pass === 'admin123') {
       setIsAdmin(true);
       sessionStorage.setItem('admin_session', 'active');
@@ -117,7 +121,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   return (
     <AppContext.Provider value={{
       language, setLanguage, currency, setCurrency,
-      products, refreshProducts,
+      products, isLoading, refreshProducts,
       cart, addToCart, removeFromCart, updateQuantity, clearCart,
       t, convertPrice, isRTL,
       isAdmin, loginAsAdmin, logoutAdmin,
