@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sparkles, Loader2, Camera, MessageCircle, X, ShoppingCart, Minus, Plus, Search, CheckCircle2, Edit3, ChevronDown, Filter } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -153,11 +152,12 @@ const AutoPricing: React.FC = () => {
   };
 
   const handleAddToCart = () => {
-    if (!selectedImage && !result) return;
-    const finalName = editableName.trim() || currentCategory;
-    // Fix: id must be string, and property names must match Product interface
+    if (!selectedImage && !result && !currentCategory) return;
+    const finalName = editableName.trim() || currentCategory || "Smart Ordered Item";
+    
+    // Create a product object WITHOUT an ID to allow the DB to generate a UUID
     const customProduct: Product = {
-        id: String(Date.now()),
+        id: '', // dbService will remove this before upserting
         title: finalName,
         category: 'Men', 
         price: currentPrice,
@@ -172,7 +172,7 @@ const AutoPricing: React.FC = () => {
   };
 
   const handleWhatsApp = () => {
-    const finalName = editableName.trim();
+    const finalName = editableName.trim() || currentCategory;
     const priceDisplay = convertPrice(currentPrice);
     const message = `*NEW ORDER REQUEST*%0a🛍️ *${finalName}*%0a📂 Type: ${currentCategory}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');

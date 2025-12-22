@@ -9,9 +9,13 @@ import { Product, Order } from '../types';
  */
 
 const getEnv = (key: string) => {
+  // Try various ways environment variables are injected in modern frontend environments
   if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
   // @ts-ignore
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) return import.meta.env[key];
+  // Check globalThis for some edge cases
+  // @ts-ignore
+  if (typeof globalThis !== 'undefined' && globalThis[key]) return globalThis[key];
   return '';
 };
 
@@ -30,7 +34,7 @@ export const dbService = {
     if (!supabase) {
       return { 
         success: false, 
-        message: "Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel." 
+        message: "Supabase credentials missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to Vercel Settings." 
       };
     }
     try {
@@ -38,7 +42,7 @@ export const dbService = {
       if (error) throw error;
       return { success: true, message: "Cloud Database Online" };
     } catch (e: any) {
-      return { success: false, message: e.message || "Connection failed. Check if table 'products' exists in Supabase." };
+      return { success: false, message: e.message || "Connection failed. Run the SQL script in Supabase Dashboard." };
     }
   },
 
@@ -60,8 +64,13 @@ export const dbService = {
     if (!supabase) throw new Error("Database not configured");
     
     const cleanProduct = { ...product };
-    // Let Supabase handle ID generation if it's a new product
-    if (!cleanProduct.id || cleanProduct.id.length < 10) delete cleanProduct.id;
+    
+    // UUID validation: If ID is not a valid UUID format, remove it so Supabase generates a new one.
+    // This prevents "invalid input syntax for type uuid" errors from Date.now() strings.
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-12a-f]{12}$/i;
+    if (!cleanProduct.id || !uuidRegex.test(cleanProduct.id)) {
+      delete cleanProduct.id;
+    }
 
     const { data, error } = await supabase
       .from('products')
@@ -104,9 +113,16 @@ export const dbService = {
 
   saveOrder: async (order: Partial<Order>) => {
     if (!supabase) throw new Error("Database not configured");
+    
+    const cleanOrder = { ...order };
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-12a-f]{12}$/i;
+    if (cleanOrder.id && !uuidRegex.test(cleanOrder.id)) {
+      delete cleanOrder.id;
+    }
+
     const { data, error } = await supabase
       .from('orders')
-      .insert(order)
+      .insert(cleanOrder)
       .select();
 
     if (error) {
