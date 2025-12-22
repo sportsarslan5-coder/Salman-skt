@@ -1,19 +1,19 @@
 export interface Product {
-  id: number;
-  name: string;
-  category: 'Men' | 'Women' | 'Kids';
-  priceUSD: number;
-  image: string;
+  id: string; // UUID from Supabase
+  title: string;
+  category: string;
+  price: number;
+  image_url: string;
   description: string;
-  sizes: string[];
-  rating: number;
-  reviews: number;
+  sizes?: string[];
+  rating?: number;
+  reviews?: number;
   isProtex?: boolean;
 }
 
 export interface Order {
   id: string;
-  customerName: string;
+  customer_name: string;
   phone: string;
   city: string;
   address: string;
@@ -21,7 +21,7 @@ export interface Order {
   items: { productName: string, price: number, quantity: number, size: string, image: string }[];
   total: number;
   status: 'Pending' | 'Completed' | 'Cancelled';
-  date: string;
+  created_at: string;
 }
 
 export interface CartItem extends Product {

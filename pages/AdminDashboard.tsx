@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Package, ShoppingBag, Plus, Edit, Trash2, X, Check, Save, 
-  ChevronRight, Camera, DollarSign, LayoutDashboard, LogOut, Search,
-  AlertCircle, Eye, Box, MapPin, User, Mail, Phone, Calendar, Loader2,
-  Database, Wifi, WifiOff
+  Camera, DollarSign, LayoutDashboard, LogOut, Search,
+  Eye, Box, MapPin, User, Mail, Phone, Calendar, Loader2,
+  Wifi, WifiOff, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { dbService } from '../services/dbService';
@@ -20,13 +20,12 @@ const AdminDashboard: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Product Form State
   const [formData, setFormData] = useState<Partial<Product>>({
-    name: '',
-    priceUSD: 0,
+    title: '',
+    price: 0,
     category: 'Men',
     description: '',
-    image: '',
+    image_url: '',
     sizes: ["S", "M", "L", "XL"],
     rating: 5.0,
     reviews: 0
@@ -35,6 +34,7 @@ const AdminDashboard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const checkConnection = async () => {
+    setDbStatus(null);
     const status = await dbService.checkConnection();
     setDbStatus(status);
   };
@@ -59,14 +59,14 @@ const AdminDashboard: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm('Permanently delete this product from global database?')) {
+  const handleDelete = async (id: string) => {
+    if (confirm('Permanently delete this product from cloud?')) {
       setIsDataLoading(true);
       try {
         await dbService.deleteProduct(id);
         await refreshProducts();
       } catch (e: any) {
-        alert(`Cloud delete failed: ${e.message}`);
+        alert(`Delete failed: ${e.message}`);
       } finally {
         setIsDataLoading(false);
       }
@@ -74,24 +74,23 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.image) return alert('Please fill required fields');
+    if (!formData.title || !formData.image_url) return alert('Please fill required fields (Title & Image)');
+    if (!formData.price || formData.price <= 0) return alert('Please enter a valid price');
     
     setIsDataLoading(true);
-    const productToSave: Product = {
-      ...formData as Product,
-      id: editingProduct ? editingProduct.id : Date.now(),
-      rating: formData.rating || 5,
-      reviews: formData.reviews || 0
-    };
-
     try {
-      await dbService.saveProduct(productToSave);
+      const payload = { ...formData };
+      // Ensure we don't send a partial ID if creating new
+      if (!editingProduct) delete payload.id;
+
+      await dbService.saveProduct(payload);
       await refreshProducts();
       setShowAddModal(false);
       setEditingProduct(null);
-      setFormData({ name: '', priceUSD: 0, category: 'Men', description: '', image: '', sizes: ["S", "M", "L", "XL"] });
+      setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] });
     } catch (e: any) {
-      alert(`Cloud sync failed: ${e.message}. Ensure your "products" table exists in Supabase.`);
+      console.error(e);
+      alert(`Error saving to Supabase: ${e.message}\n\nCommon fixes:\n1. Ensure 'products' table exists in Supabase.\n2. Ensure VITE_SUPABASE_URL is correct in Vercel.`);
     } finally {
       setIsDataLoading(false);
     }
@@ -102,13 +101,13 @@ const AdminDashboard: React.FC = () => {
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      setFormData({ ...formData, image: reader.result as string });
+      setFormData({ ...formData, image_url: reader.result as string });
     };
     reader.readAsDataURL(file);
   };
 
   const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    p.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -122,58 +121,65 @@ const AdminDashboard: React.FC = () => {
 
         <nav className="flex-grow space-y-2">
           <button 
-            onClick={() => setActiveTab('products')}
+            onClick={() => setActiveTab('products')} 
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'products' ? 'bg-accent text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
           >
             <Package size={18} /> Inventory
           </button>
           <button 
-            onClick={() => setActiveTab('orders')}
+            onClick={() => setActiveTab('orders')} 
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'orders' ? 'bg-accent text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
           >
             <ShoppingBag size={18} /> Orders
           </button>
         </nav>
 
-        {/* DB Connection Status */}
-        <div className="mt-6 mb-6 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
-           <div className="flex items-center gap-2 mb-1">
-              {dbStatus?.success ? <Wifi size={14} className="text-green-500" /> : <WifiOff size={14} className="text-red-500" />}
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Cloud Status</span>
+        {/* Cloud Status */}
+        <div className={`mt-6 mb-6 px-4 py-3 rounded-xl border ${dbStatus?.success ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+           <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                {dbStatus?.success ? <Wifi size={14} className="text-green-500" /> : <WifiOff size={14} className="text-red-500" />}
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Cloud Status</span>
+              </div>
+              <button onClick={checkConnection} className="text-gray-500 hover:text-white transition-colors">
+                <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
+              </button>
            </div>
-           <p className={`text-[10px] leading-tight ${dbStatus?.success ? 'text-gray-300' : 'text-red-400 font-bold'}`}>
-              {dbStatus ? dbStatus.message : 'Checking connectivity...'}
+           <p className={`text-[10px] leading-tight font-medium ${dbStatus?.success ? 'text-green-400' : 'text-red-400'}`}>
+              {dbStatus ? dbStatus.message : 'Checking...'}
            </p>
         </div>
 
-        <button 
-          onClick={logoutAdmin}
-          className="mt-auto flex items-center gap-3 px-4 py-3 text-red-400 font-bold hover:bg-red-400/10 rounded-xl transition-all"
-        >
+        <button onClick={logoutAdmin} className="mt-auto flex items-center gap-3 px-4 py-3 text-red-400 font-bold hover:bg-red-400/10 rounded-xl transition-all">
           <LogOut size={18} /> Exit Admin
         </button>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-6 md:p-10 overflow-y-auto max-h-screen custom-scrollbar">
+        {!dbStatus?.success && dbStatus && (
+            <div className="mb-8 p-6 bg-red-50 border border-red-100 rounded-3xl flex items-start gap-4">
+                <AlertTriangle className="text-red-500 shrink-0" size={24} />
+                <div>
+                    <h3 className="font-bold text-red-800 uppercase tracking-tighter">Connection Failed</h3>
+                    <p className="text-red-600 text-sm mt-1 leading-relaxed">
+                        To save products globally, set <strong>VITE_SUPABASE_URL</strong> and <strong>VITE_SUPABASE_ANON_KEY</strong> in Vercel. 
+                        Also, ensure you have created the <strong>products</strong> table in Supabase.
+                    </p>
+                </div>
+            </div>
+        )}
+
         <div className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter">
-              {activeTab === 'products' ? 'Product Inventory' : 'Customer Orders'}
-            </h1>
-            <p className="text-gray-500 text-sm">Global Cloud Database Management</p>
+            <h1 className="text-3xl font-black uppercase tracking-tighter">{activeTab === 'products' ? 'Inventory' : 'Orders'}</h1>
+            <p className="text-gray-500 text-sm">Real-time Cloud Synchronization</p>
           </div>
-          
-          {(isLoading || isDataLoading) && (
-            <div className="flex items-center gap-2 text-accent font-bold animate-pulse">
-                <Loader2 className="animate-spin" /> Syncing Cloud...
-            </div>
-          )}
-
+          {(isLoading || isDataLoading) && <Loader2 className="animate-spin text-accent" size={32} />}
           {activeTab === 'products' && (
             <button 
-              disabled={isLoading || isDataLoading}
-              onClick={() => { setShowAddModal(true); setEditingProduct(null); }}
+              disabled={isLoading || isDataLoading} 
+              onClick={() => { setShowAddModal(true); setEditingProduct(null); setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] }); }} 
               className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-accent hover:text-black transition-all shadow-lg disabled:opacity-50"
             >
               <Plus size={18} /> Add Product
@@ -186,296 +192,225 @@ const AdminDashboard: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3">
               <Search className="text-gray-300" size={20} />
               <input 
-                placeholder="Search inventory..."
+                placeholder="Search cloud inventory..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 focus:outline-none font-medium"
+                className="flex-1 focus:outline-none font-medium text-sm"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map(p => (
-                <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 group relative">
-                  <div className="aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4">
-                    <img src={p.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            {products.length === 0 && !isLoading ? (
+               <div className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-gray-100">
+                  <Box size={48} className="mx-auto text-gray-200 mb-4" />
+                  <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No products found in cloud database</p>
+               </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map(p => (
+                  <div key={p.id} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 group relative">
+                    <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-4">
+                      <img src={p.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500" alt={p.title} />
+                    </div>
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-sm truncate pr-4">{p.title}</h3>
+                        <span className="text-[10px] font-black uppercase text-gray-400">{p.category}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-auto pt-2 border-t border-gray-50">
+                      <span className="font-black text-black bg-accent px-3 py-1 rounded-lg text-xs">{convertPrice(p.price)}</span>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleEdit(p)} className="p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-black hover:text-white transition-all"><Edit size={16} /></button>
+                        <button onClick={() => handleDelete(p.id)} className="p-2.5 bg-red-50 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-sm truncate">{p.name}</h3>
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="font-black text-accent bg-black px-2 py-0.5 rounded text-xs">{convertPrice(p.priceUSD)}</span>
-                    <span className="text-[10px] text-gray-400 uppercase font-black">{p.category}</span>
-                  </div>
-                  
-                  <div className="absolute top-6 right-6 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleEdit(p)} className="bg-white p-2 rounded-lg shadow-md hover:text-accent"><Edit size={16} /></button>
-                    <button onClick={() => handleDelete(p.id)} className="bg-white p-2 rounded-lg shadow-md hover:text-red-500"><Trash2 size={16} /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {orders.length === 0 && !isDataLoading ? (
               <div className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-gray-100">
-                <Box size={48} className="mx-auto text-gray-200 mb-4" />
-                <p className="text-gray-400 font-bold">No global orders recorded yet.</p>
+                <ShoppingBag size={48} className="mx-auto text-gray-200 mb-4" />
+                <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No orders recorded yet</p>
               </div>
             ) : (
-              <div className="overflow-hidden bg-white rounded-3xl border border-gray-100 shadow-sm">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b">
-                    <tr>
-                      <th className="px-6 py-4">Order ID</th>
-                      <th className="px-6 py-4">Customer</th>
-                      <th className="px-6 py-4">Total</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {orders.map(order => (
-                      <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 font-bold text-xs">#{order.id.slice(-6)}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="font-bold text-sm">{order.customerName}</span>
-                            <span className="text-xs text-gray-400">{order.phone}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 font-black">{convertPrice(order.total)}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                            order.status === 'Completed' ? 'bg-green-100 text-green-700' : 
-                            order.status === 'Cancelled' ? 'bg-red-100 text-red-700' : 
-                            'bg-yellow-100 text-yellow-700'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-gray-500">{new Date(order.date).toLocaleDateString()}</td>
-                        <td className="px-6 py-4">
-                          <button 
-                            onClick={() => setViewingOrder(order)}
-                            className="bg-black text-white p-2 rounded-lg shadow-sm hover:bg-accent hover:text-black transition-all"
-                          >
-                            <Eye size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              orders.map(order => (
+                <div key={order.id} className="bg-white p-5 rounded-2xl border flex justify-between items-center shadow-sm hover:border-accent transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 group-hover:bg-accent group-hover:text-black transition-colors">
+                        <User size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm">{order.customer_name}</h4>
+                      <p className="text-[10px] text-gray-500 uppercase font-bold">{order.city} • {convertPrice(order.total)} • {new Date(order.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                        order.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                        {order.status}
+                    </span>
+                    <button onClick={() => setViewingOrder(order)} className="p-2.5 bg-black text-white rounded-xl hover:bg-accent hover:text-black transition-all shadow-md"><Eye size={16} /></button>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         )}
       </div>
 
-      {/* Order Details Modal */}
-      {viewingOrder && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setViewingOrder(null)}></div>
-          <div className="relative bg-white w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b flex justify-between items-center bg-gray-50">
-              <div className="flex items-center gap-3">
-                 <ShoppingBag className="text-accent" />
-                 <h2 className="text-xl font-black uppercase tracking-tighter">Order #{viewingOrder.id.slice(-6)}</h2>
-              </div>
-              <button onClick={() => setViewingOrder(null)}><X size={24} /></button>
-            </div>
-            
-            <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
-               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <div className="lg:col-span-1 space-y-6">
-                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                           <User size={14} /> Customer Profile
-                        </h3>
-                        <div className="space-y-4">
-                           <div className="flex flex-col">
-                              <span className="text-lg font-bold">{viewingOrder.customerName}</span>
-                              <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
-                                 <Mail size={14} /> {viewingOrder.email || 'N/A'}
-                              </div>
-                              <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
-                                 <Phone size={14} /> {viewingOrder.phone}
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                           <MapPin size={14} /> Shipping Address
-                        </h3>
-                        <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                           {viewingOrder.address}, {viewingOrder.city}
-                        </p>
-                     </div>
-                     <div className="bg-black text-white p-6 rounded-2xl shadow-xl">
-                        <div className="flex justify-between items-center mb-2">
-                           <span className="text-xs font-bold text-gray-400 uppercase">Total Amount</span>
-                           <Calendar size={14} className="text-accent" />
-                        </div>
-                        <div className="text-3xl font-black text-accent">{convertPrice(viewingOrder.total)}</div>
-                        <p className="text-[10px] text-gray-400 mt-2">Ordered on {new Date(viewingOrder.date).toLocaleString()}</p>
-                     </div>
-                  </div>
-                  <div className="lg:col-span-2 space-y-4">
-                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Items Ordered</h3>
-                     <div className="space-y-3">
-                        {viewingOrder.items.map((item, idx) => (
-                           <div key={idx} className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm group hover:border-accent transition-colors">
-                              <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
-                                 <img src={item.image} alt={item.productName} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                              </div>
-                              <div className="flex-1">
-                                 <h4 className="font-bold text-sm leading-tight">{item.productName}</h4>
-                                 <div className="flex items-center gap-4 mt-2">
-                                    <div className="bg-gray-100 px-2 py-0.5 rounded text-[10px] font-black text-gray-500 uppercase">Size: {item.size}</div>
-                                    <div className="bg-gray-100 px-2 py-0.5 rounded text-[10px] font-black text-gray-500 uppercase">Qty: {item.quantity}</div>
-                                 </div>
-                              </div>
-                              <div className="text-right">
-                                 <div className="font-black text-sm">{convertPrice(item.price * item.quantity)}</div>
-                                 <div className="text-[10px] text-gray-400 mt-1">{convertPrice(item.price)} each</div>
-                              </div>
-                           </div>
-                        ))}
-                     </div>
-                     <div className="mt-8 flex gap-3">
-                        <button 
-                           onClick={async () => {
-                              setIsDataLoading(true);
-                              try {
-                                const order = {...viewingOrder, status: 'Completed' as const};
-                                await dbService.saveOrder(order);
-                                await loadOrders();
-                                setViewingOrder(null);
-                              } catch (e: any) { alert(`Failed to update: ${e.message}`); }
-                              finally { setIsDataLoading(false); }
-                           }}
-                           className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all flex items-center justify-center gap-2"
-                        >
-                           <Check size={18} /> Mark Completed
-                        </button>
-                        <button 
-                           onClick={async () => {
-                              if(confirm('Delete this order permanently?')) {
-                                 setIsDataLoading(true);
-                                 try {
-                                    await dbService.deleteOrder(viewingOrder.id);
-                                    await loadOrders();
-                                    setViewingOrder(null);
-                                 } catch (e: any) { alert(`Failed to delete: ${e.message}`); }
-                                 finally { setIsDataLoading(false); }
-                              }
-                           }}
-                           className="bg-red-50 text-red-600 px-6 py-3 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all flex items-center gap-2 border border-red-100"
-                        >
-                           <Trash2 size={18} /> Delete Order
-                        </button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Product Edit/Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)}></div>
-          <div className="relative bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-fade-in-up">
-            <div className="p-6 border-b flex justify-between items-center bg-gray-50">
-              <h2 className="text-xl font-black uppercase tracking-tighter">{editingProduct ? 'Update Product' : 'Add New Inventory'}</h2>
-              <button onClick={() => setShowAddModal(false)}><X size={24} /></button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up">
+            <div className="p-8 border-b flex justify-between items-center">
+              <h2 className="text-2xl font-black uppercase tracking-tighter">{editingProduct ? 'Edit Product' : 'Add to Cloud'}</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
             </div>
             
-            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto max-h-[70vh] custom-scrollbar">
+            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-gray-400">Product Image</label>
+                  <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Visual Asset</label>
                   <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="aspect-square bg-gray-100 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-accent group overflow-hidden"
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="aspect-square bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer overflow-hidden group hover:border-accent transition-all"
                   >
-                    {formData.image ? (
-                      <img src={formData.image} className="w-full h-full object-cover" />
+                    {formData.image_url ? (
+                        <img src={formData.image_url} className="w-full h-full object-cover" alt="Preview" />
                     ) : (
-                      <>
-                        <Camera className="text-gray-300 group-hover:text-accent transition-colors" size={32} />
-                        <span className="text-[10px] font-bold text-gray-400 mt-2 uppercase">Upload Photo</span>
-                      </>
+                        <div className="text-center">
+                            <Camera className="text-gray-300 mx-auto group-hover:text-accent transition-colors" size={40} />
+                            <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase">Upload Image</p>
+                        </div>
                     )}
                   </div>
                   <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase">Title</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Title</label>
                   <input 
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    placeholder="E.g. Vintage Leather Jacket"
-                    className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-accent outline-none font-bold"
+                    value={formData.title} 
+                    onChange={e => setFormData({...formData, title: e.target.value})} 
+                    placeholder="Premium Jersey..." 
+                    className="w-full border-2 border-gray-100 p-4 rounded-2xl font-bold text-sm focus:border-accent outline-none" 
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase">Price (USD)</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Price (USD)</label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                      <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                       <input 
-                        type="number"
-                        value={formData.priceUSD}
-                        onChange={e => setFormData({...formData, priceUSD: parseFloat(e.target.value)})}
-                        className="w-full border p-3 pl-8 rounded-xl focus:ring-2 focus:ring-accent outline-none font-bold"
+                        type="number" 
+                        value={formData.price} 
+                        onChange={e => setFormData({...formData, price: parseFloat(e.target.value) || 0})} 
+                        className="w-full border-2 border-gray-100 p-4 pl-10 rounded-2xl font-bold text-sm focus:border-accent outline-none" 
                       />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase">Category</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</label>
                     <select 
-                      value={formData.category}
-                      onChange={e => setFormData({...formData, category: e.target.value as any})}
-                      className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-accent outline-none font-bold appearance-none bg-white"
+                        value={formData.category} 
+                        onChange={e => setFormData({...formData, category: e.target.value})} 
+                        className="w-full border-2 border-gray-100 p-4 rounded-2xl font-bold text-sm focus:border-accent outline-none bg-white appearance-none"
                     >
-                      <option>Men</option>
-                      <option>Women</option>
-                      <option>Kids</option>
+                      <option>Men</option><option>Women</option><option>Kids</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-400 uppercase">Description</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</label>
                   <textarea 
-                    value={formData.description}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                    rows={4}
-                    className="w-full border p-3 rounded-xl focus:ring-2 focus:ring-accent outline-none text-sm leading-relaxed"
+                    value={formData.description} 
+                    onChange={e => setFormData({...formData, description: e.target.value})} 
+                    placeholder="Detail the product craftsmanship..." 
+                    rows={4} 
+                    className="w-full border-2 border-gray-100 p-4 rounded-2xl text-sm focus:border-accent outline-none resize-none" 
                   />
                 </div>
               </div>
             </div>
 
-            <div className="p-6 bg-gray-50 border-t flex justify-end gap-3">
-              <button onClick={() => setShowAddModal(false)} className="px-6 py-3 font-bold text-gray-500 hover:text-black">Cancel</button>
+            <div className="p-8 bg-gray-50 border-t flex justify-end gap-4">
+              <button onClick={() => setShowAddModal(false)} className="px-8 py-4 font-bold text-gray-400 hover:text-black transition-colors">Discard</button>
               <button 
-                disabled={isDataLoading}
-                onClick={handleSave}
-                className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-accent hover:text-black transition-all shadow-xl flex items-center gap-2 disabled:opacity-50"
+                disabled={isDataLoading} 
+                onClick={handleSave} 
+                className="bg-black text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-accent hover:text-black transition-all shadow-xl disabled:opacity-50"
               >
-                {isDataLoading ? <Loader2 className="animate-spin" /> : <Save size={18} />} Save Product
+                {isDataLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} Commit Changes
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Order Viewer Modal */}
+      {viewingOrder && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+             <div className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl animate-fade-in-up">
+                <div className="p-8 border-b flex justify-between items-center">
+                    <h2 className="text-xl font-black uppercase">Order Details</h2>
+                    <button onClick={() => setViewingOrder(null)} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
+                </div>
+                <div className="p-8 space-y-6">
+                    <div className="flex gap-4">
+                        <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center"><User className="text-gray-300" /></div>
+                        <div>
+                            <h3 className="font-bold">{viewingOrder.customer_name}</h3>
+                            <p className="text-xs text-gray-500">{viewingOrder.email}</p>
+                            <p className="text-xs text-gray-500">{viewingOrder.phone}</p>
+                        </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-2xl">
+                        <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block">Address</label>
+                        <p className="text-sm font-medium">{viewingOrder.address}, {viewingOrder.city}</p>
+                    </div>
+                    <div className="space-y-3">
+                        <label className="text-[10px] font-black uppercase text-gray-400">Items ({viewingOrder.items.length})</label>
+                        {viewingOrder.items.map((item, i) => (
+                            <div key={i} className="flex justify-between items-center text-sm">
+                                <span className="font-medium">{item.productName} (x{item.quantity})</span>
+                                <span className="font-bold">{convertPrice(item.price * item.quantity)}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="pt-4 border-t flex justify-between items-center">
+                        <span className="font-black text-lg">Total</span>
+                        <span className="font-black text-xl text-accent bg-black px-4 py-1 rounded-xl">{convertPrice(viewingOrder.total)}</span>
+                    </div>
+                </div>
+                <div className="p-8 pt-0 flex gap-4">
+                   <button 
+                     onClick={async () => {
+                       if(confirm('Delete order?')) {
+                          await dbService.deleteOrder(viewingOrder.id);
+                          loadOrders();
+                          setViewingOrder(null);
+                       }
+                     }}
+                     className="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-bold hover:bg-red-500 hover:text-white transition-all"
+                   >
+                     Delete
+                   </button>
+                   <button 
+                     onClick={() => setViewingOrder(null)}
+                     className="flex-1 bg-black text-white py-4 rounded-2xl font-bold"
+                   >
+                     Close
+                   </button>
+                </div>
+             </div>
+          </div>
       )}
     </div>
   );

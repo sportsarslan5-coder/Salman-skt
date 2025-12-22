@@ -1,26 +1,5 @@
+
 import { GoogleGenAI } from "@google/genai";
-
-// Robust helper to find the API key in various environments
-const getAPIKey = (): string => {
-    let key = '';
-
-    // 1. Try standard Vite/Client naming
-    // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-        // @ts-ignore
-        if (import.meta.env.VITE_API_KEY) key = import.meta.env.VITE_API_KEY;
-        // @ts-ignore
-        else if (import.meta.env.NEXT_PUBLIC_API_KEY) key = import.meta.env.NEXT_PUBLIC_API_KEY;
-    }
-
-    // 2. Try standard process.env (Create React App / Node)
-    if (!key && typeof process !== 'undefined' && process.env) {
-        if (process.env.REACT_APP_API_KEY) key = process.env.REACT_APP_API_KEY;
-        else if (process.env.API_KEY) key = process.env.API_KEY;
-    }
-
-    return key;
-};
 
 const cleanJSON = (text: string): string => {
     // Remove markdown code blocks if present
@@ -37,28 +16,10 @@ export interface PricingAnalysis {
 }
 
 export const analyzeProductImage = async (base64Data: string, mimeType: string, userProvidedName?: string): Promise<PricingAnalysis> => {
-    const apiKey = getAPIKey();
-    
-    // FALLBACK / DEMO MODE if Key is missing
-    if (!apiKey) {
-        console.warn("API Key missing. Using Demo Mode.");
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve({
-                    productName: userProvidedName || "Premium High-Top Sneaker (Demo)",
-                    category: "Shoes",
-                    dominantColors: ["Red", "White"],
-                    reasoning: "API Key missing. Displaying demo result.",
-                    complexityScore: 0.8,
-                    estimatedPriceUSD: 125
-                });
-            }, 1500);
-        });
-    }
+    // CRITICAL: Exclusively use process.env.API_KEY as per guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-    const ai = new GoogleGenAI({ apiKey });
-
-    // Strict Categories matching your business rules
+    // Strict Categories matching business rules
     const VALID_CATEGORIES = [
         "T-Shirt", "Hoodie", "Jersey", "Jacket", "Tracksuit", "Cap", "Beanie", "Jeans", "Shorts", "Sweatpants", 
         "Polo Shirt", "Dress Shirt", "Tank Top", "Sweater", "Cardigan", "Vest", "Coat", "Trench Coat", "Blazer", 
@@ -85,19 +46,14 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
     TASK 1: IDENTIFICATION
     - Identify the specific product. Use the User Context to help accuracy.
     - OUTPUT: "productName" (e.g. "Air Jordan 1 Retro High" or "Custom Embroidered Hoodie").
-    - If the User Context is specific (e.g. "Barcelona 2025 Kit"), respect it but refine it to be professional.
 
     TASK 2: CATEGORIZATION
     - Try to categorize into one of the following specific categories:
     [${VALID_CATEGORIES.join(', ')}]
-    - IF the item does DOES NOT fit these categories (e.g. it's a "Yoga Mat", "Smart Watch", "Tent", "Electronic"), use a generic but accurate category name.
     
-    TASK 3: COMPLEXITY & PRICING (THE "INTERNET PRICE" LOGIC)
+    TASK 3: COMPLEXITY & PRICING
     - Determine a Complexity Score from 0.0 (Basic) to 1.0 (Premium/Complex).
-    - ESTIMATED PRICE (Critical): Estimate a fair custom manufacturing OR retail market price in USD for this item. 
-      - If it is a known luxury/hyped item (like a specific sneaker), estimate the market value.
-      - If it is a generic item, estimate standard market price.
-      - Be realistic.
+    - ESTIMATED PRICE: Estimate standard retail market price in USD for this item. 
     
     TASK 4: DOMINANT COLORS
     - List max 2 main colors.
@@ -134,27 +90,19 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
 
     } catch (error) {
         console.error("AI Analysis Failed:", error);
-        
-        // Fallback Logic
-        const fallbackType = "Sneakers";
-        const fallbackName = userProvidedName || "Custom Item";
-        
         return {
-            productName: fallbackName,
-            category: fallbackType,
+            productName: userProvidedName || "Custom Item",
+            category: "T-Shirt",
             dominantColors: ["Multi-color"],
             complexityScore: 0.5,
             estimatedPriceUSD: 55,
-            reasoning: "AI analysis failed. Please verify details manually."
+            reasoning: "Analysis failed. Reverting to baseline estimates."
         };
     }
 };
 
 export const chatWithStylist = async (message: string, history: any[]) => {
-    const apiKey = getAPIKey();
-    if (!apiKey) return "I'm currently in demo mode. Please configure my API key to chat!";
-    
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const systemInstruction = "You are a hip, knowledgeable sneaker and streetwear expert for Salman SKT. You help customers find shoes based on their style. Keep answers short, fun, and use emojis.";
     
     try {
@@ -168,6 +116,7 @@ export const chatWithStylist = async (message: string, history: any[]) => {
         });
         return response.text || "I'm thinking... ask me again!";
     } catch (e) {
+        console.error("Chat Failed:", e);
         return "I'm having trouble connecting right now. Try again later!";
     }
 };

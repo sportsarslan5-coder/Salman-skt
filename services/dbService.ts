@@ -1,107 +1,125 @@
 import { createClient } from '@supabase/supabase-js';
 import { Product, Order } from '../types';
 
-// IMPORTANT: Replace these with your actual Supabase credentials for the global DB to work.
-// You can get these from your Supabase Project Settings > API.
-const SUPABASE_URL = (typeof process !== 'undefined' && process.env.VITE_SUPABASE_URL) || 'https://your-project-id.supabase.co';
-const SUPABASE_ANON_KEY = (typeof process !== 'undefined' && process.env.VITE_SUPABASE_ANON_KEY) || 'your-anon-key';
+/**
+ * DATABASE CONFIGURATION
+ * These variables must be set in your Vercel Environment Variables.
+ * VITE_SUPABASE_URL
+ * VITE_SUPABASE_ANON_KEY
+ */
 
-const isConfigured = SUPABASE_URL !== 'https://your-project-id.supabase.co' && SUPABASE_ANON_KEY !== 'your-anon-key';
+// @ts-ignore
+const SUPABASE_URL = (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_URL : '') || '';
+// @ts-ignore
+const SUPABASE_ANON_KEY = (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SUPABASE_ANON_KEY : '') || '';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const isConfigured = SUPABASE_URL.length > 0 && !SUPABASE_URL.includes('your-project-id');
+
+// Create a single supabase client instance
+export const supabase = isConfigured 
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
+  : null;
 
 export const dbService = {
   checkConnection: async (): Promise<{ success: boolean; message: string }> => {
-    if (!isConfigured) {
-        return { success: false, message: "Supabase credentials not configured in dbService.ts or Vercel Env Vars." };
+    if (!supabase) {
+      return { 
+        success: false, 
+        message: "Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel." 
+      };
     }
     try {
-        const { error } = await supabase.from('products').select('count', { count: 'exact', head: true });
-        if (error) throw error;
-        return { success: true, message: "Connected to Cloud Database" };
+      const { error } = await supabase.from('products').select('count', { count: 'exact', head: true });
+      if (error) throw error;
+      return { success: true, message: "Cloud Database Online" };
     } catch (e: any) {
-        return { success: false, message: e.message || "Database connection failed" };
+      return { success: false, message: e.message || "Connection failed. Check if table 'products' exists in Supabase." };
     }
   },
 
-  // --- PRODUCT CRUD (GLOBAL) ---
   getProducts: async (): Promise<Product[]> => {
-    if (!isConfigured) {
-        console.error("Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
-        return [];
-    }
+    if (!supabase) return [];
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .order('id', { ascending: false });
+      .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching global products:', error.message, error.details);
+      console.error('Fetch Products Error:', error.message);
       return [];
     }
     return data || [];
   },
 
-  saveProduct: async (product: Product) => {
+  saveProduct: async (product: Partial<Product>) => {
+    if (!supabase) throw new Error("Database not configured");
+    
+    // Remove ID if it's empty to allow Supabase to generate a UUID
+    const cleanProduct = { ...product };
+    if (!cleanProduct.id) delete cleanProduct.id;
+
     const { data, error } = await supabase
       .from('products')
-      .upsert(product)
+      .upsert(cleanProduct)
       .select();
 
     if (error) {
-      console.error('Error saving product to cloud:', error.message, error.details);
+      console.error('Save Product Error:', error.message);
       throw new Error(error.message);
     }
-    return data;
+    return data[0];
   },
 
-  deleteProduct: async (id: number) => {
+  deleteProduct: async (id: string) => {
+    if (!supabase) throw new Error("Database not configured");
     const { error } = await supabase
       .from('products')
       .delete()
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting product from cloud:', error.message, error.details);
+      console.error('Delete Product Error:', error.message);
       throw new Error(error.message);
     }
   },
 
-  // --- ORDER MANAGEMENT (GLOBAL) ---
   getOrders: async (): Promise<Order[]> => {
+    if (!supabase) return [];
     const { data, error } = await supabase
       .from('orders')
       .select('*')
-      .order('date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching global orders:', error.message, error.details);
+      console.error('Fetch Orders Error:', error.message);
       return [];
     }
     return data || [];
   },
 
-  saveOrder: async (order: Order) => {
+  saveOrder: async (order: Partial<Order>) => {
+    if (!supabase) throw new Error("Database not configured");
     const { data, error } = await supabase
       .from('orders')
       .insert(order)
       .select();
 
     if (error) {
-      console.error('Error saving order to cloud:', error.message, error.details);
+      console.error('Save Order Error:', error.message);
       throw new Error(error.message);
     }
-    return data;
+    return data[0];
   },
 
   deleteOrder: async (id: string) => {
+    if (!supabase) throw new Error("Database not configured");
     const { error } = await supabase
       .from('orders')
       .delete()
       .eq('id', id);
 
     if (error) {
-      console.error('Error deleting order from cloud:', error.message, error.details);
+      console.error('Delete Order Error:', error.message);
       throw new Error(error.message);
     }
   }

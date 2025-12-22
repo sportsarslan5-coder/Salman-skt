@@ -1,3 +1,4 @@
+
 import { Product, BlogPost, Translations } from './types';
 
 export const EXCHANGE_RATE_PKR = 278.5; 
@@ -150,12 +151,13 @@ const generateProducts = (): Product[] => {
 
     const isProtex = lowerName.includes("jacket") || lowerName.includes("coat") || lowerName.includes("boots") || lowerName.includes("waterproof") || lowerName.includes("ski");
 
+    // Fix: Corrected property names (title, price, image_url) and converted id to string
     return {
-      id: 1000 + index,
-      name: name,
+      id: (1000 + index).toString(),
+      title: name,
       category: category,
-      priceUSD: item.price,
-      image: item.img,
+      price: item.price,
+      image_url: item.img,
       description: `Official Salman SKT ${name} collection. ${isProtex ? 'Equipped with PROTEX elite weather-resistance technology for maximum durability in all conditions.' : 'Crafted from premium, sustainably sourced Sialkot grade materials.'}`,
       sizes: category === 'Men' || category === 'Women' ? ["S", "M", "L", "XL", "XXL"] : ["US 1Y", "US 2Y", "US 3Y"],
       rating: parseFloat((4.7 + (Math.random() * 0.3)).toFixed(1)),

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sparkles, Loader2, Camera, MessageCircle, X, ShoppingCart, Minus, Plus, Search, CheckCircle2, Edit3, ChevronDown, Filter } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -154,12 +155,13 @@ const AutoPricing: React.FC = () => {
   const handleAddToCart = () => {
     if (!selectedImage && !result) return;
     const finalName = editableName.trim() || currentCategory;
+    // Fix: id must be string, and property names must match Product interface
     const customProduct: Product = {
-        id: Date.now(),
-        name: finalName,
+        id: String(Date.now()),
+        title: finalName,
         category: 'Men', 
-        priceUSD: currentPrice,
-        image: selectedImage || "https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?w=800&q=80",
+        price: currentPrice,
+        image_url: selectedImage || "https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?w=800&q=80",
         description: `Smart Priced Order. Category: ${currentCategory}.`,
         sizes: availableSizes,
         rating: 5.0,
