@@ -11,22 +11,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { convertPrice, addToCart, t } = useAppContext();
   
   return (
-    <div className="group relative flex flex-col h-full bg-white">
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-gray-50 mb-4 shadow-sm transition-all duration-300 group-hover:shadow-xl border border-gray-100">
+    <div className="group relative flex flex-col h-full">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-secondary mb-4 border border-white/5 transition-all duration-500 group-hover:border-accent/50">
         <img 
           src={product.image_url} 
           alt={product.title} 
           loading="lazy"
-          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
         />
         
-        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
           <a 
             href={`#/product/${product.id}`}
-            className="bg-white text-black p-3 rounded-full hover:bg-accent hover:text-black transition-all transform hover:scale-110 shadow-lg flex items-center justify-center"
-            title="View Details"
+            className="bg-white text-black p-3 rounded-full hover:bg-accent transition-all transform hover:scale-110 shadow-lg"
           >
-            <Eye size={20} />
+            <Eye size={18} />
           </a>
           <button
             onClick={(e) => {
@@ -34,38 +33,35 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 e.stopPropagation();
                 addToCart(product, product.sizes?.[0] || 'M');
             }}
-            className="bg-black text-white p-3 rounded-full hover:bg-accent hover:text-black transition-all transform hover:scale-110 shadow-lg"
-            title={t('addToCart')}
+            className="bg-accent text-black p-3 rounded-full hover:bg-white transition-all transform hover:scale-110 shadow-lg"
           >
-            <ShoppingCart size={20} />
+            <ShoppingCart size={18} />
           </button>
         </div>
 
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.isProtex && (
-                <div className="bg-black text-accent text-[9px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter shadow-sm border border-accent/30 flex items-center gap-1 w-fit">
-                    <ShieldCheck size={10} /> PROTEX ELITE
-                </div>
-            )}
-        </div>
+        {product.isProtex && (
+          <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md text-accent text-[8px] font-black px-2 py-1 rounded border border-accent/20 flex items-center gap-1">
+            <ShieldCheck size={10} /> PROTEX
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-col flex-grow px-1">
-        <div className="flex justify-between items-start mb-1">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{product.category}</span>
-          <div className="flex items-center gap-1 text-yellow-500">
-            <Star size={12} fill="currentColor" />
-            <span className="text-[11px] font-bold text-gray-700">{(product.rating || 5).toFixed(1)}</span>
+      <div className="flex flex-col flex-grow">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[10px] font-black text-accent uppercase tracking-widest">{product.category}</span>
+          <div className="flex items-center gap-1 text-accent">
+            <Star size={10} fill="currentColor" />
+            <span className="text-[10px] font-bold text-white">{(product.rating || 5).toFixed(1)}</span>
           </div>
         </div>
         
         <a href={`#/product/${product.id}`} className="block group-hover:text-accent transition-colors duration-200">
-          <h3 className="text-sm font-black text-primary leading-tight mb-1 truncate">{product.title}</h3>
+          <h3 className="text-sm font-bold text-gray-200 leading-tight mb-2 truncate">{product.title}</h3>
         </a>
         
-        <div className="flex items-center justify-between mt-auto pt-2">
-          <span className="text-base font-black text-primary tracking-tighter">{convertPrice(product.price)}</span>
-          <div className="text-[10px] text-gray-400 font-bold uppercase">{product.reviews || 0} Reviews</div>
+        <div className="flex items-center justify-between mt-auto">
+          <span className="text-lg font-black text-white tracking-tighter">{convertPrice(product.price)}</span>
+          <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">Limited Stock</span>
         </div>
       </div>
     </div>

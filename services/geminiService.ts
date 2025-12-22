@@ -1,8 +1,15 @@
-
 import { GoogleGenAI } from "@google/genai";
 
+const getApiKey = () => {
+    // Safely access process.env in a browser environment
+    try {
+        return (globalThis as any).process?.env?.API_KEY || "";
+    } catch (e) {
+        return "";
+    }
+};
+
 const cleanJSON = (text: string): string => {
-    // Remove markdown code blocks if present
     return text.replace(/```json/g, '').replace(/```/g, '').trim();
 };
 
@@ -11,15 +18,26 @@ export interface PricingAnalysis {
     category: string;
     reasoning: string;
     dominantColors: string[];
-    complexityScore: number; // 0.0 to 1.0 (Basic to Premium/Custom)
-    estimatedPriceUSD?: number; // AI estimated market price
+    complexityScore: number; 
+    estimatedPriceUSD?: number; 
 }
 
 export const analyzeProductImage = async (base64Data: string, mimeType: string, userProvidedName?: string): Promise<PricingAnalysis> => {
-    // CRITICAL: Exclusively use process.env.API_KEY as per guidelines
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        console.warn("Gemini API Key missing");
+        return {
+            productName: userProvidedName || "Custom Item",
+            category: "T-Shirt",
+            dominantColors: ["Multi-color"],
+            complexityScore: 0.5,
+            estimatedPriceUSD: 55,
+            reasoning: "API Key not configured."
+        };
+    }
 
-    // Strict Categories matching business rules
+    const ai = new GoogleGenAI({ apiKey });
+
     const VALID_CATEGORIES = [
         "T-Shirt", "Hoodie", "Jersey", "Jacket", "Tracksuit", "Cap", "Beanie", "Jeans", "Shorts", "Sweatpants", 
         "Polo Shirt", "Dress Shirt", "Tank Top", "Sweater", "Cardigan", "Vest", "Coat", "Trench Coat", "Blazer", 
@@ -38,31 +56,12 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
     ];
 
     const prompt = `
-    You are an expert fashion and sports equipment authenticator and pricing algorithm.
-    User Context (Name/Title): "${userProvidedName || ''}"
-    
-    Analyze this product image.
-    
-    TASK 1: IDENTIFICATION
-    - Identify the specific product. Use the User Context to help accuracy.
-    - OUTPUT: "productName" (e.g. "Air Jordan 1 Retro High" or "Custom Embroidered Hoodie").
-
-    TASK 2: CATEGORIZATION
-    - Try to categorize into one of the following specific categories:
-    [${VALID_CATEGORIES.join(', ')}]
-    
-    TASK 3: COMPLEXITY & PRICING
-    - Determine a Complexity Score from 0.0 (Basic) to 1.0 (Premium/Complex).
-    - ESTIMATED PRICE: Estimate standard retail market price in USD for this item. 
-    
-    TASK 4: DOMINANT COLORS
-    - List max 2 main colors.
-
-    Return valid JSON only:
+    You are an expert fashion and sports equipment authenticator and pricing algorithm for Salman SKT (Sialkot).
+    Analyze this product image and return JSON only.
     {
         "productName": "string",
         "category": "string",
-        "dominantColors": ["string", "string"],
+        "dominantColors": ["string"],
         "complexityScore": number,
         "estimatedPriceUSD": number,
         "reasoning": "string"
@@ -86,7 +85,7 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
         if (response.text) {
             return JSON.parse(cleanJSON(response.text));
         }
-        throw new Error("No response text");
+        throw new Error("No response");
 
     } catch (error) {
         console.error("AI Analysis Failed:", error);
@@ -96,14 +95,17 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
             dominantColors: ["Multi-color"],
             complexityScore: 0.5,
             estimatedPriceUSD: 55,
-            reasoning: "Analysis failed. Reverting to baseline estimates."
+            reasoning: "Analysis temporarily unavailable."
         };
     }
 };
 
 export const chatWithStylist = async (message: string, history: any[]) => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const systemInstruction = "You are a hip, knowledgeable sneaker and streetwear expert for Salman SKT. You help customers find shoes based on their style. Keep answers short, fun, and use emojis.";
+    const apiKey = getApiKey();
+    if (!apiKey) return "I need an API key to help you style!";
+
+    const ai = new GoogleGenAI({ apiKey });
+    const systemInstruction = "You are a hip, knowledgeable sneaker and streetwear expert for Salman SKT. Keep answers short, fun, and use emojis.";
     
     try {
         const response = await ai.models.generateContent({
@@ -114,9 +116,8 @@ export const chatWithStylist = async (message: string, history: any[]) => {
             ],
             config: { systemInstruction }
         });
-        return response.text || "I'm thinking... ask me again!";
+        return response.text || "I'm thinking...";
     } catch (e) {
-        console.error("Chat Failed:", e);
-        return "I'm having trouble connecting right now. Try again later!";
+        return "Chat system is busy. Please try again in a moment!";
     }
 };

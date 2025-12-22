@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, CartItem, Language, Currency } from '../types';
-import { TRANSLATIONS, EXCHANGE_RATE_PKR } from '../constants';
+import { TRANSLATIONS, EXCHANGE_RATE_PKR, PRODUCTS } from '../constants';
 import { dbService } from '../services/dbService';
 
 interface AppContextType {
@@ -13,9 +13,7 @@ interface AppContextType {
   refreshProducts: () => Promise<void>;
   cart: CartItem[];
   addToCart: (product: Product, size: string, quantity?: number) => void;
-  // Fix: changed id type from number to string to match Product.id
   removeFromCart: (id: string, size: string) => void;
-  // Fix: changed id type from number to string to match Product.id
   updateQuantity: (id: string, size: string, qty: number) => void;
   clearCart: () => void;
   t: (key: string) => string;
@@ -42,9 +40,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const refreshProducts = async () => {
     setIsLoading(true);
-    const data = await dbService.getProducts();
-    setProducts(data);
-    setIsLoading(false);
+    try {
+      const cloudData = await dbService.getProducts();
+      // If cloud is empty or disconnected, show demo data so the site isn't "white/empty"
+      if (!cloudData || cloudData.length === 0) {
+        setProducts(PRODUCTS);
+      } else {
+        // Mix them or just show cloud data
+        setProducts(cloudData);
+      }
+    } catch (e) {
+      setProducts(PRODUCTS);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -95,7 +104,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addToCart = (product: Product, size: string, quantity: number = 1) => {
     setCart(prev => {
-      // Comparison between strings (item.id and product.id)
       const existing = prev.find(item => item.id === product.id && item.selectedSize === size);
       if (existing) {
         return prev.map(item => 
@@ -108,12 +116,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  // Fix: updated id type to string
   const removeFromCart = (id: string, size: string) => {
     setCart(prev => prev.filter(item => !(item.id === id && item.selectedSize === size)));
   };
 
-  // Fix: updated id type to string
   const updateQuantity = (id: string, size: string, qty: number) => {
     if (qty < 1) return;
     setCart(prev => prev.map(item => 
