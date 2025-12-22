@@ -80,7 +80,6 @@ const AdminDashboard: React.FC = () => {
     setIsDataLoading(true);
     try {
       const payload = { ...formData };
-      // Ensure we don't send a partial ID if creating new
       if (!editingProduct) delete payload.id;
 
       await dbService.saveProduct(payload);
@@ -90,7 +89,7 @@ const AdminDashboard: React.FC = () => {
       setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] });
     } catch (e: any) {
       console.error(e);
-      alert(`Error saving to Supabase: ${e.message}\n\nCommon fixes:\n1. Ensure 'products' table exists in Supabase.\n2. Ensure VITE_SUPABASE_URL is correct in Vercel.`);
+      alert(`Error saving to Supabase: ${e.message}`);
     } finally {
       setIsDataLoading(false);
     }
@@ -163,8 +162,7 @@ const AdminDashboard: React.FC = () => {
                 <div>
                     <h3 className="font-bold text-red-800 uppercase tracking-tighter">Connection Failed</h3>
                     <p className="text-red-600 text-sm mt-1 leading-relaxed">
-                        To save products globally, set <strong>VITE_SUPABASE_URL</strong> and <strong>VITE_SUPABASE_ANON_KEY</strong> in Vercel. 
-                        Also, ensure you have created the <strong>products</strong> table in Supabase.
+                        Database connection is required to publish products. Check your Vercel Environment Variables.
                     </p>
                 </div>
             </div>
@@ -175,16 +173,26 @@ const AdminDashboard: React.FC = () => {
             <h1 className="text-3xl font-black uppercase tracking-tighter">{activeTab === 'products' ? 'Inventory' : 'Orders'}</h1>
             <p className="text-gray-500 text-sm">Real-time Cloud Synchronization</p>
           </div>
-          {(isLoading || isDataLoading) && <Loader2 className="animate-spin text-accent" size={32} />}
-          {activeTab === 'products' && (
+          
+          <div className="flex items-center gap-4">
             <button 
-              disabled={isLoading || isDataLoading} 
-              onClick={() => { setShowAddModal(true); setEditingProduct(null); setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] }); }} 
-              className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-accent hover:text-black transition-all shadow-lg disabled:opacity-50"
+              onClick={() => activeTab === 'products' ? refreshProducts() : loadOrders()}
+              className="p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              title="Refresh Data"
             >
-              <Plus size={18} /> Add Product
+              <RefreshCw size={20} className={(isLoading || isDataLoading) ? 'animate-spin' : ''} />
             </button>
-          )}
+            
+            {activeTab === 'products' && (
+              <button 
+                disabled={isLoading || isDataLoading} 
+                onClick={() => { setShowAddModal(true); setEditingProduct(null); setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] }); }} 
+                className="bg-black text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-accent hover:text-black transition-all shadow-lg disabled:opacity-50"
+              >
+                <Plus size={18} /> Add Product
+              </button>
+            )}
+          </div>
         </div>
 
         {activeTab === 'products' ? (
@@ -200,22 +208,29 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {products.length === 0 && !isLoading ? (
-               <div className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-gray-100">
-                  <Box size={48} className="mx-auto text-gray-200 mb-4" />
-                  <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No products found in cloud database</p>
+               <div className="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-gray-100 flex flex-col items-center">
+                  <Box size={60} className="text-gray-200 mb-6" />
+                  <h3 className="text-xl font-bold mb-2">Inventory is Empty</h3>
+                  <p className="text-gray-400 max-w-sm mx-auto mb-8 text-sm">Start by adding your own high-quality products to the cloud database.</p>
+                  <button 
+                    onClick={() => { setShowAddModal(true); setEditingProduct(null); }}
+                    className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-accent hover:text-black transition-all"
+                  >
+                    Add First Product
+                  </button>
                </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map(p => (
-                  <div key={p.id} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 group relative">
-                    <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-4">
+                  <div key={p.id} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 group relative flex flex-col">
+                    <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 mb-4 border border-gray-100">
                       <img src={p.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500" alt={p.title} />
                     </div>
                     <div className="flex justify-between items-start mb-2">
                         <h3 className="font-bold text-sm truncate pr-4">{p.title}</h3>
-                        <span className="text-[10px] font-black uppercase text-gray-400">{p.category}</span>
+                        <span className="text-[10px] font-black uppercase text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{p.category}</span>
                     </div>
-                    <div className="flex justify-between items-center mt-auto pt-2 border-t border-gray-50">
+                    <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-50">
                       <span className="font-black text-black bg-accent px-3 py-1 rounded-lg text-xs">{convertPrice(p.price)}</span>
                       <div className="flex gap-2">
                         <button onClick={() => handleEdit(p)} className="p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-black hover:text-white transition-all"><Edit size={16} /></button>
@@ -371,18 +386,23 @@ const AdminDashboard: React.FC = () => {
                             <p className="text-xs text-gray-500">{viewingOrder.phone}</p>
                         </div>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-2xl">
-                        <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block">Address</label>
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                        <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">Shipping Address</label>
                         <p className="text-sm font-medium">{viewingOrder.address}, {viewingOrder.city}</p>
                     </div>
                     <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase text-gray-400">Items ({viewingOrder.items.length})</label>
-                        {viewingOrder.items.map((item, i) => (
-                            <div key={i} className="flex justify-between items-center text-sm">
-                                <span className="font-medium">{item.productName} (x{item.quantity})</span>
-                                <span className="font-bold">{convertPrice(item.price * item.quantity)}</span>
-                            </div>
-                        ))}
+                        <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Items ({viewingOrder.items.length})</label>
+                        <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+                            {viewingOrder.items.map((item, i) => (
+                                <div key={i} className="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
+                                    <div className="flex flex-col">
+                                        <span className="font-bold">{item.productName}</span>
+                                        <span className="text-[10px] text-gray-400 uppercase font-black">Size: {item.size} • Qty: {item.quantity}</span>
+                                    </div>
+                                    <span className="font-black text-black">{convertPrice(item.price * item.quantity)}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     <div className="pt-4 border-t flex justify-between items-center">
                         <span className="font-black text-lg">Total</span>
@@ -398,7 +418,7 @@ const AdminDashboard: React.FC = () => {
                           setViewingOrder(null);
                        }
                      }}
-                     className="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-bold hover:bg-red-500 hover:text-white transition-all"
+                     className="flex-1 bg-red-50 text-red-500 py-4 rounded-2xl font-bold hover:bg-red-500 hover:text-white transition-all border border-red-100"
                    >
                      Delete
                    </button>

@@ -4,16 +4,12 @@ import { Product, Order } from '../types';
 /**
  * DATABASE CONFIGURATION
  * These variables must be set in your Vercel Environment Variables.
- * VITE_SUPABASE_URL
- * VITE_SUPABASE_ANON_KEY
  */
 
 const getEnv = (key: string) => {
-  // Try various ways environment variables are injected in modern frontend environments
   if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
   // @ts-ignore
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) return import.meta.env[key];
-  // Check globalThis for some edge cases
   // @ts-ignore
   if (typeof globalThis !== 'undefined' && globalThis[key]) return globalThis[key];
   return '';
@@ -24,7 +20,6 @@ const SUPABASE_ANON_KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
 const isConfigured = SUPABASE_URL.length > 0 && !SUPABASE_URL.includes('your-project-id');
 
-// Create a single supabase client instance
 export const supabase = isConfigured 
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
   : null;
@@ -34,7 +29,7 @@ export const dbService = {
     if (!supabase) {
       return { 
         success: false, 
-        message: "Supabase credentials missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to Vercel Settings." 
+        message: "Supabase not configured. Set VITE_SUPABASE_URL in Vercel." 
       };
     }
     try {
@@ -42,7 +37,7 @@ export const dbService = {
       if (error) throw error;
       return { success: true, message: "Cloud Database Online" };
     } catch (e: any) {
-      return { success: false, message: e.message || "Connection failed. Run the SQL script in Supabase Dashboard." };
+      return { success: false, message: e.message || "Connection failed. Run the SQL script in Supabase." };
     }
   },
 
@@ -65,9 +60,10 @@ export const dbService = {
     
     const cleanProduct = { ...product };
     
-    // UUID validation: If ID is not a valid UUID format, remove it so Supabase generates a new one.
-    // This prevents "invalid input syntax for type uuid" errors from Date.now() strings.
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-12a-f]{12}$/i;
+    // Standard UUID format check (8-4-4-4-12)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    // If ID is missing or invalid, let Supabase generate a proper UUID
     if (!cleanProduct.id || !uuidRegex.test(cleanProduct.id)) {
       delete cleanProduct.id;
     }
@@ -115,7 +111,7 @@ export const dbService = {
     if (!supabase) throw new Error("Database not configured");
     
     const cleanOrder = { ...order };
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-12a-f]{12}$/i;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (cleanOrder.id && !uuidRegex.test(cleanOrder.id)) {
       delete cleanOrder.id;
     }
