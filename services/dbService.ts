@@ -1,3 +1,4 @@
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Product, Order } from '../types';
 
@@ -7,14 +8,25 @@ const LOCAL_STORAGE_PRODUCTS_KEY = 'skt_products_v1';
 const LOCAL_STORAGE_ORDERS_KEY = 'skt_orders_v1';
 
 const getEnv = (key: string) => {
+  // Try all possible ways to get environment variables in different hosting environments
   try {
     const altKey = key.startsWith('VITE_') ? key.replace('VITE_', '') : `VITE_${key}`;
-    // @ts-ignore
-    const viteEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env[key] || import.meta.env[altKey] : null;
-    const procEnv = (typeof process !== 'undefined' && process.env) ? process.env[key] || process.env[altKey] : null;
-    const globalEnv = (globalThis as any)[key] || (globalThis as any)[altKey];
     
-    return viteEnv || procEnv || globalEnv || '';
+    // Fix: Access import.meta.env through any to avoid property access errors
+    const meta = import.meta as any;
+    if (typeof meta !== 'undefined' && meta.env) {
+        if (meta.env[key]) return meta.env[key];
+        if (meta.env[altKey]) return meta.env[altKey];
+    }
+    
+    // @ts-ignore - Node/Vercel/Classic
+    if (typeof process !== 'undefined' && process.env) {
+        if (process.env[key]) return process.env[key];
+        if (process.env[altKey]) return process.env[altKey];
+    }
+
+    // Global scope (fallback)
+    return (globalThis as any)[key] || (globalThis as any)[altKey] || '';
   } catch (e) {
     return '';
   }
@@ -26,19 +38,18 @@ const getSupabase = () => {
     const URL = getEnv('VITE_SUPABASE_URL');
     const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-    if (URL && KEY && URL.length > 10) {
+    // Only attempt if keys look valid
+    if (URL && KEY && URL.startsWith('http')) {
         try {
             supabaseInstance = createClient(URL, KEY);
             return supabaseInstance;
         } catch (e) {
-            console.warn("Supabase initialization failed, switching to local mode.");
             return null;
         }
     }
     return null;
 };
 
-// Helper to handle local storage
 const localDb = {
     getProducts: (): Product[] => {
         const data = localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY);
@@ -50,7 +61,8 @@ const localDb = {
         if (index > -1) {
             products[index] = product;
         } else {
-            products.push({ ...product, id: crypto.randomUUID() });
+            product.id = crypto.randomUUID();
+            products.push(product);
         }
         localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(products));
         return product;
@@ -77,25 +89,28 @@ const localDb = {
 };
 
 export const dbService = {
-  isConfigured: () => getSupabase() !== null,
+  isConfigured: () => {
+    const client = getSupabase();
+    return !!client;
+  },
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
     const client = getSupabase();
     if (!client) {
       return { 
         success: false, 
-        message: "Offline Mode",
-        details: "Using Browser Storage (Keys not set)."
+        message: "Offline / Local Mode",
+        details: "Keys missing. Data will NOT sync across mobiles."
       };
     }
     try {
       const { error } = await client.from('products').select('count', { count: 'exact', head: true });
       if (error) throw error;
-      return { success: true, message: "Cloud Connected" };
+      return { success: true, message: "Cloud Active (Sync ON)" };
     } catch (e: any) {
       return { 
         success: false, 
-        message: "Cloud Error",
+        message: "Connection Error",
         details: e.message
       };
     }
@@ -107,7 +122,6 @@ export const dbService = {
     try {
       const { data, error } = await client.from('products').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      // Merge local and cloud if needed, but for now just cloud
       return data || [];
     } catch (error) {
       return localDb.getProducts();
@@ -122,19 +136,22 @@ export const dbService = {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (cleanProduct.id && !uuidRegex.test(cleanProduct.id)) delete cleanProduct.id;
 
-    const { data, error } = await client.from('products').upsert(cleanProduct).select();
-    if (error) {
-        console.error("Cloud save failed, saving locally.");
+    try {
+        const { data, error } = await client.from('products').upsert(cleanProduct).select();
+        if (error) throw error;
+        return data ? data[0] : null;
+    } catch (e) {
+        console.warn("Saving locally as fallback");
         return localDb.saveProduct(product as Product);
     }
-    return data ? data[0] : null;
   },
 
   deleteProduct: async (id: string) => {
     const client = getSupabase();
     if (!client) return localDb.deleteProduct(id);
-    const { error } = await client.from('products').delete().eq('id', id);
-    if (error) {
+    try {
+        await client.from('products').delete().eq('id', id);
+    } catch (e) {
         localDb.deleteProduct(id);
     }
   },

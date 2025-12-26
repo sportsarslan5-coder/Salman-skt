@@ -3,7 +3,7 @@ import {
   Package, ShoppingBag, Plus, Edit, Trash2, X, Check, Save, 
   Camera, DollarSign, LayoutDashboard, LogOut, Search,
   Eye, Box, MapPin, User, Mail, Phone, Calendar, Loader2,
-  Wifi, WifiOff, AlertTriangle, RefreshCw, Settings, ExternalLink, Database
+  Wifi, WifiOff, AlertTriangle, RefreshCw, Settings, ExternalLink, Database, AlertCircle, Info, Copy, Terminal
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { dbService } from '../services/dbService';
@@ -11,7 +11,7 @@ import { Product, Order } from '../types';
 
 const AdminDashboard: React.FC = () => {
   const { products, refreshProducts, isLoading, logoutAdmin, convertPrice } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'setup'>('products');
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [dbStatus, setDbStatus] = useState<{success: boolean, message: string, details?: string} | null>(null);
@@ -104,6 +104,39 @@ const AdminDashboard: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  const sqlCode = `-- Step 1: Create Products Table
+CREATE TABLE products (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  title text,
+  price numeric,
+  category text,
+  description text,
+  image_url text,
+  sizes text[],
+  rating numeric,
+  reviews numeric
+);
+
+-- Step 2: Create Orders Table
+CREATE TABLE orders (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  customer_name text,
+  phone text,
+  city text,
+  address text,
+  email text,
+  items jsonb,
+  total numeric,
+  status text
+);`;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(sqlCode);
+    alert("SQL Code Copied! Now paste it in Supabase SQL Editor.");
+  };
+
   const filteredProducts = products.filter(p => 
     p.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -120,19 +153,20 @@ const AdminDashboard: React.FC = () => {
         <nav className="flex-grow space-y-2">
           <button onClick={() => setActiveTab('products')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'products' ? 'bg-accent text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}><Package size={18} /> Inventory</button>
           <button onClick={() => setActiveTab('orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'orders' ? 'bg-accent text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}><ShoppingBag size={18} /> Orders</button>
+          <button onClick={() => setActiveTab('setup')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'setup' ? 'bg-accent text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}><Settings size={18} /> Global Sync Setup</button>
         </nav>
 
-        {/* Cloud Status */}
-        <div className={`mt-6 mb-6 px-4 py-3 rounded-xl border ${dbStatus?.success ? 'bg-green-500/10 border-green-500/20' : 'bg-accent/10 border-accent/20'}`}>
+        {/* Sync Status Sidebar */}
+        <div className={`mt-6 mb-6 px-4 py-3 rounded-xl border ${dbStatus?.success ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
            <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                {dbStatus?.success ? <Database size={14} className="text-green-500" /> : <Database size={14} className="text-accent" />}
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{dbStatus?.success ? 'Cloud' : 'Local'} Mode</span>
+                <Database size={14} className={dbStatus?.success ? "text-green-500" : "text-red-500"} />
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{dbStatus?.success ? 'Cloud Active' : 'Local Only'}</span>
               </div>
               <button onClick={checkConnection} className="text-gray-500 hover:text-white transition-colors"><RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} /></button>
            </div>
-           <p className={`text-[10px] leading-tight font-black uppercase tracking-tighter ${dbStatus?.success ? 'text-green-400' : 'text-accent'}`}>
-              {dbStatus ? dbStatus.message : 'SYNCING...'}
+           <p className={`text-[10px] leading-tight font-black uppercase tracking-tighter ${dbStatus?.success ? 'text-green-400' : 'text-red-400'}`}>
+              {dbStatus ? dbStatus.message : 'CHECKING...'}
            </p>
         </div>
 
@@ -144,24 +178,92 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 p-6 md:p-10 overflow-y-auto max-h-screen bg-[#050505]">
         
-        <div className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-white">{activeTab === 'products' ? 'Inventory' : 'Orders'}</h1>
-            <p className="text-gray-500 text-sm">Managing Salman SKT Assets</p>
-          </div>
-          
-          {activeTab === 'products' && (
-            <button 
-              onClick={() => { setShowAddModal(true); setEditingProduct(null); setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] }); }} 
-              className="bg-accent text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl"
-            >
-              <Plus size={18} /> Add Product
-            </button>
-          )}
-        </div>
+        {activeTab === 'setup' ? (
+          <div className="max-w-4xl animate-fade-in-up">
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-white mb-2">Global Sync Setup</h1>
+            <p className="text-gray-500 mb-10">Follow these steps to make your products visible on all mobile devices.</p>
 
-        {activeTab === 'products' ? (
+            <div className="grid gap-8">
+              {/* Step 1 */}
+              <div className="bg-[#111] border border-white/10 rounded-[2rem] p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center font-black text-black">1</div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">Create Supabase Project</h3>
+                </div>
+                <p className="text-gray-400 mb-4 text-sm font-urdu leading-relaxed">
+                  سب سے پہلے [supabase.com](https://supabase.com) پر جائیں اور ایک فری اکاؤنٹ بنا کر نیا پروجیکٹ شروع کریں۔
+                </p>
+                <a href="https://supabase.com" target="_blank" className="inline-flex items-center gap-2 text-accent text-sm font-bold border-b border-accent pb-1 hover:text-white transition-colors">Go to Supabase Dashboard <ExternalLink size={14} /></a>
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-[#111] border border-white/10 rounded-[2rem] p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center font-black text-black">2</div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">Setup Database Tables</h3>
+                </div>
+                <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
+                  اپنے پروجیکٹ میں "SQL Editor" پر کلک کریں اور نیچے دیا گیا کوڈ وہاں پیسٹ کر کے "Run" دبائیں۔ اس سے آپ کے پروڈکٹس کلاؤڈ پر سیو ہونا شروع ہو جائیں گے۔
+                </p>
+                <div className="relative group">
+                  <pre className="bg-black/50 p-6 rounded-2xl text-[11px] text-green-400 font-mono overflow-x-auto border border-white/5">
+                    {sqlCode}
+                  </pre>
+                  <button onClick={copyToClipboard} className="absolute top-4 right-4 bg-accent text-black p-3 rounded-xl hover:bg-white transition-all shadow-xl flex items-center gap-2 text-[10px] font-black uppercase">
+                    <Copy size={14} /> Copy SQL Code
+                  </button>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-[#111] border border-white/10 rounded-[2rem] p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center font-black text-black">3</div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">Add Keys to Vercel</h3>
+                </div>
+                <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
+                  اپنے Supabase پروجیکٹ کی "Project Settings" -> "API" میں جائیں۔ وہاں سے `URL` اور `anon public key` کاپی کریں۔ پھر اپنے Vercel ڈیش بورڈ میں Environment Variables میں جا کر یہ دو نام سیٹ کریں:
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
+                    <span className="text-accent">VITE_SUPABASE_URL</span>
+                    <span className="text-gray-500">(Your Supabase Project URL)</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
+                    <span className="text-accent">VITE_SUPABASE_ANON_KEY</span>
+                    <span className="text-gray-500">(Your Supabase Anon Key)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : activeTab === 'products' ? (
           <div className="space-y-6">
+            {!dbStatus?.success && (
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl flex items-start gap-4 animate-pulse">
+                    <AlertTriangle className="text-red-500 shrink-0" size={24} />
+                    <div className="space-y-1">
+                        <h4 className="text-red-500 font-black uppercase text-xs tracking-widest">Offline Mode Active</h4>
+                        <p className="text-gray-400 text-[11px] leading-relaxed font-urdu">
+                            آپ کا ڈیٹا کلاؤڈ سے نہیں جڑا ہوا۔ جو پروڈکٹس آپ یہاں ڈالیں گے وہ صرف **اسی موبائل** پر نظر آئیں گے۔ دوسرے موبائلز کے لیے "Global Sync Setup" مکمل کریں۔
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-black uppercase tracking-tighter text-white">Inventory</h1>
+                <p className="text-gray-500 text-sm">Managing Salman SKT Stock</p>
+              </div>
+              <button 
+                onClick={() => { setShowAddModal(true); setEditingProduct(null); setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] }); }} 
+                className="bg-accent text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-all shadow-xl"
+              >
+                <Plus size={18} /> Add Product
+              </button>
+            </div>
+
             <div className="bg-[#111] p-4 rounded-2xl border border-white/10 flex items-center gap-3">
               <Search className="text-gray-500" size={20} />
               <input placeholder="Search current stock..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="flex-1 bg-transparent border-none focus:outline-none font-medium text-sm text-white" />
