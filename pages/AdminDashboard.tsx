@@ -191,7 +191,7 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Create Supabase Project</h3>
                 </div>
                 <p className="text-gray-400 mb-4 text-sm font-urdu leading-relaxed">
-                  {"سب سے پہلے supabase.com پر جائیں اور ایک فری اکاؤنٹ بنا کر نیا پروجیکٹ شروع کریں۔"}
+                  {"سب سے پہلے سپا بیس (supabase.com) پر جائیں اور ایک فری اکاؤنٹ بنا کر نیا پروجیکٹ شروع کریں۔"}
                 </p>
                 <a href="https://supabase.com" target="_blank" className="inline-flex items-center gap-2 text-accent text-sm font-bold border-b border-accent pb-1 hover:text-white transition-colors">Go to Supabase Dashboard <ExternalLink size={14} /></a>
               </div>
@@ -203,7 +203,7 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Setup Database Tables</h3>
                 </div>
                 <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
-                  {"اپنے پروجیکٹ میں SQL Editor پر کلک کریں اور وہ کوڈ جو تصویر میں کامیاب ہوا تھا، اسے دوبارہ چیک کرنے کی ضرورت نہیں کیونکہ وہ سیٹ ہو چکا ہے۔"}
+                  {"آپ کا ڈیٹا بیس اب تیار ہے، کیونکہ آپ نے ایس کیو ایل (SQL) کوڈ پہلے ہی رن کر لیا ہے۔"}
                 </p>
                 <div className="relative group">
                   <pre className="bg-black/50 p-6 rounded-2xl text-[11px] text-green-400 font-mono overflow-x-auto border border-white/5">
@@ -222,16 +222,16 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Add Keys to Vercel</h3>
                 </div>
                 <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
-                  {"اب آخری کام یہ ہے کہ Supabase کی Project Settings میں جائیں، وہاں سے URL اور Anon Key کاپی کریں اور Vercel کے Environment Variables میں ڈال دیں۔"}
+                  {"اب سپا بیس کی پروجیکٹ سیٹنگز میں جائیں۔ وہاں سے یو آر ایل (URL) اور اینن کی (anon public key) کاپی کریں۔ ورسل (Vercel) کے انوائرمنٹ ویریبلز میں یہ دو نام سیٹ کریں:"}
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
                     <span className="text-accent">VITE_SUPABASE_URL</span>
-                    <span className="text-gray-500">(Copy from Supabase)</span>
+                    <span className="text-gray-500">{"(Supabase URL)"}</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
                     <span className="text-accent">VITE_SUPABASE_ANON_KEY</span>
-                    <span className="text-gray-500">(Copy from Supabase)</span>
+                    <span className="text-gray-500">{"(Supabase Anon Key)"}</span>
                   </div>
                 </div>
               </div>
@@ -245,7 +245,7 @@ CREATE TABLE orders (
                     <div className="space-y-1">
                         <h4 className="text-red-500 font-black uppercase text-xs tracking-widest">Offline Mode Active</h4>
                         <p className="text-gray-400 text-[11px] leading-relaxed font-urdu">
-                            {"آپ کا ڈیٹا ابھی کلاؤڈ سے کنیکٹ نہیں ہوا۔ Keys سیٹ کرنے کے بعد یہ وارننگ ختم ہو جائے گی اور ڈیٹا ہر جگہ نظر آئے گا۔"}
+                            {"آپ کا ڈیٹا ابھی کلاؤڈ سے نہیں جڑا۔ ورسل (Vercel) میں کیز (Keys) سیٹ کرنے کے بعد یہ وارننگ ختم ہو جائے گی۔"}
                         </p>
                     </div>
                 </div>

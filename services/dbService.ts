@@ -1,4 +1,3 @@
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Product, Order } from '../types';
 
@@ -8,25 +7,22 @@ const LOCAL_STORAGE_PRODUCTS_KEY = 'skt_products_v1';
 const LOCAL_STORAGE_ORDERS_KEY = 'skt_orders_v1';
 
 const getEnv = (key: string) => {
-  // Try all possible ways to get environment variables in different hosting environments
   try {
+    // Vercel and Vite standard way to access keys
+    const env = (import.meta as any).env;
+    if (env && env[key]) return env[key];
+    
+    // Fallback for different environments
     const altKey = key.startsWith('VITE_') ? key.replace('VITE_', '') : `VITE_${key}`;
-    
-    // Fix: Access import.meta.env through any to avoid property access errors
-    const meta = import.meta as any;
-    if (typeof meta !== 'undefined' && meta.env) {
-        if (meta.env[key]) return meta.env[key];
-        if (meta.env[altKey]) return meta.env[altKey];
-    }
-    
-    // @ts-ignore - Node/Vercel/Classic
+    if (env && env[altKey]) return env[altKey];
+
+    // Node process fallback
     if (typeof process !== 'undefined' && process.env) {
         if (process.env[key]) return process.env[key];
         if (process.env[altKey]) return process.env[altKey];
     }
 
-    // Global scope (fallback)
-    return (globalThis as any)[key] || (globalThis as any)[altKey] || '';
+    return '';
   } catch (e) {
     return '';
   }
@@ -38,7 +34,6 @@ const getSupabase = () => {
     const URL = getEnv('VITE_SUPABASE_URL');
     const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-    // Only attempt if keys look valid
     if (URL && KEY && URL.startsWith('http')) {
         try {
             supabaseInstance = createClient(URL, KEY);
@@ -100,7 +95,7 @@ export const dbService = {
       return { 
         success: false, 
         message: "Offline / Local Mode",
-        details: "Keys missing. Data will NOT sync across mobiles."
+        details: "Keys missing in Vercel Environment Variables."
       };
     }
     try {
@@ -141,7 +136,6 @@ export const dbService = {
         if (error) throw error;
         return data ? data[0] : null;
     } catch (e) {
-        console.warn("Saving locally as fallback");
         return localDb.saveProduct(product as Product);
     }
   },
