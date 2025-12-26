@@ -203,7 +203,7 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Setup Database Tables</h3>
                 </div>
                 <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
-                  {"اپنے پروجیکٹ میں SQL Editor پر کلک کریں اور نیچے دیا گیا کوڈ وہاں پیسٹ کر کے Run دبائیں۔ اس سے آپ کے پروڈکٹس کلاؤڈ پر سیو ہونا شروع ہو جائیں گے۔"}
+                  {"اپنے پروجیکٹ میں SQL Editor پر کلک کریں اور وہ کوڈ جو تصویر میں کامیاب ہوا تھا، اسے دوبارہ چیک کرنے کی ضرورت نہیں کیونکہ وہ سیٹ ہو چکا ہے۔"}
                 </p>
                 <div className="relative group">
                   <pre className="bg-black/50 p-6 rounded-2xl text-[11px] text-green-400 font-mono overflow-x-auto border border-white/5">
@@ -222,16 +222,16 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Add Keys to Vercel</h3>
                 </div>
                 <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
-                  {"اپنے Supabase پروجیکٹ کی Project Settings اور API سیکشن میں جائیں۔ وہاں سے URL اور anon key کاپی کریں۔ پھر اپنے Vercel ڈیش بورڈ میں Environment Variables میں جا کر یہ دو نام سیٹ کریں:"}
+                  {"اب آخری کام یہ ہے کہ Supabase کی Project Settings میں جائیں، وہاں سے URL اور Anon Key کاپی کریں اور Vercel کے Environment Variables میں ڈال دیں۔"}
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
                     <span className="text-accent">VITE_SUPABASE_URL</span>
-                    <span className="text-gray-500">(Your Supabase Project URL)</span>
+                    <span className="text-gray-500">(Copy from Supabase)</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
                     <span className="text-accent">VITE_SUPABASE_ANON_KEY</span>
-                    <span className="text-gray-500">(Your Supabase Anon Key)</span>
+                    <span className="text-gray-500">(Copy from Supabase)</span>
                   </div>
                 </div>
               </div>
@@ -245,7 +245,7 @@ CREATE TABLE orders (
                     <div className="space-y-1">
                         <h4 className="text-red-500 font-black uppercase text-xs tracking-widest">Offline Mode Active</h4>
                         <p className="text-gray-400 text-[11px] leading-relaxed font-urdu">
-                            {"آپ کا ڈیٹا کلاؤڈ سے نہیں جڑا ہوا۔ جو پروڈکٹس آپ یہاں ڈالیں گے وہ صرف اسی موبائل پر نظر آئیں گے۔ دوسرے موبائلز کے لیے Global Sync Setup مکمل کریں۔"}
+                            {"آپ کا ڈیٹا ابھی کلاؤڈ سے کنیکٹ نہیں ہوا۔ Keys سیٹ کرنے کے بعد یہ وارننگ ختم ہو جائے گی اور ڈیٹا ہر جگہ نظر آئے گا۔"}
                         </p>
                     </div>
                 </div>
