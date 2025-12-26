@@ -222,7 +222,7 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Add Keys to Vercel</h3>
                 </div>
                 <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
-                  اپنے Supabase پروجیکٹ کی "Project Settings" -> "API" میں جائیں۔ وہاں سے `URL` اور `anon public key` کاپی کریں۔ پھر اپنے Vercel ڈیش بورڈ میں Environment Variables میں جا کر یہ دو نام سیٹ کریں:
+                  اپنے Supabase پروجیکٹ کی "Project Settings" → "API" میں جائیں۔ وہاں سے URL اور anon public key کاپی کریں۔ پھر اپنے Vercel ڈیش بورڈ میں Environment Variables میں جا کر یہ دو نام سیٹ کریں:
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
@@ -245,7 +245,7 @@ CREATE TABLE orders (
                     <div className="space-y-1">
                         <h4 className="text-red-500 font-black uppercase text-xs tracking-widest">Offline Mode Active</h4>
                         <p className="text-gray-400 text-[11px] leading-relaxed font-urdu">
-                            آپ کا ڈیٹا کلاؤڈ سے نہیں جڑا ہوا۔ جو پروڈکٹس آپ یہاں ڈالیں گے وہ صرف **اسی موبائل** پر نظر آئیں گے۔ دوسرے موبائلز کے لیے "Global Sync Setup" مکمل کریں۔
+                            آپ کا ڈیٹا کلاؤڈ سے نہیں جڑا ہوا۔ جو پروڈکٹس آپ یہاں ڈالیں گے وہ صرف اسی موبائل پر نظر آئیں گے۔ دوسرے موبائلز کے لیے "Global Sync Setup" مکمل کریں۔
                         </p>
                     </div>
                 </div>
