@@ -6,20 +6,29 @@ let supabaseInstance: SupabaseClient | null = null;
 const LOCAL_STORAGE_PRODUCTS_KEY = 'skt_products_v1';
 const LOCAL_STORAGE_ORDERS_KEY = 'skt_orders_v1';
 
-const getEnv = (key: string) => {
+// Function to find keys in any environment (Vite, Vercel, Node)
+const getEnv = (key: string): string => {
   try {
-    // Vercel and Vite standard way to access keys
-    const env = (import.meta as any).env;
-    if (env && env[key]) return env[key];
-    
-    // Fallback for different environments
-    const altKey = key.startsWith('VITE_') ? key.replace('VITE_', '') : `VITE_${key}`;
-    if (env && env[altKey]) return env[altKey];
+    // 1. Try Vite's import.meta.env
+    const viteEnv = (import.meta as any).env;
+    if (viteEnv && viteEnv[key]) return viteEnv[key];
 
-    // Node process fallback
-    if (typeof process !== 'undefined' && process.env) {
-        if (process.env[key]) return process.env[key];
-        if (process.env[altKey]) return process.env[altKey];
+    // 2. Try standard process.env (Vercel injection)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return process.env[key];
+    }
+
+    // 3. Try common fallbacks (if user forgot VITE_ prefix or used NEXT_ prefix)
+    const baseKey = key.replace('VITE_', '').replace('NEXT_PUBLIC_', '');
+    const fallbacks = [
+      `VITE_${baseKey}`,
+      `NEXT_PUBLIC_${baseKey}`,
+      baseKey
+    ];
+
+    for (const f of fallbacks) {
+      if (viteEnv && viteEnv[f]) return viteEnv[f];
+      if (typeof process !== 'undefined' && process.env && process.env[f]) return process.env[f];
     }
 
     return '';
@@ -34,11 +43,12 @@ const getSupabase = () => {
     const URL = getEnv('VITE_SUPABASE_URL');
     const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-    if (URL && KEY && URL.startsWith('http')) {
+    if (URL && KEY && URL.length > 10) {
         try {
             supabaseInstance = createClient(URL, KEY);
             return supabaseInstance;
         } catch (e) {
+            console.error("Supabase Init Error:", e);
             return null;
         }
     }
@@ -85,8 +95,7 @@ const localDb = {
 
 export const dbService = {
   isConfigured: () => {
-    const client = getSupabase();
-    return !!client;
+    return !!getSupabase();
   },
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
@@ -94,18 +103,18 @@ export const dbService = {
     if (!client) {
       return { 
         success: false, 
-        message: "Offline / Local Mode",
-        details: "Keys missing in Vercel Environment Variables."
+        message: "OFFLINE / LOCAL MODE",
+        details: "Environment variables not detected yet."
       };
     }
     try {
       const { error } = await client.from('products').select('count', { count: 'exact', head: true });
       if (error) throw error;
-      return { success: true, message: "Cloud Active (Sync ON)" };
+      return { success: true, message: "CLOUD ACTIVE (SYNC ON)" };
     } catch (e: any) {
       return { 
         success: false, 
-        message: "Connection Error",
+        message: "CONNECTION ERROR",
         details: e.message
       };
     }
@@ -128,6 +137,7 @@ export const dbService = {
     if (!client) return localDb.saveProduct(product as Product);
     
     const cleanProduct = { ...product };
+    // Ensure ID is a valid UUID or remove it for auto-generation
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (cleanProduct.id && !uuidRegex.test(cleanProduct.id)) delete cleanProduct.id;
 

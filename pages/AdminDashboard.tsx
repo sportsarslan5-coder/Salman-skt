@@ -203,7 +203,7 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Setup Database Tables</h3>
                 </div>
                 <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
-                  {"آپ کا ڈیٹا بیس اب تیار ہے، کیونکہ آپ نے ایس کیو ایل (SQL) کوڈ پہلے ہی رن کر لیا ہے۔"}
+                  {"ایس کیو ایل (SQL) کوڈ آپ پہلے ہی رن کر چکے ہیں، اس لیے یہ مرحلہ مکمل ہے۔"}
                 </p>
                 <div className="relative group">
                   <pre className="bg-black/50 p-6 rounded-2xl text-[11px] text-green-400 font-mono overflow-x-auto border border-white/5">
@@ -222,16 +222,16 @@ CREATE TABLE orders (
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Add Keys to Vercel</h3>
                 </div>
                 <p className="text-gray-400 mb-6 text-sm font-urdu leading-relaxed">
-                  {"اب سپا بیس کی پروجیکٹ سیٹنگز میں جائیں۔ وہاں سے یو آر ایل (URL) اور اینن کی (anon public key) کاپی کریں۔ ورسل (Vercel) کے انوائرمنٹ ویریبلز میں یہ دو نام سیٹ کریں:"}
+                  {"ورسل (Vercel) میں کیز (Keys) شامل کرنے کے بعد ایک بار 'Redeploy' ضرور کریں تاکہ تبدیلیاں لاگو ہو سکیں۔"}
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
                     <span className="text-accent">VITE_SUPABASE_URL</span>
-                    <span className="text-gray-500">{"(Supabase URL)"}</span>
+                    <span className="text-gray-500">{"(From Supabase Settings)"}</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-black/50 rounded-xl border border-white/5 font-mono text-xs">
                     <span className="text-accent">VITE_SUPABASE_ANON_KEY</span>
-                    <span className="text-gray-500">{"(Supabase Anon Key)"}</span>
+                    <span className="text-gray-500">{"(From Supabase Settings)"}</span>
                   </div>
                 </div>
               </div>
@@ -245,7 +245,7 @@ CREATE TABLE orders (
                     <div className="space-y-1">
                         <h4 className="text-red-500 font-black uppercase text-xs tracking-widest">Offline Mode Active</h4>
                         <p className="text-gray-400 text-[11px] leading-relaxed font-urdu">
-                            {"آپ کا ڈیٹا ابھی کلاؤڈ سے نہیں جڑا۔ ورسل (Vercel) میں کیز (Keys) سیٹ کرنے کے بعد یہ وارننگ ختم ہو جائے گی۔"}
+                            {"آپ کی ویب سائٹ ابھی لوکل موڈ میں ہے۔ کیز سیٹ کرنے کے بعد یہ خود بخود آن لائن ہو جائے گی۔"}
                         </p>
                     </div>
                 </div>
