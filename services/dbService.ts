@@ -9,25 +9,38 @@ const LOCAL_STORAGE_ORDERS_KEY = 'skt_orders_v1';
 
 const getEnv = (key: string): string => {
   try {
-    if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key]) {
-      return (import.meta as any).env[key];
-    }
-    if (typeof process !== 'undefined' && process.env && process.env[key]) {
-      return process.env[key];
-    }
-    return '';
+    // Check various ways env variables might be provided
+    const val = (import.meta as any).env?.[key] || 
+                (process as any).env?.[key] || 
+                '';
+    
+    // Safety check: sometimes users paste the name into the value field in Vercel
+    if (val === key) return ''; 
+    return val;
   } catch (e) {
     return '';
   }
 };
 
+export const getDiagnostics = () => {
+  const url = getEnv('VITE_SUPABASE_URL');
+  const key = getEnv('VITE_SUPABASE_ANON_KEY');
+  
+  return {
+    urlFound: !!url && url.startsWith('http'),
+    keyFound: !!key && key.length > 20,
+    urlValue: url ? (url.substring(0, 10) + '...') : 'Missing',
+    keyValue: key ? (key.substring(0, 5) + '...') : 'Missing'
+  };
+};
+
 const getSupabase = () => {
     if (supabaseInstance) return supabaseInstance;
     
-    const URL = getEnv('VITE_SUPABASE_URL') || getEnv('SUPABASE_URL');
-    const KEY = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('SUPABASE_ANON_KEY');
+    const URL = getEnv('VITE_SUPABASE_URL');
+    const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-    if (URL && KEY && URL.length > 10) {
+    if (URL && KEY && URL.startsWith('http') && KEY.length > 20) {
         try {
             supabaseInstance = createClient(URL, KEY);
             return supabaseInstance;
@@ -78,27 +91,26 @@ const localDb = {
 };
 
 export const dbService = {
-  isConfigured: () => !!getSupabase(),
+  isConfigured: () => {
+    const client = getSupabase();
+    return !!client;
+  },
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
     const client = getSupabase();
     if (!client) {
-      return { 
-        success: false, 
-        message: "LOCAL MODE (OFFLINE)",
-        details: "Keys are missing. Syncing locally to this device only."
-      };
+      const diag = getDiagnostics();
+      if (!diag.urlFound && !diag.keyFound) {
+        return { success: false, message: "OFFLINE MODE", details: "Vercel keys are missing or name/value mixed up." };
+      }
+      return { success: false, message: "CONFIG ERROR", details: `URL: ${diag.urlFound ? 'OK' : 'INVALID'} | Key: ${diag.keyFound ? 'OK' : 'INVALID'}` };
     }
     try {
       const { error } = await client.from('products').select('id').limit(1);
       if (error) throw error;
-      return { success: true, message: "GLOBAL SYNC ACTIVE (ONLINE)" };
+      return { success: true, message: "GLOBAL SYNC ACTIVE" };
     } catch (e: any) {
-      return { 
-        success: false, 
-        message: "CLOUD SYNC ERROR",
-        details: e.message
-      };
+      return { success: false, message: "DATABASE ERROR", details: e.message };
     }
   },
 
@@ -107,7 +119,7 @@ export const dbService = {
     if (!client) return localDb.getProducts();
     try {
       const { data, error } = await client.from('products').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
+      if (error) return localDb.getProducts();
       return data || [];
     } catch (error) {
       return localDb.getProducts();
@@ -141,7 +153,7 @@ export const dbService = {
     if (!client) return localDb.getOrders();
     try {
       const { data, error } = await client.from('orders').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
+      if (error) return localDb.getOrders();
       return data || [];
     } catch (error) {
       return localDb.getOrders();
