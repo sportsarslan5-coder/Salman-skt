@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="Sialkot Shop - Premium Quality Men's Fashion & Technical Apparel." />
     <meta name="theme-color" content="#0a0a0a">
     <title>Sialkot Shop | Premium Collection</title>
@@ -22,6 +23,25 @@
               sans: ['Inter', 'sans-serif'],
               urdu: ['Noto Nastaliq Urdu', 'serif'],
             },
+            animation: {
+              'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+              'fade-in-right': 'fadeInRight 0.4s ease-out forwards',
+              'marquee': 'marquee 25s linear infinite',
+            },
+            keyframes: {
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeInRight: {
+                '0%': { opacity: '0', transform: 'translateX(-20px)' },
+                '100%': { opacity: '1', transform: 'translateX(0)' },
+              },
+              marquee: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              }
+            }
           },
         },
       }
@@ -35,6 +55,7 @@
         padding: 0; 
         min-height: 100vh;
         overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent;
       }
       #root:empty + #preloader {
         display: flex;
@@ -59,6 +80,16 @@
       }
       @keyframes spin {
         to { transform: rotate(360deg); }
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 10px;
       }
     </style>
     <script type="importmap">

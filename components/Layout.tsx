@@ -1,11 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Menu, X, Search, MessageCircle, Instagram, Facebook, Twitter, Sparkles, Lock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { WHATSAPP_NUMBER } from '../constants';
+import BottomNav from './BottomNav';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { 
-    t, cart, language, setLanguage, currency, setCurrency, isRTL, route, navigate 
+    t, cart, navigate, route 
   } = useAppContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -52,7 +53,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <a
                   key={link.name}
                   href={`#${link.path}`}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-accent transition-all flex items-center gap-1.5"
+                  className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-1.5 ${route === link.path ? 'text-accent' : 'text-gray-400 hover:text-accent'}`}
                 >
                   {link.name === 'smartPricing' && <Sparkles size={10} className="text-accent" />}
                   {t(link.name)}
@@ -67,7 +68,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <a href="#/cart" className="relative text-white hover:text-accent">
                 <ShoppingBag size={20} />
                 {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-accent text-black text-[9px] font-black h-4 w-4 flex items-center justify-center rounded-full">
+                  <span className="absolute -top-2 -right-2 bg-accent text-black text-[9px] font-black h-4 w-4 flex items-center justify-center rounded-full animate-bounce">
                     {cart.reduce((a, b) => a + b.quantity, 0)}
                   </span>
                 )}
@@ -81,14 +82,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden">
           <div className="fixed inset-0 bg-black/95" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="fixed inset-y-0 left-0 w-[80%] bg-[#0a0a0a] border-r border-white/10 p-10">
+          <div className="fixed inset-y-0 left-0 w-[80%] bg-[#0a0a0a] border-r border-white/10 p-10 animate-fade-in-right">
             <div className="flex justify-between items-center mb-12">
               <span className="text-xl font-black uppercase">SIALKOT<span className="text-accent">SHOP</span></span>
               <button onClick={() => setIsMobileMenuOpen(false)}><X size={24} /></button>
             </div>
             <div className="flex flex-col gap-8">
               {navLinks.map((link) => (
-                <a key={link.name} href={`#${link.path}`} className="text-2xl font-black uppercase tracking-tighter hover:text-accent">
+                <a key={link.name} href={`#${link.path}`} onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-black uppercase tracking-tighter hover:text-accent">
                   {t(link.name)}
                 </a>
               ))}
@@ -98,12 +99,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       )}
 
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="flex-grow pb-20 md:pb-0">
         {children}
       </main>
 
-      {/* Dark Luxury Footer */}
-      <footer className="bg-black border-t border-white/5 pt-20 pb-10">
+      {/* Bottom Navigation for Mobile */}
+      <BottomNav />
+
+      {/* Footer (Hidden on Mobile for cleaner app feel) */}
+      <footer className="bg-black border-t border-white/5 pt-20 pb-10 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
             <div className="md:col-span-5">

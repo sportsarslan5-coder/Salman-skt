@@ -10,20 +10,26 @@ export interface PricingAnalysis {
     estimatedPriceUSD?: number; 
 }
 
-// Fix: Use process.env.API_KEY directly and implement latest Gemini SDK patterns
 export const analyzeProductImage = async (base64Data: string, mimeType: string, userProvidedName?: string): Promise<PricingAnalysis> => {
-    // Guideline: Initialize client right before use
+    // Initialize right before use to ensure the latest key is used
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const prompt = `
-    You are an expert fashion and sports equipment authenticator and pricing algorithm for Salman SKT (Sialkot).
-    Analyze this product image and provide a detailed analysis.
+    You are an expert fashion auditor for 'Sialkot Shop', the world capital of sports manufacturing.
+    Analyze this apparel image. Identify the type of garment, material quality (based on visual textures), 
+    and provide a fair export-grade price estimation in USD.
+    
+    Current market rates for Sialkot Export:
+    - T-shirts: $20-30
+    - Hoodies: $40-55
+    - Technical Jackets: $60-90
+    - Sports Jerseys: $35-50
+    - Leather Goods: $100+
     `;
 
     try {
-        // Guideline: Use gemini-3-pro-preview for complex reasoning/vision tasks
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
+            model: 'gemini-3-pro-preview', // Use Pro for detailed vision analysis
             contents: {
                 parts: [
                     { inlineData: { mimeType, data: base64Data } },
@@ -32,7 +38,6 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
             },
             config: {
                 responseMimeType: 'application/json',
-                // Guideline: Always use responseSchema for expected JSON output
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
@@ -43,7 +48,7 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
                             type: Type.ARRAY, 
                             items: { type: Type.STRING } 
                         },
-                        complexityScore: { type: Type.NUMBER },
+                        complexityScore: { type: Type.NUMBER, description: "0.1 to 1.0 based on design detail" },
                         estimatedPriceUSD: { type: Type.NUMBER }
                     },
                     required: ["productName", "category", "reasoning", "dominantColors", "complexityScore", "estimatedPriceUSD"]
@@ -51,43 +56,41 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
             }
         });
         
-        // Guideline: Use .text property directly
         if (response.text) {
             return JSON.parse(response.text.trim());
         }
-        throw new Error("No response");
+        throw new Error("Empty response from AI");
 
     } catch (error) {
         console.error("AI Analysis Failed:", error);
         return {
-            productName: userProvidedName || "Custom Item",
-            category: "T-Shirt",
-            dominantColors: ["Multi-color"],
+            productName: userProvidedName || "Custom Apparel",
+            category: "Apparel",
+            dominantColors: ["Unknown"],
             complexityScore: 0.5,
-            estimatedPriceUSD: 55,
-            reasoning: "Analysis temporarily unavailable."
+            estimatedPriceUSD: 45,
+            reasoning: "Detailed vision analysis failed. Providing baseline Sialkot export estimation."
         };
     }
 };
 
 export const chatWithStylist = async (message: string, history: any[]) => {
-    // Guideline: Use process.env.API_KEY directly
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const systemInstruction = "You are a hip, knowledgeable sneaker and streetwear expert for Salman SKT. Keep answers short, fun, and use emojis.";
     
     try {
-        // Guideline: Use gemini-3-flash-preview for conversational tasks
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: [
                 ...history,
                 { role: 'user', parts: [{ text: message }] }
             ],
-            config: { systemInstruction }
+            config: { 
+                systemInstruction: "You are the 'Sialkot Shop' Style Expert. You help men find the best jerseys, technical jackets, and streetwear. You are confident, hip, and use Urdu words like 'Bhai', 'Zabardast', and 'Shandaar' occasionally. Keep responses under 3 sentences and very punchy. 🧥🔥"
+            }
         });
-        // Guideline: Use .text property directly
-        return response.text || "I'm thinking...";
+        return response.text || "I'm having a bit of a style block. Ask me something else!";
     } catch (e) {
-        return "Chat system is busy. Please try again in a moment!";
+        console.error("Chat error:", e);
+        return "System is a bit busy, Bhai. Try again in a second!";
     }
 };

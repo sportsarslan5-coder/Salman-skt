@@ -1,3 +1,4 @@
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Product, Order } from '../types';
 
@@ -6,31 +7,17 @@ let supabaseInstance: SupabaseClient | null = null;
 const LOCAL_STORAGE_PRODUCTS_KEY = 'skt_products_v1';
 const LOCAL_STORAGE_ORDERS_KEY = 'skt_orders_v1';
 
-// Function to find keys in any environment (Vite, Vercel, Node)
+// Vercel and Vite handles env variables differently. This ensures we pick them up.
 const getEnv = (key: string): string => {
   try {
-    // 1. Try Vite's import.meta.env
-    const viteEnv = (import.meta as any).env;
-    if (viteEnv && viteEnv[key]) return viteEnv[key];
-
-    // 2. Try standard process.env (Vercel injection)
+    // 1. Try Vite's import.meta.env (Client Side)
+    if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key]) {
+      return (import.meta as any).env[key];
+    }
+    // 2. Try standard process.env (Server Side / Deployment)
     if (typeof process !== 'undefined' && process.env && process.env[key]) {
       return process.env[key];
     }
-
-    // 3. Try common fallbacks (if user forgot VITE_ prefix or used NEXT_ prefix)
-    const baseKey = key.replace('VITE_', '').replace('NEXT_PUBLIC_', '');
-    const fallbacks = [
-      `VITE_${baseKey}`,
-      `NEXT_PUBLIC_${baseKey}`,
-      baseKey
-    ];
-
-    for (const f of fallbacks) {
-      if (viteEnv && viteEnv[f]) return viteEnv[f];
-      if (typeof process !== 'undefined' && process.env && process.env[f]) return process.env[f];
-    }
-
     return '';
   } catch (e) {
     return '';
@@ -40,15 +27,16 @@ const getEnv = (key: string): string => {
 const getSupabase = () => {
     if (supabaseInstance) return supabaseInstance;
     
-    const URL = getEnv('VITE_SUPABASE_URL');
-    const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
+    // Check both VITE_ prefixed and standard names
+    const URL = getEnv('VITE_SUPABASE_URL') || getEnv('SUPABASE_URL');
+    const KEY = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('SUPABASE_ANON_KEY');
 
     if (URL && KEY && URL.length > 10) {
         try {
             supabaseInstance = createClient(URL, KEY);
             return supabaseInstance;
         } catch (e) {
-            console.error("Supabase Init Error:", e);
+            console.error("Supabase Initialization Error:", e);
             return null;
         }
     }
@@ -104,17 +92,18 @@ export const dbService = {
       return { 
         success: false, 
         message: "OFFLINE / LOCAL MODE",
-        details: "Environment variables not detected yet."
+        details: "Keys not found. Using local storage."
       };
     }
     try {
-      const { error } = await client.from('products').select('count', { count: 'exact', head: true });
+      // Light check
+      const { error } = await client.from('products').select('id').limit(1);
       if (error) throw error;
-      return { success: true, message: "CLOUD ACTIVE (SYNC ON)" };
+      return { success: true, message: "CLOUD CONNECTED" };
     } catch (e: any) {
       return { 
         success: false, 
-        message: "CONNECTION ERROR",
+        message: "SYNC ERROR",
         details: e.message
       };
     }
@@ -136,13 +125,8 @@ export const dbService = {
     const client = getSupabase();
     if (!client) return localDb.saveProduct(product as Product);
     
-    const cleanProduct = { ...product };
-    // Ensure ID is a valid UUID or remove it for auto-generation
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (cleanProduct.id && !uuidRegex.test(cleanProduct.id)) delete cleanProduct.id;
-
     try {
-        const { data, error } = await client.from('products').upsert(cleanProduct).select();
+        const { data, error } = await client.from('products').upsert(product).select();
         if (error) throw error;
         return data ? data[0] : null;
     } catch (e) {

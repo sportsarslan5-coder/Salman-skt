@@ -1,147 +1,34 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Sparkles, Loader2, Camera, MessageCircle, X, ShoppingCart, Minus, Plus, Search, CheckCircle2, Edit3, ChevronDown, Filter } from 'lucide-react';
+
+import React, { useState, useRef } from 'react';
+import { Sparkles, Loader2, Camera, MessageCircle, X, ShoppingCart, Minus, Plus, Search, ChevronRight, Info, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { analyzeProductImage, PricingAnalysis } from '../services/geminiService';
 import { WHATSAPP_NUMBER } from '../constants';
-import { Product } from '../types';
 
 const AutoPricing: React.FC = () => {
   const { convertPrice, addToCart, navigate } = useAppContext();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<PricingAnalysis | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   
-  // Data State
-  const [editableName, setEditableName] = useState('');
-  const [currentCategory, setCurrentCategory] = useState('');
-  const [currentPrice, setCurrentPrice] = useState(0);
-
-  // Order Configuration State
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState('');
-  const [availableSizes, setAvailableSizes] = useState<string[]>(['S', 'M', 'L', 'XL']);
-  
+  const [selectedSize, setSelectedSize] = useState('M');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- FULL 100 PRODUCT PRICE LIST ---
-  const PRICE_CATALOG: {name: string, price: number}[] = [
-    { name: "T-Shirt", price: 25 }, { name: "Hoodie", price: 40 }, { name: "Jersey", price: 45 }, { name: "Jacket", price: 60 }, { name: "Tracksuit", price: 70 },
-    { name: "Cap", price: 15 }, { name: "Beanie", price: 18 }, { name: "Jeans", price: 55 }, { name: "Shorts", price: 30 }, { name: "Sweatpants", price: 35 },
-    { name: "Polo Shirt", price: 28 }, { name: "Dress Shirt", price: 38 }, { name: "Tank Top", price: 22 }, { name: "Sweater", price: 42 }, { name: "Cardigan", price: 48 },
-    { name: "Vest", price: 32 }, { name: "Coat", price: 90 }, { name: "Trench Coat", price: 110 }, { name: "Blazer", price: 85 }, { name: "Leather Jacket", price: 120 },
-    { name: "Bomber Jacket", price: 95 }, { name: "Windbreaker", price: 65 }, { name: "Raincoat", price: 75 }, { name: "Pajama Set", price: 40 }, { name: "Nightwear", price: 38 },
-    { name: "Bathrobe", price: 50 }, { name: "Jumpsuit", price: 60 }, { name: "Romper", price: 45 }, { name: "Skirt", price: 30 }, { name: "Leggings", price: 28 },
-    { name: "Jeggings", price: 32 }, { name: "Yoga Pants", price: 35 }, { name: "Sports Bra", price: 30 }, { name: "Workout Top", price: 26 }, { name: "Compression Shirt", price: 34 },
-    { name: "Base Layer", price: 38 }, { name: "Thermal Wear", price: 40 }, { name: "Gloves", price: 20 }, { name: "Scarf", price: 22 }, { name: "Shawl", price: 28 },
-    { name: "Socks (Pack)", price: 15 }, { name: "Ankle Socks", price: 10 }, { name: "Sneakers", price: 120 }, { name: "Running Shoes", price: 95 }, { name: "Leather Boots", price: 130 },
-    { name: "Loafers", price: 85 }, { name: "Sandals", price: 28 }, { name: "Slippers", price: 20 }, { name: "Flip Flops", price: 18 }, { name: "Formal Shoes", price: 110 },
-    { name: "Sunglasses", price: 35 }, { name: "Belt", price: 25 }, { name: "Watch", price: 60 }, { name: "Backpack", price: 50 }, { name: "Crossbody Bag", price: 40 },
-    { name: "Duffle Bag", price: 60 }, { name: "Laptop Bag", price: 55 }, { name: "Wallet", price: 22 }, { name: "Tie", price: 15 }, { name: "Bow Tie", price: 18 },
-    { name: "Cufflinks", price: 30 }, { name: "Handkerchief", price: 10 }, { name: "Rain Boots", price: 48 }, { name: "Ski Jacket", price: 140 }, { name: "Winter Coat", price: 130 },
-    { name: "Puffer Jacket", price: 100 }, { name: "Down Jacket", price: 115 }, { name: "Graphic T-Shirt", price: 27 }, { name: "Ripped Jeans", price: 60 }, { name: "Cargo Pants", price: 50 },
-    { name: "Denim Jacket", price: 85 }, { name: "Faux Fur Coat", price: 125 }, { name: "Camouflage Jacket", price: 90 }, { name: "Oversized Hoodie", price: 50 }, { name: "Zipper Hoodie", price: 45 },
-    { name: "Half Sleeve Shirt", price: 30 }, { name: "Long Sleeve T-Shirt", price: 28 }, { name: "Linen Shirt", price: 40 }, { name: "Khaki Pants", price: 42 }, { name: "Joggers", price: 38 },
-    { name: "Lounge Wear", price: 55 }, { name: "Sleep Shorts", price: 20 }, { name: "Sport Shorts", price: 26 }, { name: "Baseball Cap", price: 22 }, { name: "Visor Hat", price: 18 },
-    { name: "Fedora Hat", price: 35 }, { name: "Bucket Hat", price: 25 }, { name: "Custom Jersey", price: 65 }, { name: "Team Tracksuit", price: 75 }, { name: "Warm Gloves", price: 24 },
-    { name: "Touchscreen Gloves", price: 28 }, { name: "Waterproof Jacket", price: 85 }, { name: "Cycling Shorts", price: 32 }, { name: "Hiking Boots", price: 135 }, { name: "Trail Shoes", price: 110 },
-    { name: "Dress Pants", price: 50 }, { name: "Office Shirt", price: 36 }, { name: "Softshell Jacket", price: 88 }, { name: "Winter Leggings", price: 40 }, { name: "Fashion Hoodie", price: 52 }
-  ];
-
-  // Helper dictionary for fast lookup
-  const SHOP_PRICES = useMemo(() => {
-    const dict: {[key: string]: number} = {};
-    PRICE_CATALOG.forEach(item => { dict[item.name] = item.price; });
-    return dict;
-  }, []);
-
-  const filteredCatalog = useMemo(() => {
-    return PRICE_CATALOG.filter(item => 
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
-
-  const handleProductSelect = (item: {name: string, price: number}) => {
-    setEditableName(item.name);
-    setCurrentCategory(item.name);
-    setCurrentPrice(item.price);
-    updateSizesForCategory(item.name);
-    
-    if (!result) {
-        setResult({
-            productName: item.name,
-            category: item.name,
-            reasoning: "Selected from official catalog.",
-            dominantColors: ["Standard"],
-            complexityScore: 0.5,
-            estimatedPriceUSD: item.price
-        });
-    }
-  };
-
-  const normalizeCategory = (cat: string): string => {
-      if (!cat) return 'Unknown';
-      const input = cat.trim();
-      const lowerInput = input.toLowerCase();
-      
-      if (SHOP_PRICES[input]) return input;
-      const keys = Object.keys(SHOP_PRICES);
-      for (const key of keys) {
-          if (key.toLowerCase() === lowerInput) return key;
-      }
-      return 'Unknown';
-  };
-
-  const updateSizesForCategory = (cat: string) => {
-        const lowerCat = cat.toLowerCase();
-        let sizes: string[] = ['S', 'M', 'L', 'XL', 'XXL'];
-        let defaultSize = 'M';
-
-        if (['shoe', 'sneaker', 'boot', 'sandal', 'slipper', 'flip flop', 'loafer'].some(k => lowerCat.includes(k))) {
-            sizes = ['US 7', 'US 8', 'US 9', 'US 10', 'US 11', 'US 12'];
-            defaultSize = 'US 9';
-        } 
-        else if (['cap', 'hat', 'beanie', 'visor', 'bag', 'backpack', 'wallet', 'watch', 'sunglass', 'belt', 'tie', 'cufflink', 'scarf', 'shawl', 'handkerchief'].some(k => lowerCat.includes(k))) {
-            sizes = ['One Size'];
-            defaultSize = 'One Size';
-        }
-        
-        setAvailableSizes(sizes);
-        setSelectedSize(defaultSize);
-  };
-
-  useEffect(() => {
-    if (result && !editableName.includes(result.productName)) {
-        let finalName = result.productName || "Custom Item";
-        setEditableName(finalName);
-        
-        const normalizedCat = normalizeCategory(result.category);
-        const displayCategory = normalizedCat === 'Unknown' ? result.category : normalizedCat;
-        setCurrentCategory(displayCategory);
-        
-        let finalPrice = 0;
-        if (normalizedCat !== 'Unknown' && SHOP_PRICES[normalizedCat]) {
-            finalPrice = SHOP_PRICES[normalizedCat];
-        } else {
-            finalPrice = result.estimatedPriceUSD || 50; 
-            finalPrice = Math.ceil(finalPrice / 5) * 5;
-        }
-        setCurrentPrice(finalPrice);
-    }
-  }, [result]);
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onloadend = async () => {
-      const base64String = reader.result as string;
-      setSelectedImage(base64String);
+      const base64 = (reader.result as string).split(',')[1];
+      setSelectedImage(reader.result as string);
       setAnalyzing(true);
-      const base64Data = base64String.split(',')[1];
+      setResult(null);
+
       try {
-        const data = await analyzeProductImage(base64Data, file.type, editableName);
-        setResult(data);
+        const analysis = await analyzeProductImage(base64, file.type);
+        setResult(analysis);
       } catch (err) {
         console.error(err);
       } finally {
@@ -151,167 +38,186 @@ const AutoPricing: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleAddToCart = () => {
-    if (!selectedImage && !result && !currentCategory) return;
-    const finalName = editableName.trim() || currentCategory || "Smart Ordered Item";
-    
-    // Create a product object WITHOUT an ID to allow the DB to generate a UUID
-    const customProduct: Product = {
-        id: '', // dbService will remove this before upserting
-        title: finalName,
-        category: 'Men', 
-        price: currentPrice,
-        image_url: selectedImage || "https://images.unsplash.com/photo-1578768079052-aa76e52ff62e?w=800&q=80",
-        description: `Smart Priced Order. Category: ${currentCategory}.`,
-        sizes: availableSizes,
-        rating: 5.0,
-        reviews: 0
-    };
-    addToCart(customProduct, selectedSize, quantity);
-    navigate('/cart');
-  };
-
-  const handleWhatsApp = () => {
-    const finalName = editableName.trim() || currentCategory;
-    const priceDisplay = convertPrice(currentPrice);
-    const message = `*NEW ORDER REQUEST*%0a🛍️ *${finalName}*%0a📂 Type: ${currentCategory}%0a💰 Price: ${priceDisplay}%0a📏 Size: ${selectedSize}%0a📦 Quantity: ${quantity}`;
+  const handleWhatsAppInquiry = () => {
+    if (!result) return;
+    const message = `*AI LENS INQUIRY - SIALKOT SHOP*%0a` +
+                    `*Product:* ${result.productName}%0a` +
+                    `*Estimated Price:* ${convertPrice(result.estimatedPriceUSD || 0)}%0a` +
+                    `*Size Required:* ${selectedSize}%0a` +
+                    `*Quantity:* ${quantity}%0a` +
+                    `------------------%0a` +
+                    `I saw this on your AI Lens. Can you provide this quality?`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-secondary py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-black text-primary mb-4 uppercase tracking-tighter">
-            Smart Pricing
+    <div className="min-h-screen bg-black py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6 border border-accent/20">
+            <Sparkles size={14} /> AI Powered Lens
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-4">
+            Smart Pricing<span className="text-accent"> Tool</span>
           </h1>
-          <p className="text-gray-500 max-w-xl mx-auto">Select a product or upload a photo to get the official premium price.</p>
+          <p className="text-gray-500 max-w-xl mx-auto uppercase text-[10px] font-bold tracking-widest leading-loose">
+            Upload any apparel photo. Our AI analyzes fabric density, stitching complexity, and Sialkot export standards to give you a fair price.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-4 bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col h-[700px]">
-              <div className="p-6 bg-black text-white">
-                  <div className="flex items-center gap-2 mb-4">
-                      <Filter size={18} className="text-accent" />
-                      <h3 className="font-bold uppercase tracking-wider text-sm">Quick Catalog</h3>
-                  </div>
+        {!selectedImage ? (
+          <div 
+            onClick={() => fileInputRef.current?.click()}
+            className="aspect-[16/9] md:aspect-[21/9] bg-[#0a0a0a] border-2 border-dashed border-white/10 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 transition-all group overflow-hidden relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="bg-white/5 p-6 rounded-3xl mb-4 group-hover:scale-110 transition-transform">
+              <Camera size={48} className="text-gray-500 group-hover:text-accent transition-colors" />
+            </div>
+            <p className="text-white font-black uppercase tracking-widest text-xs">Snap or Upload Photo</p>
+            <p className="text-gray-600 text-[10px] mt-2 font-bold">JPG, PNG up to 10MB</p>
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-fade-in">
+            {/* Image Preview Area */}
+            <div className="relative rounded-[2.5rem] overflow-hidden bg-[#111] border border-white/10 aspect-square lg:aspect-auto">
+              <img src={selectedImage} className="w-full h-full object-cover" alt="To be analyzed" />
+              
+              {analyzing && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center">
                   <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <input 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search items..."
-                        className="w-full bg-white/10 border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-accent outline-none text-white placeholder:text-gray-500"
-                      />
+                    <div className="w-20 h-20 border-4 border-accent/20 border-t-accent rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <Sparkles size={24} className="text-accent animate-pulse" />
+                    </div>
                   </div>
-              </div>
-              <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
-                  <div className="grid grid-cols-1 gap-1">
-                      {filteredCatalog.map((item, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => handleProductSelect(item)}
-                            className={`flex items-center justify-between p-4 rounded-xl text-left transition-all group ${
-                                currentCategory === item.name 
-                                ? 'bg-accent/10 border-accent/20 border text-black' 
-                                : 'hover:bg-gray-50 border border-transparent'
-                            }`}
+                  <h3 className="mt-6 text-accent font-black uppercase tracking-[0.3em] text-[10px]">Analyzing Stitching...</h3>
+                  {/* Pulse Line */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-accent/50 shadow-[0_0_15px_rgba(255,215,0,0.5)] animate-scan-line"></div>
+                </div>
+              )}
+
+              <button 
+                onClick={() => { setSelectedImage(null); setResult(null); }}
+                className="absolute top-6 right-6 p-3 bg-black/50 text-white rounded-full hover:bg-red-500 transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Results Area */}
+            <div className="flex flex-col h-full">
+              {result ? (
+                <div className="bg-[#111] border border-white/10 rounded-[2.5rem] p-8 flex-grow animate-fade-in-up">
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <span className="text-accent font-black uppercase text-[10px] tracking-widest mb-2 block">AI Detection: {result.category}</span>
+                      <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">{result.productName}</h2>
+                    </div>
+                    <div className="bg-black border border-white/5 px-4 py-2 rounded-xl text-center">
+                      <div className="text-[10px] text-gray-500 font-bold uppercase mb-1">Complexity</div>
+                      <div className="text-accent font-black">{(result.complexityScore * 100).toFixed(0)}%</div>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-400 text-sm leading-relaxed mb-8 font-medium">
+                    {result.reasoning}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="bg-black/50 p-4 rounded-2xl border border-white/5">
+                        <span className="text-[9px] text-gray-600 font-bold uppercase block mb-1">Estimated Price</span>
+                        <span className="text-xl font-black text-white">{convertPrice(result.estimatedPriceUSD || 0)}</span>
+                    </div>
+                    <div className="bg-black/50 p-4 rounded-2xl border border-white/5">
+                        <span className="text-[9px] text-gray-600 font-bold uppercase block mb-1">Colors Found</span>
+                        <div className="flex gap-1 mt-1">
+                            {result.dominantColors.map(c => (
+                                <span key={c} className="text-[8px] font-black uppercase text-accent border border-accent/20 px-1.5 py-0.5 rounded">{c}</span>
+                            ))}
+                        </div>
+                    </div>
+                  </div>
+
+                  {/* Ordering Options */}
+                  <div className="space-y-6 mb-10">
+                    <div>
+                      <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 block">Configure Item</label>
+                      <div className="flex gap-2">
+                        {['S', 'M', 'L', 'XL'].map(s => (
+                          <button 
+                            key={s} 
+                            onClick={() => setSelectedSize(s)}
+                            className={`flex-1 py-3 rounded-xl font-black text-xs transition-all ${selectedSize === s ? 'bg-accent text-black' : 'bg-black text-gray-400 border border-white/5'}`}
                           >
-                              <div className="flex flex-col">
-                                  <span className="font-bold text-sm">{item.name}</span>
-                                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">{idx + 1} of 100</span>
-                              </div>
-                              <ChevronDown size={14} className="text-gray-300 -rotate-90" />
+                            {s}
                           </button>
-                      ))}
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between bg-black p-4 rounded-2xl border border-white/5">
+                        <span className="text-xs font-black uppercase text-gray-400">Quantity</span>
+                        <div className="flex items-center gap-6">
+                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-white hover:text-accent"><Minus size={18} /></button>
+                            <span className="text-white font-black text-lg w-4 text-center">{quantity}</span>
+                            <button onClick={() => setQuantity(quantity + 1)} className="text-white hover:text-accent"><Plus size={18} /></button>
+                        </div>
+                    </div>
                   </div>
-              </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <button 
+                      onClick={handleWhatsAppInquiry}
+                      className="w-full bg-green-500 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-green-600 transition-all shadow-lg"
+                    >
+                      <MessageCircle size={20} /> Inquire via WhatsApp
+                    </button>
+                    <button 
+                        onClick={() => {
+                            addToCart({
+                                id: 'custom-' + Date.now(),
+                                title: result.productName,
+                                category: result.category,
+                                price: result.estimatedPriceUSD || 55,
+                                image_url: selectedImage,
+                                description: result.reasoning
+                            }, selectedSize, quantity);
+                            navigate('/cart');
+                        }}
+                        className="w-full bg-white text-black py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-accent transition-all"
+                    >
+                      Add to Cart (Draft)
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-[#111] border border-white/10 rounded-[2.5rem] p-12 flex flex-col items-center justify-center text-center h-full">
+                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                    <Info className="text-gray-600" size={32} />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-4">Awaiting Analysis</h3>
+                  <p className="text-gray-500 text-xs font-bold uppercase tracking-widest leading-relaxed">
+                    Once uploaded, our proprietary Sialkot AI will provide manufacturing insights and direct factory pricing.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-
-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                  <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
-                      <label className="block text-xs font-bold uppercase text-gray-400 mb-3">Product Name</label>
-                      <div className="flex items-center gap-2 bg-gray-50 border-2 border-gray-100 p-4 rounded-xl">
-                          <Edit3 size={18} className="text-gray-400" />
-                          <input 
-                            value={editableName}
-                            onChange={(e) => setEditableName(e.target.value)}
-                            placeholder="E.g. T-Shirt"
-                            className="w-full bg-transparent font-bold focus:outline-none"
-                          />
-                      </div>
-                  </div>
-
-                  <div className={`bg-white rounded-3xl p-6 shadow-xl border-2 border-dashed h-[400px] flex flex-col items-center justify-center transition-all ${selectedImage ? 'border-accent' : 'border-gray-200 hover:border-accent/50'}`}>
-                      {selectedImage ? (
-                          <div className="relative w-full h-full group">
-                              <img src={selectedImage} alt="Preview" className="w-full h-full object-contain rounded-2xl" />
-                              <button onClick={() => setSelectedImage(null)} className="absolute top-2 right-2 bg-white/80 p-2 rounded-full shadow-md text-red-500 hover:bg-white"><X size={20} /></button>
-                              {analyzing && (
-                                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl">
-                                      <Loader2 className="w-10 h-10 text-accent animate-spin mb-2" />
-                                      <span className="font-bold text-sm uppercase tracking-widest">Pricing...</span>
-                                  </div>
-                              )}
-                          </div>
-                      ) : (
-                          <div className="text-center space-y-4">
-                              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
-                                  <Camera size={40} />
-                              </div>
-                              <button onClick={() => fileInputRef.current?.click()} className="bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-accent hover:text-black transition-all shadow-lg">Upload Image</button>
-                          </div>
-                      )}
-                      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-                  </div>
-              </div>
-
-              <div className="flex flex-col h-full">
-                  {result || currentPrice > 0 ? (
-                      <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 flex flex-col h-full animate-fade-in-up">
-                          <div className="flex-1 space-y-8">
-                              <div className="bg-black text-white p-8 rounded-3xl text-center relative overflow-hidden">
-                                  <div className="relative z-10">
-                                      <p className="text-accent text-[10px] font-bold uppercase tracking-widest mb-1">Official Catalog Price</p>
-                                      <h2 className="text-6xl font-black text-accent">{convertPrice(currentPrice * quantity)}</h2>
-                                  </div>
-                              </div>
-                              <div className="space-y-4">
-                                  <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                      <span className="font-bold text-sm">Size: {selectedSize}</span>
-                                      <div className="flex gap-1">
-                                          {availableSizes.slice(0, 3).map(s => (
-                                              <button key={s} onClick={() => setSelectedSize(s)} className={`w-8 h-8 rounded-lg text-[10px] font-bold border transition-all ${selectedSize === s ? 'bg-black text-white border-black' : 'bg-white border-gray-200'}`}>{s}</button>
-                                          ))}
-                                      </div>
-                                  </div>
-                                  <div className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                      <span className="font-bold text-sm">Quantity</span>
-                                      <div className="flex items-center gap-4 bg-white px-3 py-1.5 rounded-xl border border-gray-100">
-                                          <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="hover:text-accent"><Minus size={16} /></button>
-                                          <span className="font-bold w-4 text-center">{quantity}</span>
-                                          <button onClick={() => setQuantity(quantity + 1)} className="hover:text-accent"><Plus size={16} /></button>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                          <div className="space-y-3 mt-8">
-                              <button onClick={handleAddToCart} className="w-full bg-black text-white py-4 rounded-2xl font-bold text-lg hover:bg-accent hover:text-black transition-all shadow-xl flex items-center justify-center gap-2">
-                                  <ShoppingCart size={20} /> Checkout Now
-                              </button>
-                          </div>
-                      </div>
-                  ) : (
-                      <div className="bg-white rounded-3xl p-12 shadow-sm border-2 border-dashed border-gray-100 h-full flex flex-col items-center justify-center text-center">
-                          <Sparkles size={30} className="text-gray-200 mb-4" />
-                          <p className="text-gray-400 font-medium">Select a product to view the premium price</p>
-                      </div>
-                  )}
-              </div>
-          </div>
-        </div>
+        )}
       </div>
+      
+      <style>{`
+        @keyframes scan-line {
+          0% { top: 0; }
+          100% { top: 100%; }
+        }
+        .animate-scan-line {
+          animation: scan-line 2s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
