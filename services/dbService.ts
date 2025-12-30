@@ -7,14 +7,11 @@ let supabaseInstance: SupabaseClient | null = null;
 const LOCAL_STORAGE_PRODUCTS_KEY = 'skt_products_v1';
 const LOCAL_STORAGE_ORDERS_KEY = 'skt_orders_v1';
 
-// Vercel and Vite handles env variables differently. This ensures we pick them up.
 const getEnv = (key: string): string => {
   try {
-    // 1. Try Vite's import.meta.env (Client Side)
     if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key]) {
       return (import.meta as any).env[key];
     }
-    // 2. Try standard process.env (Server Side / Deployment)
     if (typeof process !== 'undefined' && process.env && process.env[key]) {
       return process.env[key];
     }
@@ -27,7 +24,6 @@ const getEnv = (key: string): string => {
 const getSupabase = () => {
     if (supabaseInstance) return supabaseInstance;
     
-    // Check both VITE_ prefixed and standard names
     const URL = getEnv('VITE_SUPABASE_URL') || getEnv('SUPABASE_URL');
     const KEY = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('SUPABASE_ANON_KEY');
 
@@ -82,28 +78,25 @@ const localDb = {
 };
 
 export const dbService = {
-  isConfigured: () => {
-    return !!getSupabase();
-  },
+  isConfigured: () => !!getSupabase(),
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
     const client = getSupabase();
     if (!client) {
       return { 
         success: false, 
-        message: "OFFLINE / LOCAL MODE",
-        details: "Keys not found. Using local storage."
+        message: "LOCAL MODE (OFFLINE)",
+        details: "Keys are missing. Syncing locally to this device only."
       };
     }
     try {
-      // Light check
       const { error } = await client.from('products').select('id').limit(1);
       if (error) throw error;
-      return { success: true, message: "CLOUD CONNECTED" };
+      return { success: true, message: "GLOBAL SYNC ACTIVE (ONLINE)" };
     } catch (e: any) {
       return { 
         success: false, 
-        message: "SYNC ERROR",
+        message: "CLOUD SYNC ERROR",
         details: e.message
       };
     }
@@ -124,7 +117,6 @@ export const dbService = {
   saveProduct: async (product: Partial<Product>) => {
     const client = getSupabase();
     if (!client) return localDb.saveProduct(product as Product);
-    
     try {
         const { data, error } = await client.from('products').upsert(product).select();
         if (error) throw error;
