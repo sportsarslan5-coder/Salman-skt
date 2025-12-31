@@ -14,9 +14,11 @@ const getEnv = (key: string): string => {
                 (process as any).env?.[key] || 
                 '';
     
-    // Safety check: sometimes users paste the name into the value field in Vercel
-    if (val === key) return ''; 
-    return val;
+    // CRITICAL FIX: If the value is the same as the key name, it means the user pasted the name in Vercel value field.
+    if (val.trim() === key || val.trim() === 'VITE_SUPABASE_URL' || val.trim() === 'VITE_SUPABASE_ANON_KEY') {
+        return "__ERROR_NAME_AS_VALUE__";
+    }
+    return val.trim();
   } catch (e) {
     return '';
   }
@@ -28,9 +30,10 @@ export const getDiagnostics = () => {
   
   return {
     urlFound: !!url && url.startsWith('http'),
-    keyFound: !!key && key.length > 20,
-    urlValue: url ? (url.substring(0, 10) + '...') : 'Missing',
-    keyValue: key ? (key.substring(0, 5) + '...') : 'Missing'
+    keyFound: !!key && key.length > 20 && key !== "__ERROR_NAME_AS_VALUE__",
+    isNameError: url === "__ERROR_NAME_AS_VALUE__" || key === "__ERROR_NAME_AS_VALUE__",
+    urlValue: url === "__ERROR_NAME_AS_VALUE__" ? "ERROR: Pasted Name Instead of Link" : (url ? (url.substring(0, 15) + '...') : 'Missing'),
+    keyValue: key === "__ERROR_NAME_AS_VALUE__" ? "ERROR: Pasted Name Instead of Key" : (key ? (key.substring(0, 8) + '...') : 'Missing')
   };
 };
 
@@ -40,12 +43,11 @@ const getSupabase = () => {
     const URL = getEnv('VITE_SUPABASE_URL');
     const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-    if (URL && KEY && URL.startsWith('http') && KEY.length > 20) {
+    if (URL && KEY && URL.startsWith('http') && KEY.length > 20 && KEY !== "__ERROR_NAME_AS_VALUE__") {
         try {
             supabaseInstance = createClient(URL, KEY);
             return supabaseInstance;
         } catch (e) {
-            console.error("Supabase Initialization Error:", e);
             return null;
         }
     }
@@ -91,26 +93,29 @@ const localDb = {
 };
 
 export const dbService = {
-  isConfigured: () => {
-    const client = getSupabase();
-    return !!client;
-  },
+  isConfigured: () => !!getSupabase(),
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
     const client = getSupabase();
-    if (!client) {
-      const diag = getDiagnostics();
-      if (!diag.urlFound && !diag.keyFound) {
-        return { success: false, message: "OFFLINE MODE", details: "Vercel keys are missing or name/value mixed up." };
-      }
-      return { success: false, message: "CONFIG ERROR", details: `URL: ${diag.urlFound ? 'OK' : 'INVALID'} | Key: ${diag.keyFound ? 'OK' : 'INVALID'}` };
+    const diag = getDiagnostics();
+
+    if (diag.isNameError) {
+        return { success: false, message: "KEY PASTE ERROR", details: "You pasted the variable NAME into the VALUE field in Vercel. Copy the actual code from Supabase!" };
     }
+
+    if (!client) {
+      if (!diag.urlFound && !diag.keyFound) {
+        return { success: false, message: "OFFLINE MODE", details: "Vercel keys are missing. Please add them to see products on other devices." };
+      }
+      return { success: false, message: "CONFIG ERROR", details: `URL: ${diag.urlFound ? 'OK' : 'MISSING'} | Key: ${diag.keyFound ? 'OK' : 'MISSING'}` };
+    }
+
     try {
       const { error } = await client.from('products').select('id').limit(1);
       if (error) throw error;
-      return { success: true, message: "GLOBAL SYNC ACTIVE" };
+      return { success: true, message: "GLOBAL SYNC: ON" };
     } catch (e: any) {
-      return { success: false, message: "DATABASE ERROR", details: e.message };
+      return { success: false, message: "DATABASE ERROR", details: "Table 'products' might not be created in Supabase yet." };
     }
   },
 
