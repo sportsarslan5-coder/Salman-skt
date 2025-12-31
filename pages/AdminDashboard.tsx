@@ -87,26 +87,51 @@ const AdminDashboard: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const sqlCode = `-- 1. Tables Banane Ka Code
+  // BULLETPROOF SQL: Includes extensions and forced policies
+  const sqlCode = `-- 1. Enable Support for ID Generation
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- 2. Create products table
 CREATE TABLE IF NOT EXISTS products (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  title text, price numeric, category text, description text, image_url text, sizes text[], rating numeric, reviews numeric
+  title text NOT NULL,
+  price numeric DEFAULT 0,
+  category text DEFAULT 'Men',
+  description text,
+  image_url text,
+  sizes text[] DEFAULT '{S,M,L,XL}',
+  rating numeric DEFAULT 5,
+  reviews numeric DEFAULT 0
 );
 
+-- 3. Create orders table
 CREATE TABLE IF NOT EXISTS orders (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  customer_name text, phone text, city text, address text, email text, items jsonb, total numeric, status text
+  customer_name text,
+  phone text,
+  city text,
+  address text,
+  email text,
+  items jsonb,
+  total numeric,
+  status text DEFAULT 'Pending'
 );
 
--- 2. Database Ko Unlock Karne Ka Code
+-- 4. UNBLOCK ACCESS (Force Public Access)
 ALTER TABLE products DISABLE ROW LEVEL SECURITY;
-ALTER TABLE orders DISABLE ROW LEVEL SECURITY;`;
+ALTER TABLE orders DISABLE ROW LEVEL SECURITY;
+
+-- 5. Extra Backup: Allow all access
+DROP POLICY IF EXISTS "Public Access" ON products;
+CREATE POLICY "Public Access" ON products FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public Access" ON orders;
+CREATE POLICY "Public Access" ON orders FOR ALL USING (true) WITH CHECK (true);`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(sqlCode).then(() => {
-        alert('SQL Code Copied! Now paste it in Supabase SQL Editor and click RUN.');
+        alert('SQL Code Copied! Go to Supabase SQL Editor, paste it, and click RUN.');
     });
   };
 
@@ -149,13 +174,13 @@ ALTER TABLE orders DISABLE ROW LEVEL SECURITY;`;
           <div className="max-w-4xl animate-fade-in-up space-y-8 pb-20">
             <div className="bg-[#111] border border-white/10 rounded-[3rem] p-10 relative overflow-hidden shadow-2xl">
                <div className="absolute top-0 right-0 p-10 opacity-5 -rotate-12"><Database size={150} /></div>
-               <h1 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-4">Final <span className="text-accent">Setup</span></h1>
+               <h1 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-4">Fix <span className="text-accent">Database</span></h1>
                <p className="text-gray-400 text-sm font-urdu leading-relaxed max-w-xl">
-                 {"آپ کا کنکشن (Keys) اب ٹھیک ہو گیا ہے۔ بس آخری کام یہ کرنا ہے کہ ڈیٹا بیس میں ٹیبل بنانا ہے تاکہ آپ کا سامان محفوظ ہو سکے۔"}
+                 {"آپ کی ایپ کلاؤڈ سے کنیکٹ نہیں ہو رہی کیونکہ آپ نے سپا بیس میں 'ٹیبل' (Table) نہیں بنایا۔ نیچے دیے گئے بٹن سے کوڈ کاپی کریں اور اسے سپا بیس میں جا کر 'RUN' کریں۔"}
                </p>
             </div>
 
-            {/* DIAGNOSTICS - Should be green now based on user screenshot */}
+            {/* STATUS CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={`p-8 rounded-[2.5rem] border ${diagnostics.urlFound ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
                    <div className="flex justify-between items-center mb-4">
@@ -177,25 +202,32 @@ ALTER TABLE orders DISABLE ROW LEVEL SECURITY;`;
             <div className="bg-[#111] border border-white/10 rounded-[3rem] p-10 shadow-2xl">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                   <div>
-                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-2">Step 2: Initialize Tables</h3>
-                    <p className="text-gray-500 text-xs font-urdu">{"نیچے دیا گیا بٹن دبا کر کوڈ کاپی کریں اور سپا بیس میں RUN کریں۔"}</p>
+                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-2">Step 2: Copy & Run Script</h3>
+                    <p className="text-gray-500 text-xs font-urdu">{"نیچے دیا گیا بٹن دبا کر کوڈ کاپی کریں اور سپا بیس میں RUN کا بٹن ضرور دبائیں۔"}</p>
                   </div>
-                  <button onClick={copyToClipboard} className="bg-accent text-black px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-[0_0_30px_rgba(255,215,0,0.3)] flex items-center gap-3 hover:scale-105 transition-transform active:scale-95">
-                    <Copy size={18} /> Copy SQL Script
-                  </button>
+                  <div className="flex gap-3">
+                    <button onClick={checkConnection} className="bg-white/5 text-white px-6 py-4 rounded-2xl font-black uppercase text-xs border border-white/10 flex items-center gap-2 hover:bg-white/10">
+                        <RefreshCw size={14} /> Refresh Status
+                    </button>
+                    <button onClick={copyToClipboard} className="bg-accent text-black px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-[0_0_30px_rgba(255,215,0,0.3)] flex items-center gap-3 hover:scale-105 transition-transform active:scale-95">
+                        <Copy size={18} /> Copy SQL Code
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="bg-black/60 rounded-3xl p-8 border border-white/5 relative group">
                   <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl"></div>
-                  <pre className="text-[11px] text-green-400 font-mono overflow-x-auto leading-relaxed custom-scrollbar">
+                  <pre className="text-[11px] text-green-400 font-mono overflow-x-auto leading-relaxed custom-scrollbar max-h-60">
                     {sqlCode}
                   </pre>
                 </div>
 
-                <div className="mt-8 p-6 bg-accent/5 border border-accent/20 rounded-2xl flex items-start gap-4">
-                  <Info size={24} className="text-accent shrink-0" />
-                  <p className="text-xs text-gray-400 font-urdu leading-relaxed">
-                    {"سکرین کے بائیں طرف 'SQL Editor' میں جا کر ایک نئی 'Query' بنائیں اور وہاں یہ سارا کوڈ پیسٹ کر کے نیچے 'Run' کا بٹن دبا دیں۔ آپ کا مسئلہ حل ہو جائے گا۔"}
+                <div className="mt-8 p-8 bg-red-500/5 border border-red-500/20 rounded-3xl">
+                  <h4 className="text-red-400 font-black uppercase text-xs mb-3 flex items-center gap-2">
+                    <AlertCircle size={14} /> Warning for Multi-Device Sync
+                  </h4>
+                  <p className="text-xs text-gray-500 font-urdu leading-relaxed">
+                    {"اگر یہ پیج 'Green' نہیں ہوتا، تو آپ جو بھی سامان ڈالیں گے وہ صرف اسی موبائل میں رہے گا۔ دوسرے موبائل پر سامان دکھانے کے لیے اس پیج کو ہرا (Green) ہونا ضروری ہے۔"}
                   </p>
                 </div>
             </div>
@@ -204,8 +236,10 @@ ALTER TABLE orders DISABLE ROW LEVEL SECURITY;`;
           <div className="space-y-8 pb-20">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
-                <h1 className="text-5xl font-black uppercase tracking-tighter text-white italic">Global <span className="text-accent">Stock</span></h1>
-                <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">{dbStatus?.message || 'Syncing Inventory...'}</p>
+                <h1 className="text-5xl font-black uppercase tracking-tighter text-white italic">Cloud <span className="text-accent">Stock</span></h1>
+                <p className={`text-[10px] font-black uppercase tracking-[0.3em] mt-1 ${dbStatus?.success ? 'text-green-500' : 'text-red-500 animate-pulse'}`}>
+                    {dbStatus?.success ? '✓ Live Connection Active' : '⚠ CONNECTION FAILED - CHECK SYNC TAB'}
+                </p>
               </div>
               <button onClick={() => { setShowAddModal(true); setEditingProduct(null); setFormData({ title: '', price: 0, category: 'Men', description: '', image_url: '', sizes: ["S", "M", "L", "XL"] }); }} className="bg-accent text-black px-10 py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-[0_0_30px_rgba(255,215,0,0.2)] hover:scale-105 transition-transform">
                 <Plus size={22} /> Add New Item

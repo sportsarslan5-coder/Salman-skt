@@ -100,22 +100,23 @@ export const dbService = {
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
     const diag = getDiagnostics();
-    if (diag.isNameError) return { success: false, message: "KEY NAME ERROR", details: "Pasted variable name instead of value." };
-    if (diag.isSecretKeyError) return { success: false, message: "WRONG KEY TYPE", details: "You used a Secret key. Use the 'anon' key starting with 'eyJ'." };
+    if (diag.isNameError) return { success: false, message: "KEY NAME ERROR", details: "Vercel keys incorrect." };
+    if (diag.isSecretKeyError) return { success: false, message: "WRONG KEY", details: "Use the 'anon' key from Supabase." };
     
     const client = getSupabase();
-    if (!client) return { success: false, message: "CONFIG ERROR", details: "Invalid URL or Key format." };
+    if (!client) return { success: false, message: "CONFIG MISSING", details: "Vercel URL/Key not detected." };
 
     try {
       const { error, status } = await client.from('products').select('id').limit(1);
       if (error) {
-          if (status === 401 || status === 403) return { success: false, message: "AUTH FAILED", details: "The Anon Key is invalid or expired." };
-          if (status === 404) return { success: false, message: "TABLE MISSING", details: "Table 'products' does not exist." };
-          throw error;
+          // If status is 404, it means table definitely doesn't exist
+          if (status === 404) return { success: false, message: "TABLE MISSING", details: "Run SQL Script in Supabase Editor!" };
+          // For other errors, show the actual message
+          return { success: false, message: "CLOUD ERROR", details: error.message };
       }
       return { success: true, message: "GLOBAL SYNC: ON" };
     } catch (e: any) {
-      return { success: false, message: "DATABASE ERROR", details: "Ensure SQL Script was run and RLS is disabled." };
+      return { success: false, message: "SYSTEM ERROR", details: e.message || "Connection failed." };
     }
   },
 
