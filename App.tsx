@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AppProvider, useAppContext } from './context/AppContext';
 import Layout from './components/Layout';
@@ -15,17 +16,13 @@ import AIStylist from './components/AIStylist';
 
 const AppContent: React.FC = () => {
   const { route, isAdmin } = useAppContext();
-  
-  // Clean route for matching
   const path = route.split('?')[0];
 
-  // Admin Routes (Independent of main layout)
   if (path === '/admin/login') return <AdminLogin />;
   if (path === '/admin') {
     return isAdmin ? <AdminDashboard /> : <AdminLogin />;
   }
 
-  // Common Layout wrapping for public routes
   return (
     <Layout>
       {(() => {
@@ -37,8 +34,6 @@ const AppContent: React.FC = () => {
         if (path === '/blog') return <Blog />;
         if (path === '/contact') return <Contact />;
         if (path.startsWith('/product/')) return <ProductDetails />;
-        
-        // Default Fallback
         return <Home />;
       })()}
     </Layout>

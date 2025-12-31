@@ -11,72 +11,80 @@ export const TRANSLATIONS: Translations = {
   contact: { en: 'Contact', ur: 'رابطہ کریں' },
   cart: { en: 'Cart', ur: 'ٹوکری' },
   checkout: { en: 'Checkout', ur: 'چیک آؤٹ' },
-  search: { en: 'Search products...', ur: 'مصنوعات تلاش کریں...' },
+  search: { en: 'Search products...', ur: 'تلاش کریں...' },
   men: { en: 'Men', ur: 'مرد' },
   women: { en: 'Women', ur: 'خواتین' },
   kids: { en: 'Kids', ur: 'بچے' },
-  buyNow: { en: 'Shop Our Collection', ur: 'ہماری کلیکشن خریدیں' },
+  buyNow: { en: 'Shop Collection', ur: 'خریداری کریں' },
   heroTitle: { en: 'Sialkot Shop', ur: 'سیالکوٹ شاپ' },
-  heroSubtitle: { en: 'Premium quality apparel, technical sportswear, and PROTEX protective gear.', ur: 'اعلیٰ معیار کے ملبوسات، تکنیکی اسپورٹس ویئر، اور پروٹیکس حفاظتی گیئر۔' },
-  dealOfTheDay: { en: 'Trending Now', ur: 'اب ٹرینڈ ہو رہا ہے' },
+  heroSubtitle: { en: 'Global Export of Technical Apparel & Protective Gear.', ur: 'اعلیٰ معیار کے ملبوسات اور تکنیکی اسپورٹس ویئر۔' },
+  dealOfTheDay: { en: 'Export Elite', ur: 'ایکسپورٹ پریمیم' },
   addToCart: { en: 'Add to Cart', ur: 'ٹوکری میں شامل کریں' },
-  reviews: { en: 'Customer Reviews', ur: 'کسٹمر کے جائزے' },
-  emptyCart: { en: 'Your cart is empty', ur: 'آپ کی ٹوکری خالی ہے' },
-  total: { en: 'Total', ur: 'کل' },
-  placeOrder: { en: 'Place Order on WhatsApp', ur: 'واٹس ایپ پر آرڈر کریں' },
-  contactUs: { en: 'Contact Us', ur: 'ہم سے رابطہ کریں' },
-  sendMessage: { en: 'Send Message', ur: 'پیغام بھیجیں' },
-  aiStylist: { en: 'Style Expert', ur: 'اسٹائل ماہر' },
-  stylistIntro: { en: 'Hi! I am your Sialkot Shop expert. Looking for premium jerseys or PROTEX jackets?', ur: 'ہائے! میں آپ کا سیالکوٹ شاپ ایکسپرٹ ہوں۔ کیا آپ پریمیم جرسی یا پروٹیکس جیکٹ تلاش کر رہے ہیں؟' },
-  typing: { en: 'Expert is typing...', ur: 'ماہر لکھ رہا ہے...' },
-  footerText: { en: '© 2024 Sialkot Shop Export. All rights reserved.', ur: '© 2024 سیالکوٹ شاپ ایکسپورٹ۔ جملہ حقوق محفوظ ہیں۔' },
-  subscribe: { en: 'Subscribe', ur: 'سبسکرائب' },
+  emptyCart: { en: 'Your cart is empty', ur: 'ٹوکری خالی ہے' },
+  total: { en: 'Order Total', ur: 'کل رقم' },
+  placeOrder: { en: 'Order via WhatsApp', ur: 'واٹس ایپ پر آرڈر کریں' },
+  contactUs: { en: 'Get in Touch', ur: 'رابطہ کریں' },
+  aiStylist: { en: 'Global Style Expert', ur: 'اسٹائل ماہر' },
   smartPricing: { en: 'AI Lens', ur: 'اے آئی لینز' },
 };
 
-const generateProducts = (): Product[] => {
-  const rawList = [
-    { name: "Pro-Lite Football Jersey", price: 45, category: 'Men', img: "https://images.unsplash.com/photo-1580087444194-03552a41d082?w=800&q=80", isProtex: false },
-    { name: "Arctic Storm Jacket", price: 110, category: 'Men', img: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80", isProtex: true },
-    { name: "Technical Training Hoodie", price: 65, category: 'Men', img: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80", isProtex: true },
-    { name: "Export Grade Cotton Tee", price: 25, category: 'Men', img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80", isProtex: false },
-    { name: "Laser-Cut Tracksuit", price: 95, category: 'Men', img: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=800&q=80", isProtex: true },
-    { name: "Premium Leather Biker Jacket", price: 180, category: 'Men', img: "https://images.unsplash.com/photo-1520975954732-35dd22299614?w=800&q=80", isProtex: true },
-    { name: "Womens Elite Yoga Leggings", price: 35, category: 'Women', img: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&q=80", isProtex: false },
-    { name: "Urban Tech Windbreaker", price: 85, category: 'Men', img: "https://images.unsplash.com/photo-1622445272461-c6580cab8755?w=800&q=80", isProtex: true },
-    { name: "Junior Pro Sports Set", price: 40, category: 'Kids', img: "https://images.unsplash.com/photo-1519233924710-1811568205f4?w=800&q=80", isProtex: false },
-    { name: "Export Quality Denim Jacket", price: 75, category: 'Men', img: "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?w=800&q=80", isProtex: false }
-  ];
-
-  return rawList.map((item, index) => ({
-    id: (2000 + index).toString(),
-    title: item.name,
-    category: item.category,
-    price: item.price,
-    image_url: item.img,
-    description: `Official Sialkot Shop ${item.name} collection. Engineered with ${item.isProtex ? 'PROTEX technical weather-proofing' : 'premium export-grade cotton'} for the ultimate athletic and lifestyle experience.`,
-    sizes: item.category === 'Kids' ? ["US 8Y", "US 10Y", "US 12Y"] : ["S", "M", "L", "XL", "XXL"],
-    rating: parseFloat((4.8 + (Math.random() * 0.2)).toFixed(1)),
-    reviews: Math.floor(Math.random() * 500) + 50,
-    isProtex: item.isProtex
-  }));
-};
-
-export const PRODUCTS: Product[] = generateProducts();
+export const PRODUCTS: Product[] = [
+  {
+    id: '101',
+    title: "Pro-Tech Soccer Jersey",
+    category: 'Men',
+    price: 45.00,
+    image_url: "https://images.unsplash.com/photo-1580087444194-03552a41d082?w=800&q=80",
+    description: "Authentic Sialkot-engineered soccer jersey with moisture-wicking technology. Designed for professional performance and durability.",
+    sizes: ["US Small", "US Medium", "US Large", "US XL", "US XXL"],
+    rating: 4.9,
+    reviews: 128,
+    isProtex: false
+  },
+  {
+    id: '102',
+    title: "Arctic Shield Technical Jacket",
+    category: 'Men',
+    price: 120.00,
+    image_url: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80",
+    description: "Export-grade weather-resistant jacket. Features laser-cut seams and PROTEX thermal insulation for extreme environments.",
+    sizes: ["US M", "US L", "US XL"],
+    rating: 5.0,
+    reviews: 84,
+    isProtex: true
+  },
+  {
+    id: '103',
+    title: "Urban Elite Training Hoodie",
+    category: 'Men',
+    price: 65.00,
+    image_url: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
+    description: "Heavyweight premium cotton blend. Engineered for the modern athlete with a focus on fit and comfort.",
+    sizes: ["S", "M", "L", "XL"],
+    rating: 4.8,
+    reviews: 210,
+    isProtex: true
+  },
+  {
+    id: '104',
+    title: "Technical Compression Set",
+    category: 'Women',
+    price: 55.00,
+    image_url: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&q=80",
+    description: "Elite performance wear for women. High-waisted, squat-proof, and designed with breathable mesh panels.",
+    sizes: ["US XS", "US S", "US M", "US L"],
+    rating: 4.7,
+    reviews: 156,
+    isProtex: false
+  }
+];
 
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "The Sialkot Legacy",
-    summary: "How a small city in Pakistan became the world's leading hub for sports manufacturing.",
-    date: "Dec 20, 2024",
+    title: "From Sialkot to New York",
+    summary: "How we ship premium quality products directly from our factories to the USA.",
+    date: "Dec 24, 2024",
     image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
-  },
-  {
-    id: 2,
-    title: "PROTEX Technology Explained",
-    summary: "Diving deep into the laser-cut technology that makes our jackets invincible.",
-    date: "Dec 15, 2024",
-    image: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80"
   }
 ];

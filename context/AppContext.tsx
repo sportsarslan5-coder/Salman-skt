@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, CartItem, Language, Currency } from '../types';
 import { TRANSLATIONS, EXCHANGE_RATE_PKR, PRODUCTS } from '../constants';
@@ -30,23 +31,20 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
-  const [currency, setCurrency] = useState<Currency>('USD');
+  const [currency, setCurrency] = useState<Currency>('USD'); // Default for USA
   const [cart, setCart] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(sessionStorage.getItem('admin_session') === 'active');
-  
   const [route, setRoute] = useState<string>(window.location.hash.slice(1) || '/');
 
   const refreshProducts = async () => {
     setIsLoading(true);
     try {
       const cloudData = await dbService.getProducts();
-      // If cloud is empty or disconnected, show demo data so the site isn't "white/empty"
       if (!cloudData || cloudData.length === 0) {
         setProducts(PRODUCTS);
       } else {
-        // Mix them or just show cloud data
         setProducts(cloudData);
       }
     } catch (e) {
@@ -58,9 +56,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     refreshProducts();
-  }, []);
-
-  useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
       setRoute(hash || '/');
