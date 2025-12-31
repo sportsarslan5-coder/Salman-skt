@@ -9,16 +9,14 @@ const LOCAL_STORAGE_ORDERS_KEY = 'skt_orders_v1';
 
 const getEnv = (key: string): string => {
   try {
-    // Check various ways env variables might be provided
     const val = (import.meta as any).env?.[key] || 
                 (process as any).env?.[key] || 
                 '';
-    
-    // CRITICAL FIX: If the value is the same as the key name, it means the user pasted the name in Vercel value field.
-    if (val.trim() === key || val.trim() === 'VITE_SUPABASE_URL' || val.trim() === 'VITE_SUPABASE_ANON_KEY') {
+    const trimmed = val.trim();
+    if (trimmed === key || trimmed === 'VITE_SUPABASE_URL' || trimmed === 'VITE_SUPABASE_ANON_KEY') {
         return "__ERROR_NAME_AS_VALUE__";
     }
-    return val.trim();
+    return trimmed;
   } catch (e) {
     return '';
   }
@@ -28,12 +26,17 @@ export const getDiagnostics = () => {
   const url = getEnv('VITE_SUPABASE_URL');
   const key = getEnv('VITE_SUPABASE_ANON_KEY');
   
+  const isUrlValid = !!url && url.startsWith('http');
+  const isKeyValid = !!key && key.startsWith('eyJ'); // Anon keys are always JWTs starting with eyJ
+  const isSecretKey = !!key && (key.startsWith('sb_') || key.includes('secret'));
+
   return {
-    urlFound: !!url && url.startsWith('http'),
-    keyFound: !!key && key.length > 20 && key !== "__ERROR_NAME_AS_VALUE__",
+    urlFound: isUrlValid,
+    keyFound: isKeyValid,
     isNameError: url === "__ERROR_NAME_AS_VALUE__" || key === "__ERROR_NAME_AS_VALUE__",
-    urlValue: url === "__ERROR_NAME_AS_VALUE__" ? "ERROR: Pasted Name Instead of Link" : (url ? (url.substring(0, 15) + '...') : 'Missing'),
-    keyValue: key === "__ERROR_NAME_AS_VALUE__" ? "ERROR: Pasted Name Instead of Key" : (key ? (key.substring(0, 8) + '...') : 'Missing')
+    isSecretKeyError: isSecretKey,
+    urlValue: url === "__ERROR_NAME_AS_VALUE__" ? "Name Error" : (url ? (url.substring(0, 15) + '...') : 'Missing'),
+    keyValue: key === "__ERROR_NAME_AS_VALUE__" ? "Name Error" : (key ? (key.substring(0, 8) + '...') : 'Missing')
   };
 };
 
@@ -43,7 +46,7 @@ const getSupabase = () => {
     const URL = getEnv('VITE_SUPABASE_URL');
     const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-    if (URL && KEY && URL.startsWith('http') && KEY.length > 20 && KEY !== "__ERROR_NAME_AS_VALUE__") {
+    if (URL && KEY && URL.startsWith('http') && KEY.startsWith('eyJ')) {
         try {
             supabaseInstance = createClient(URL, KEY);
             return supabaseInstance;
@@ -96,26 +99,23 @@ export const dbService = {
   isConfigured: () => !!getSupabase(),
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
-    const client = getSupabase();
     const diag = getDiagnostics();
-
-    if (diag.isNameError) {
-        return { success: false, message: "KEY PASTE ERROR", details: "You pasted the variable NAME into the VALUE field in Vercel. Copy the actual code from Supabase!" };
-    }
-
-    if (!client) {
-      if (!diag.urlFound && !diag.keyFound) {
-        return { success: false, message: "OFFLINE MODE", details: "Vercel keys are missing. Please add them to see products on other devices." };
-      }
-      return { success: false, message: "CONFIG ERROR", details: `URL: ${diag.urlFound ? 'OK' : 'MISSING'} | Key: ${diag.keyFound ? 'OK' : 'MISSING'}` };
-    }
+    if (diag.isNameError) return { success: false, message: "KEY NAME ERROR", details: "Pasted variable name instead of value." };
+    if (diag.isSecretKeyError) return { success: false, message: "WRONG KEY TYPE", details: "You used a Secret key. Use the 'anon' key starting with 'eyJ'." };
+    
+    const client = getSupabase();
+    if (!client) return { success: false, message: "CONFIG ERROR", details: "Invalid URL or Key format." };
 
     try {
-      const { error } = await client.from('products').select('id').limit(1);
-      if (error) throw error;
+      const { error, status } = await client.from('products').select('id').limit(1);
+      if (error) {
+          if (status === 401 || status === 403) return { success: false, message: "AUTH FAILED", details: "The Anon Key is invalid or expired." };
+          if (status === 404) return { success: false, message: "TABLE MISSING", details: "Table 'products' does not exist." };
+          throw error;
+      }
       return { success: true, message: "GLOBAL SYNC: ON" };
     } catch (e: any) {
-      return { success: false, message: "DATABASE ERROR", details: "Table 'products' might not be created in Supabase yet." };
+      return { success: false, message: "DATABASE ERROR", details: "Ensure SQL Script was run and RLS is disabled." };
     }
   },
 
