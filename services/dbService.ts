@@ -26,13 +26,15 @@ export const getDiagnostics = () => {
   const url = getEnv('VITE_SUPABASE_URL');
   const key = getEnv('VITE_SUPABASE_ANON_KEY');
   
-  const isUrlValid = !!url && url.startsWith('http');
-  const isKeyValid = !!key && key.startsWith('eyJ'); // Anon keys are always JWTs starting with eyJ
+  const isPlaceholder = url.includes('abcdxyz') || key.includes('eyJhbGci');
+  const isUrlValid = !!url && url.startsWith('http') && !url.includes('abcdxyz');
+  const isKeyValid = !!key && key.startsWith('eyJ') && !key.includes('eyJhbGci');
   const isSecretKey = !!key && (key.startsWith('sb_') || key.includes('secret'));
 
   return {
     urlFound: isUrlValid,
     keyFound: isKeyValid,
+    isPlaceholder,
     isNameError: url === "__ERROR_NAME_AS_VALUE__" || key === "__ERROR_NAME_AS_VALUE__",
     isSecretKeyError: isSecretKey,
     urlValue: url === "__ERROR_NAME_AS_VALUE__" ? "Name Error" : (url ? (url.substring(0, 15) + '...') : 'Missing'),
@@ -46,7 +48,8 @@ const getSupabase = () => {
     const URL = getEnv('VITE_SUPABASE_URL');
     const KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-    if (URL && KEY && URL.startsWith('http') && KEY.startsWith('eyJ')) {
+    // Extra check to prevent connection to placeholders
+    if (URL && KEY && URL.startsWith('http') && KEY.startsWith('eyJ') && !URL.includes('abcdxyz')) {
         try {
             supabaseInstance = createClient(URL, KEY);
             return supabaseInstance;
@@ -100,6 +103,7 @@ export const dbService = {
 
   checkConnection: async (): Promise<{ success: boolean; message: string; details?: string }> => {
     const diag = getDiagnostics();
+    if (diag.isPlaceholder) return { success: false, message: "PLACEHOLDER DETECTED", details: "Pasted example URL instead of real URL." };
     if (diag.isNameError) return { success: false, message: "KEY NAME ERROR", details: "Vercel keys incorrect." };
     if (diag.isSecretKeyError) return { success: false, message: "WRONG KEY", details: "Use the 'anon' key from Supabase." };
     
@@ -109,9 +113,7 @@ export const dbService = {
     try {
       const { error, status } = await client.from('products').select('id').limit(1);
       if (error) {
-          // If status is 404, it means table definitely doesn't exist
           if (status === 404) return { success: false, message: "TABLE MISSING", details: "Run SQL Script in Supabase Editor!" };
-          // For other errors, show the actual message
           return { success: false, message: "CLOUD ERROR", details: error.message };
       }
       return { success: true, message: "GLOBAL SYNC: ON" };

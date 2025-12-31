@@ -87,7 +87,6 @@ const AdminDashboard: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  // BULLETPROOF SQL: Includes extensions and forced policies
   const sqlCode = `-- 1. Enable Support for ID Generation
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -174,22 +173,42 @@ CREATE POLICY "Public Access" ON orders FOR ALL USING (true) WITH CHECK (true);`
           <div className="max-w-4xl animate-fade-in-up space-y-8 pb-20">
             <div className="bg-[#111] border border-white/10 rounded-[3rem] p-10 relative overflow-hidden shadow-2xl">
                <div className="absolute top-0 right-0 p-10 opacity-5 -rotate-12"><Database size={150} /></div>
-               <h1 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-4">Fix <span className="text-accent">Database</span></h1>
+               <h1 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-4">Fix <span className="text-accent">Connection</span></h1>
                <p className="text-gray-400 text-sm font-urdu leading-relaxed max-w-xl">
-                 {"آپ کی ایپ کلاؤڈ سے کنیکٹ نہیں ہو رہی کیونکہ آپ نے سپا بیس میں 'ٹیبل' (Table) نہیں بنایا۔ نیچے دیے گئے بٹن سے کوڈ کاپی کریں اور اسے سپا بیس میں جا کر 'RUN' کریں۔"}
+                 {"آپ کا ڈیٹا بیس تیار ہے، لیکن آپ نے 'Vercel' میں اب بھی میرا دیا ہوا فرضی لنک (abcdxyz) استعمال کیا ہوا ہے۔ اپنا اصلی لنک ڈالیں تاکہ کام شروع ہو سکے۔"}
                </p>
             </div>
 
+            {/* ERROR ALERTS */}
+            {(diagnostics.isPlaceholder || diagnostics.isNameError) && (
+              <div className="bg-red-500 border-4 border-white rounded-[2rem] p-8 shadow-xl">
+                <div className="flex items-start gap-4 text-white">
+                    <AlertTriangle size={48} className="shrink-0" />
+                    <div>
+                        <h3 className="text-2xl font-black uppercase italic mb-2">URGENT: Replace Placeholder URL!</h3>
+                        <p className="text-sm font-urdu font-bold leading-relaxed mb-4">
+                            {"آپ کے 'Vercel' میں اب بھی 'abcdxyz' والا لنک نظر آ رہا ہے۔ اسے بدلنا ضروری ہے۔"}
+                        </p>
+                        <div className="space-y-2 text-xs font-black uppercase">
+                           <p className="flex items-center gap-2"><ArrowRight size={14}/> Go to Supabase Settings -> API</p>
+                           <p className="flex items-center gap-2"><ArrowRight size={14}/> Copy "Project URL"</p>
+                           <p className="flex items-center gap-2"><ArrowRight size={14}/> Paste it in Vercel 'VITE_SUPABASE_URL'</p>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            )}
+
             {/* STATUS CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={`p-8 rounded-[2.5rem] border ${diagnostics.urlFound ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                <div className={`p-8 rounded-[2.5rem] border ${diagnostics.urlFound ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/10 border-red-500/40'}`}>
                    <div className="flex justify-between items-center mb-4">
                       <span className="text-[10px] font-black uppercase text-accent tracking-widest">Supabase URL</span>
                       {diagnostics.urlFound ? <Check size={20} className="text-green-500" /> : <X size={20} className="text-red-500" />}
                    </div>
                    <div className="font-mono text-[10px] text-white bg-black/40 p-4 rounded-2xl truncate border border-white/5">{diagnostics.urlValue}</div>
                 </div>
-                <div className={`p-8 rounded-[2.5rem] border ${diagnostics.keyFound ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                <div className={`p-8 rounded-[2.5rem] border ${diagnostics.keyFound ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/10 border-red-500/40'}`}>
                    <div className="flex justify-between items-center mb-4">
                       <span className="text-[10px] font-black uppercase text-accent tracking-widest">Anon Key Status</span>
                       {diagnostics.keyFound ? <Check size={20} className="text-green-500" /> : <X size={20} className="text-red-500" />}
@@ -202,33 +221,23 @@ CREATE POLICY "Public Access" ON orders FOR ALL USING (true) WITH CHECK (true);`
             <div className="bg-[#111] border border-white/10 rounded-[3rem] p-10 shadow-2xl">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                   <div>
-                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-2">Step 2: Copy & Run Script</h3>
-                    <p className="text-gray-500 text-xs font-urdu">{"نیچے دیا گیا بٹن دبا کر کوڈ کاپی کریں اور سپا بیس میں RUN کا بٹن ضرور دبائیں۔"}</p>
+                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tight mb-2">Step 2: Table Initialization</h3>
+                    <p className="text-gray-500 text-xs font-urdu">{"آپ یہ کام کر چکے ہیں، لیکن اگر دوبارہ ضرورت پڑے تو یہاں سے کوڈ لیں۔"}</p>
                   </div>
                   <div className="flex gap-3">
                     <button onClick={checkConnection} className="bg-white/5 text-white px-6 py-4 rounded-2xl font-black uppercase text-xs border border-white/10 flex items-center gap-2 hover:bg-white/10">
-                        <RefreshCw size={14} /> Refresh Status
+                        <RefreshCw size={14} /> Refresh
                     </button>
                     <button onClick={copyToClipboard} className="bg-accent text-black px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-[0_0_30px_rgba(255,215,0,0.3)] flex items-center gap-3 hover:scale-105 transition-transform active:scale-95">
-                        <Copy size={18} /> Copy SQL Code
+                        <Copy size={18} /> Copy SQL
                     </button>
                   </div>
                 </div>
                 
                 <div className="bg-black/60 rounded-3xl p-8 border border-white/5 relative group">
-                  <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl"></div>
                   <pre className="text-[11px] text-green-400 font-mono overflow-x-auto leading-relaxed custom-scrollbar max-h-60">
                     {sqlCode}
                   </pre>
-                </div>
-
-                <div className="mt-8 p-8 bg-red-500/5 border border-red-500/20 rounded-3xl">
-                  <h4 className="text-red-400 font-black uppercase text-xs mb-3 flex items-center gap-2">
-                    <AlertCircle size={14} /> Warning for Multi-Device Sync
-                  </h4>
-                  <p className="text-xs text-gray-500 font-urdu leading-relaxed">
-                    {"اگر یہ پیج 'Green' نہیں ہوتا، تو آپ جو بھی سامان ڈالیں گے وہ صرف اسی موبائل میں رہے گا۔ دوسرے موبائل پر سامان دکھانے کے لیے اس پیج کو ہرا (Green) ہونا ضروری ہے۔"}
-                  </p>
                 </div>
             </div>
           </div>
