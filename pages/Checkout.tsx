@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { CreditCard, CheckCircle, MessageCircle, MapPin, User, Loader2 } from 'lucide-react';
@@ -48,7 +49,7 @@ const Checkout: React.FC = () => {
       await dbService.saveOrder(newOrder);
 
       const orderItems = cart.map((item, index) => `${index + 1}. ${item.title} (Size: ${item.selectedSize}, Qty: ${item.quantity})`).join('%0a');
-      const message = `*NEW ORDER REQUEST - SALMAN SKT*%0a*CUSTOMER:* ${formData.name}%0a*PHONE:* ${formData.phone}%0a*ITEMS:*%0a${orderItems}%0a*TOTAL:* ${convertPrice(totalUSD)}`;
+      const message = `*NEW ORDER REQUEST - SIALKOT SHOP*%0a*CUSTOMER:* ${formData.name}%0a*PHONE:* ${formData.phone}%0a*ITEMS:*%0a${orderItems}%0a*TOTAL:* ${convertPrice(totalUSD)}`;
       
       clearCart();
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
@@ -63,58 +64,62 @@ const Checkout: React.FC = () => {
   if (cart.length === 0) {
       return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 text-center">
-            <CheckCircle size={40} className="text-green-600 mb-6" />
-            <h2 className="text-3xl font-bold mb-2">Order Confirmed</h2>
-            <p className="text-gray-500 mb-6">Your order has been saved and our team is ready to assist you on WhatsApp.</p>
-            <a href="#/" className="bg-black text-white px-8 py-3 rounded-full mt-4 font-bold hover:bg-accent hover:text-black transition-all">Return Home</a>
+            <CheckCircle size={60} className="text-accent mb-8 animate-bounce" />
+            <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-4 text-white">Order Synced</h2>
+            <p className="text-gray-500 uppercase text-[10px] font-bold tracking-[0.3em] mb-10">Our global team is processing your request on WhatsApp.</p>
+            <a href="#/" className="bg-white text-black px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-accent transition-all">Return Home</a>
         </div>
       );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8 uppercase tracking-tighter">{t('checkout')}</h1>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <div className="space-y-6">
-            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                <h3 className="font-bold text-xl flex items-center gap-2 mb-6"><User size={20} className="text-accent" /> Customer Details</h3>
-                <div className="space-y-4">
-                    <input required name="name" placeholder="Full Name" onChange={handleInputChange} className="w-full border-2 border-white bg-white p-4 rounded-xl shadow-sm focus:border-accent outline-none" />
-                    <input required name="email" type="email" placeholder="Email Address" onChange={handleInputChange} className="w-full border-2 border-white bg-white p-4 rounded-xl shadow-sm focus:border-accent outline-none" />
-                    <input required name="phone" placeholder="Phone Number" onChange={handleInputChange} className="w-full border-2 border-white bg-white p-4 rounded-xl shadow-sm focus:border-accent outline-none" />
+    <div className="max-w-7xl mx-auto px-4 py-20">
+      <h1 className="text-5xl font-black uppercase italic tracking-tighter mb-12 text-white">Final <span className="text-accent">Checkout</span></h1>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="space-y-10">
+            <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] shadow-2xl">
+                <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-10 flex items-center gap-4">
+                  <User size={24} className="text-accent" /> Customer Credentials
+                </h3>
+                <div className="space-y-6">
+                    <input required name="name" placeholder="FULL NAME" onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-accent font-bold text-xs uppercase tracking-widest" />
+                    <input required name="email" type="email" placeholder="EMAIL ADDRESS" onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-accent font-bold text-xs uppercase tracking-widest" />
+                    <input required name="phone" placeholder="PHONE NUMBER (WITH COUNTRY CODE)" onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-accent font-bold text-xs uppercase tracking-widest" />
                 </div>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                <h3 className="font-bold text-xl flex items-center gap-2 mb-6"><MapPin size={20} className="text-accent" /> Shipping Information</h3>
-                <div className="space-y-4">
-                    <input required name="city" placeholder="City" onChange={handleInputChange} className="w-full border-2 border-white bg-white p-4 rounded-xl shadow-sm focus:border-accent outline-none" />
-                    <input required name="homeNumber" placeholder="Full Address / Landmark" onChange={handleInputChange} className="w-full border-2 border-white bg-white p-4 rounded-xl shadow-sm focus:border-accent outline-none" />
+            <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] shadow-2xl">
+                <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-10 flex items-center gap-4">
+                  <MapPin size={24} className="text-accent" /> Delivery Logistics
+                </h3>
+                <div className="space-y-6">
+                    <input required name="city" placeholder="CITY / STATE" onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-accent font-bold text-xs uppercase tracking-widest" />
+                    <input required name="homeNumber" placeholder="FULL SHIPPING ADDRESS" onChange={handleInputChange} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-accent font-bold text-xs uppercase tracking-widest" />
                 </div>
             </div>
 
-            <button disabled={isSubmitting} type="submit" className="w-full bg-black text-white py-5 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 hover:bg-accent hover:text-black transition-all disabled:opacity-50">
+            <button disabled={isSubmitting} type="submit" className="w-full bg-accent text-black py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl flex items-center justify-center gap-4 hover:bg-white transition-all disabled:opacity-50 group">
                 {isSubmitting ? <Loader2 className="animate-spin" /> : <MessageCircle size={24} />} 
-                {isSubmitting ? 'Saving Global Order...' : 'Confirm Order via WhatsApp'}
+                {isSubmitting ? 'SECURELY SAVING ORDER...' : 'PLACE ORDER VIA WHATSAPP'}
             </button>
         </div>
 
-        <div className="bg-gray-50 p-8 rounded-3xl h-fit border border-gray-100">
-            <h3 className="font-black uppercase tracking-tighter text-lg mb-6 border-b pb-4">Order Summary</h3>
-            <div className="space-y-4 mb-6">
+        <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] h-fit shadow-2xl">
+            <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-10 pb-6 border-b border-white/5">Order Manifest</h3>
+            <div className="space-y-6 mb-10">
                 {cart.map(item => (
-                    <div key={`${item.id}-${item.selectedSize}`} className="flex justify-between items-center text-sm">
+                    <div key={`${item.id}-${item.selectedSize}`} className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
                         <div className="flex flex-col">
-                            <span className="font-bold">{item.title}</span>
-                            <span className="text-xs text-gray-400 uppercase">Qty: {item.quantity} | Size: {item.selectedSize}</span>
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest mb-1">{item.title}</span>
+                            <span className="text-[9px] text-gray-500 uppercase font-black">QTY: {item.quantity} | SIZE: {item.selectedSize}</span>
                         </div>
-                        <span className="font-bold">{convertPrice(item.price * item.quantity)}</span>
+                        <span className="text-xs font-black text-accent">{convertPrice(item.price * item.quantity)}</span>
                     </div>
                 ))}
             </div>
-            <div className="flex justify-between mt-6 pt-6 border-t border-gray-200 font-black text-2xl tracking-tighter">
-                <span>Total</span>
-                <span className="text-accent bg-black px-3 py-1 rounded-lg">{convertPrice(totalUSD)}</span>
+            <div className="flex justify-between items-center mt-10 pt-10 border-t border-white/10">
+                <span className="text-sm font-black text-gray-500 uppercase tracking-[0.3em]">Total Valuation</span>
+                <span className="text-4xl font-black text-white italic tracking-tighter">{convertPrice(totalUSD)}</span>
             </div>
         </div>
       </form>

@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
+import { X, Send, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { chatWithStylist } from '../services/geminiService';
 
@@ -25,7 +26,6 @@ const AIStylist: React.FC = () => {
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
-    // Prepare history for Gemini
     const history = messages.map(m => ({
       role: m.role === 'bot' ? 'model' : 'user',
       parts: [{ text: m.text }]
@@ -38,52 +38,53 @@ const AIStylist: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-24 md:bottom-10 right-6 z-[60]">
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
-          className="bg-black text-white p-4 rounded-full shadow-xl hover:bg-accent transition-all hover:scale-110 flex items-center gap-2"
+          className="bg-accent text-black p-5 rounded-full shadow-[0_0_30px_rgba(255,215,0,0.4)] hover:scale-110 transition-all flex items-center gap-3 animate-bounce"
         >
-          <Sparkles size={24} className="text-yellow-400" />
-          <span className="font-bold hidden md:inline">{t('aiStylist')}</span>
+          <Sparkles size={24} className="animate-pulse" />
+          <span className="font-black text-[10px] uppercase tracking-widest hidden md:inline">AI Expert</span>
         </button>
       )}
 
       {isOpen && (
-        <div className="bg-white rounded-2xl shadow-2xl w-80 md:w-96 h-[500px] flex flex-col border border-gray-200 overflow-hidden animate-fade-in-up">
+        <div className="bg-black border border-white/10 rounded-[2.5rem] shadow-2xl w-80 md:w-96 h-[550px] flex flex-col overflow-hidden animate-fade-in-up backdrop-blur-3xl">
           {/* Header */}
-          <div className="bg-black text-white p-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Sparkles size={20} className="text-yellow-400" />
-              <h3 className="font-bold">{t('aiStylist')}</h3>
+          <div className="bg-accent text-black p-6 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Sparkles size={20} />
+              <h3 className="font-black text-[10px] uppercase tracking-widest">Global Style Engine</h3>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:text-gray-300">
+            <button onClick={() => setIsOpen(false)} className="hover:scale-110 transition-transform">
               <X size={20} />
             </button>
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
             {messages.length === 0 && (
-              <div className="text-center text-gray-500 mt-10">
-                <p>{t('stylistIntro')}</p>
+              <div className="text-center text-gray-600 mt-20 px-4">
+                <Sparkles size={40} className="mx-auto mb-6 opacity-20" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Identify your vibe. Ask me for recommendations or fashion advice.</p>
               </div>
             )}
             {messages.map((msg, idx) => (
-              <div key={idx} className={`mb-3 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-xl text-sm ${
+              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] p-4 rounded-2xl text-xs font-bold leading-relaxed ${
                   msg.role === 'user' 
-                    ? 'bg-black text-white rounded-tr-none' 
-                    : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
+                    ? 'bg-accent text-black rounded-tr-none' 
+                    : 'bg-white/5 border border-white/10 text-white rounded-tl-none'
                 }`}>
                   {msg.text}
                 </div>
               </div>
             ))}
             {isLoading && (
-              <div className="flex justify-start mb-3">
-                <div className="bg-gray-200 text-gray-500 text-xs p-2 rounded-lg animate-pulse">
-                  {t('typing')}
+              <div className="flex justify-start">
+                <div className="bg-white/5 border border-white/10 text-accent text-[8px] p-3 rounded-2xl animate-pulse font-black uppercase tracking-widest">
+                  Analyzing Style Trends...
                 </div>
               </div>
             )}
@@ -91,19 +92,19 @@ const AIStylist: React.FC = () => {
           </div>
 
           {/* Input Area */}
-          <div className="p-3 bg-white border-t flex items-center gap-2">
+          <div className="p-6 bg-black border-t border-white/10 flex items-center gap-4">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask for advice..."
-              className="flex-1 bg-gray-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-black focus:outline-none"
+              placeholder="ASK FOR STYLE ADVICE..."
+              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-[10px] font-black uppercase tracking-widest text-white outline-none focus:border-accent transition-all"
             />
             <button 
               onClick={handleSend}
               disabled={isLoading}
-              className="bg-accent text-white p-2 rounded-full hover:bg-black transition-colors disabled:opacity-50"
+              className="bg-accent text-black p-4 rounded-xl hover:bg-white transition-all disabled:opacity-50"
             >
               <Send size={18} className={isRTL ? 'rotate-180' : ''} />
             </button>

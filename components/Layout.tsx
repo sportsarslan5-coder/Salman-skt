@@ -31,7 +31,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="min-h-screen flex flex-col bg-black text-white selection:bg-accent selection:text-black">
       {/* International Shipping Banner */}
       <div className="bg-accent text-black py-2 px-4 text-[10px] font-black uppercase tracking-[0.4em] text-center z-50">
-        FAST WORLDWIDE SHIPPING TO USA • SIALKOT EXPORT STANDARDS • PREMIUM QUALITY
+        FAST WORLDWIDE SHIPPING TO USA • SALMAN SKT EXPORT STANDARDS • PREMIUM QUALITY
       </div>
 
       {/* Modern Navbar */}
@@ -39,7 +39,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className={`max-w-7xl mx-auto rounded-[2rem] transition-all duration-500 border border-white/5 ${scrolled ? 'bg-black/80 backdrop-blur-2xl py-4 shadow-2xl border-white/10' : 'bg-transparent py-6'}`}>
           <div className="px-6 md:px-10 flex justify-between items-center">
             <a href="#/" className="text-3xl font-black tracking-tighter uppercase flex items-center gap-1 group italic text-white">
-              SIALKOT<span className="text-accent group-hover:scale-110 transition-transform">SHOP</span>
+              SALMAN<span className="text-accent group-hover:scale-110 transition-transform">SKT</span>
             </a>
 
             <div className="hidden lg:flex items-center gap-10">
@@ -83,9 +83,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-20 mb-24">
             <div className="md:col-span-5">
-              <h3 className="text-3xl font-black uppercase mb-10 italic text-white">SIALKOT<span className="text-accent">SHOP</span></h3>
+              <h3 className="text-3xl font-black uppercase mb-10 italic text-white">SALMAN<span className="text-accent">SKT</span></h3>
               <p className="text-gray-500 text-sm max-w-sm mb-12 leading-relaxed uppercase tracking-widest font-bold opacity-60">
-                Direct-from-factory technical apparel. Bringing the heritage of Sialkot's manufacturing to your doorstep in the USA.
+                Direct-from-factory technical apparel. "I was a lesson" — Bringing the craftsmanship of Salman SKT to your doorstep.
               </p>
               <div className="flex gap-6">
                 <a href="#" className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-accent hover:text-black transition-all hover:-translate-y-1"><Instagram size={20} /></a>
@@ -110,7 +110,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
           </div>
           <div className="pt-16 text-center border-t border-white/5">
-            <p className="text-gray-700 text-[9px] uppercase tracking-[0.8em] font-black">{t('footerText')}</p>
+            <p className="text-gray-700 text-[9px] uppercase tracking-[0.8em] font-black">SALMAN SKT © 2024 • GLOBAL LOGISTICS</p>
           </div>
         </div>
       </footer>

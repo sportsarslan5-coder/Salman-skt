@@ -18,6 +18,7 @@ const AppContent: React.FC = () => {
   const { route, isAdmin } = useAppContext();
   const path = route.split('?')[0];
 
+  // Admin Portal Routes
   if (path === '/admin/login') return <AdminLogin />;
   if (path === '/admin') {
     return isAdmin ? <AdminDashboard /> : <AdminLogin />;

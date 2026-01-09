@@ -16,9 +16,9 @@ export const TRANSLATIONS: Translations = {
   women: { en: 'Women', ur: 'خواتین' },
   kids: { en: 'Kids', ur: 'بچے' },
   buyNow: { en: 'Shop Collection', ur: 'خریداری کریں' },
-  heroTitle: { en: 'Sialkot Shop', ur: 'سیالکوٹ شاپ' },
-  heroSubtitle: { en: 'Global Export of Technical Apparel & Protective Gear.', ur: 'اعلیٰ معیار کے ملبوسات اور تکنیکی اسپورٹس ویئر۔' },
-  dealOfTheDay: { en: 'Export Elite', ur: 'ایکسپورٹ پریمیم' },
+  heroTitle: { en: 'Salman SKT', ur: 'سلمان ایس کے ٹی' },
+  heroSubtitle: { en: 'I was a lesson. Exporting Technical Apparel & Protective Gear.', ur: 'اعلیٰ معیار کے ملبوسات اور فنی جیکٹس۔' },
+  dealOfTheDay: { en: 'Soup Series', ur: 'سوپ سیریز' },
   addToCart: { en: 'Add to Cart', ur: 'ٹوکری میں شامل کریں' },
   emptyCart: { en: 'Your cart is empty', ur: 'ٹوکری خالی ہے' },
   total: { en: 'Order Total', ur: 'کل رقم' },
@@ -29,6 +29,18 @@ export const TRANSLATIONS: Translations = {
 };
 
 export const PRODUCTS: Product[] = [
+  {
+    id: '102',
+    title: "Signature Soup Jacket",
+    category: 'Men',
+    price: 145.00,
+    image_url: "https://images.unsplash.com/photo-1591047139829-d91aec16adcd?w=800&q=80",
+    description: "The original 'Soup' technical jacket. Engineered for the streets of New York but born in Sialkot. Features liquid-resistant outer shell and PROTEX thermal lining. 'I was a lesson' series.",
+    sizes: ["US M", "US L", "US XL", "US XXL"],
+    rating: 5.0,
+    reviews: 142,
+    isProtex: true
+  },
   {
     id: '101',
     title: "Pro-Tech Soccer Jersey",
@@ -42,16 +54,16 @@ export const PRODUCTS: Product[] = [
     isProtex: false
   },
   {
-    id: '102',
-    title: "Arctic Shield Technical Jacket",
-    category: 'Men',
-    price: 120.00,
-    image_url: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800&q=80",
-    description: "Export-grade weather-resistant jacket. Features laser-cut seams and PROTEX thermal insulation for extreme environments.",
-    sizes: ["US M", "US L", "US XL"],
-    rating: 5.0,
-    reviews: 84,
-    isProtex: true
+    id: '105',
+    title: "Studio Display T-Shirt Stand",
+    category: 'Accessories',
+    price: 85.00,
+    image_url: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&q=80",
+    description: "Premium display stand for our collection. Minimalist industrial design used in our flagship studios.",
+    sizes: ["One Size"],
+    rating: 4.7,
+    reviews: 12,
+    isProtex: false
   },
   {
     id: '103',
@@ -82,9 +94,9 @@ export const PRODUCTS: Product[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "From Sialkot to New York",
-    summary: "How we ship premium quality products directly from our factories to the USA.",
-    date: "Dec 24, 2024",
+    title: "The Lesson of Salman SKT",
+    summary: "How our founder transitioned from local manufacturing to a global lesson in style.",
+    date: "Dec 25, 2024",
     image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
   }
 ];
