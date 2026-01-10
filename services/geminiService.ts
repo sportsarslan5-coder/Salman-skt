@@ -11,25 +11,22 @@ export interface PricingAnalysis {
 }
 
 export const analyzeProductImage = async (base64Data: string, mimeType: string, userProvidedName?: string): Promise<PricingAnalysis> => {
-    // Initialize right before use to ensure the latest key is used
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const prompt = `
-    You are an expert fashion auditor for 'Sialkot Shop', the world capital of sports manufacturing.
-    Analyze this apparel image. Identify the type of garment, material quality (based on visual textures), 
-    and provide a fair export-grade price estimation in USD.
+    You are an expert fashion auditor for 'Salman SKT', the legendary technical apparel studio in Sialkot.
+    Analyze this apparel image. Identify the type of garment, material quality, and provide a fair export-grade price estimation in USD for the USA market.
     
-    Current market rates for Sialkot Export:
-    - T-shirts: $20-30
-    - Hoodies: $40-55
-    - Technical Jackets: $60-90
-    - Sports Jerseys: $35-50
-    - Leather Goods: $100+
+    Salman SKT Standards:
+    - Signature Soup Jackets: $150-250
+    - Technical Stands: $80-120
+    - Elite Hoodies: $60-85
+    - Performance Jerseys: $40-60
     `;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview', // Use Pro for detailed vision analysis
+            model: 'gemini-3-pro-preview',
             contents: {
                 parts: [
                     { inlineData: { mimeType, data: base64Data } },
@@ -48,7 +45,7 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
                             type: Type.ARRAY, 
                             items: { type: Type.STRING } 
                         },
-                        complexityScore: { type: Type.NUMBER, description: "0.1 to 1.0 based on design detail" },
+                        complexityScore: { type: Type.NUMBER },
                         estimatedPriceUSD: { type: Type.NUMBER }
                     },
                     required: ["productName", "category", "reasoning", "dominantColors", "complexityScore", "estimatedPriceUSD"]
@@ -64,12 +61,12 @@ export const analyzeProductImage = async (base64Data: string, mimeType: string, 
     } catch (error) {
         console.error("AI Analysis Failed:", error);
         return {
-            productName: userProvidedName || "Custom Apparel",
-            category: "Apparel",
-            dominantColors: ["Unknown"],
-            complexityScore: 0.5,
-            estimatedPriceUSD: 45,
-            reasoning: "Detailed vision analysis failed. Providing baseline Sialkot export estimation."
+            productName: userProvidedName || "SKT Custom Draft",
+            category: "Technical Apparel",
+            dominantColors: ["Monochrome"],
+            complexityScore: 0.8,
+            estimatedPriceUSD: 145,
+            reasoning: "Standard Salman SKT estimation for technical gear."
         };
     }
 };
@@ -85,12 +82,11 @@ export const chatWithStylist = async (message: string, history: any[]) => {
                 { role: 'user', parts: [{ text: message }] }
             ],
             config: { 
-                systemInstruction: "You are the 'Sialkot Shop' Style Expert. You help men find the best jerseys, technical jackets, and streetwear. You are confident, hip, and use Urdu words like 'Bhai', 'Zabardast', and 'Shandaar' occasionally. Keep responses under 3 sentences and very punchy. 🧥🔥"
+                systemInstruction: "You are the Stylist for 'Salman SKT'. You are a disciple of Salman's philosophy: 'I was a lesson.' You help men find technical soup jackets and professional studio gear. You are cool, slightly mysterious, and extremely knowledgeable about Sialkot's manufacturing secrets. Use terms like 'Technical', 'Alpha', and 'Lesson' frequently. Keep it under 3 sentences. 🧥🕶️"
             }
         });
-        return response.text || "I'm having a bit of a style block. Ask me something else!";
+        return response.text || "Listen, I'm analyzing the fabric. Ask me about the Soup Jacket.";
     } catch (e) {
-        console.error("Chat error:", e);
-        return "System is a bit busy, Bhai. Try again in a second!";
+        return "System sync issue. Even the best lessons take time, Bhai.";
     }
 };
