@@ -5,37 +5,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="Salman SKT - Premium Quality Men's Fashion & Technical Apparel. I was a lesson." />
-    <meta name="theme-color" content="#0a0a0a">
-    <title>Salman SKT | Premium Collection</title>
+    <meta name="theme-color" content="#000000">
+    <title>Salman SKT | Technical Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Nastaliq+Urdu:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              primary: '#0a0a0a',
+              primary: '#000000',
               accent: '#FFD700',
-              secondary: '#1a1a1a',
-              'accent-hover': '#E5C100',
+              'accent-muted': '#B8860B',
+              secondary: '#111111',
             },
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
               urdu: ['Noto Nastaliq Urdu', 'serif'],
+              display: ['Syne', 'sans-serif'],
             },
             animation: {
-              'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
-              'fade-in-right': 'fadeInRight 0.4s ease-out forwards',
-              'marquee': 'marquee 25s linear infinite',
+              'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'fade-in-right': 'fadeInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'marquee': 'marquee 40s linear infinite',
               'scan-line': 'scanLine 3s linear infinite',
+              'shimmer': 'shimmer 2s linear infinite',
+              'float': 'float 6s ease-in-out infinite',
             },
             keyframes: {
               fadeInUp: {
-                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '0%': { opacity: '0', transform: 'translateY(40px)' },
                 '100%': { opacity: '1', transform: 'translateY(0)' },
               },
               fadeInRight: {
-                '0%': { opacity: '0', transform: 'translateX(-20px)' },
+                '0%': { opacity: '0', transform: 'translateX(-30px)' },
                 '100%': { opacity: '1', transform: 'translateX(0)' },
               },
               marquee: {
@@ -45,6 +48,14 @@
               scanLine: {
                 '0%': { top: '0%' },
                 '100%': { top: '100%' }
+              },
+              shimmer: {
+                '0%': { backgroundPosition: '-200% 0' },
+                '100%': { backgroundPosition: '200% 0' }
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' }
               }
             }
           },
@@ -52,16 +63,33 @@
       }
     </script>
     <style>
-      /* فوری کالا بیک گراؤنڈ تاکہ سفید سکرین نہ آئے */
+      :root {
+        --accent: #FFD700;
+      }
       html, body { 
-        background-color: #0a0a0a !important; 
+        background-color: #000000 !important; 
         color: #ffffff; 
         margin: 0; 
         padding: 0; 
         min-height: 100vh;
         overflow-x: hidden;
-        -webkit-tap-highlight-color: transparent;
+        -webkit-font-smoothing: antialiased;
       }
+
+      /* Noise Grain Texture Overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        opacity: 0.03;
+        z-index: 9998;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      }
+
       #root:empty + #preloader {
         display: flex;
       }
@@ -72,55 +100,69 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: #0a0a0a;
+        background: #000;
         z-index: 9999;
       }
       .loader-spin {
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba(255, 213, 0, 0.1);
-        border-top-color: #FFD700;
+        width: 60px;
+        height: 60px;
+        border: 1px solid rgba(255, 215, 0, 0.1);
+        border-top-color: var(--accent);
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
       }
       @keyframes spin {
         to { transform: rotate(360deg); }
       }
       .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
+        width: 4px;
       }
       .custom-scrollbar::-webkit-scrollbar-track {
         background: transparent;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #333;
+        background: #222;
         border-radius: 10px;
       }
+      .glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .shimmer-text {
+        background: linear-gradient(90deg, #555 0%, #fff 50%, #555 100%);
+        background-size: 200% auto;
+        color: transparent;
+        -webkit-background-clip: text;
+        animation: shimmer 3s linear infinite;
+      }
+      ::selection {
+        background: var(--accent);
+        color: #000;
+      }
     </style>
-    <script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "lucide-react": "https://esm.sh/lucide-react@0.468.0",
-    "@google/genai": "https://esm.sh/@google/genai@1.3.0",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.47.10",
+    "react": "https://esm.sh/react@^19.2.3",
     "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.90.1",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
   }
 }
 </script>
-  </head>
-  <body class="bg-[#0a0a0a] text-white antialiased">
+</head>
+  <body class="bg-black text-white selection:bg-accent selection:text-black antialiased">
     <div id="root"></div>
-    <!-- لوڈنگ سکرین -->
     <div id="preloader">
-      <div class="loader-spin mb-4"></div>
-      <div style="font-family: 'Inter', sans-serif; font-weight: 900; letter-spacing: -0.05em; color: #fff; font-size: 1.5rem;">
-        SALMAN<span style="color: #FFD700; font-style: italic;">SKT</span>
+      <div class="loader-spin mb-8"></div>
+      <div style="font-family: 'Syne', sans-serif; font-weight: 800; letter-spacing: -0.05em; color: #fff; font-size: 2rem; font-style: italic;">
+        SALMAN<span style="color: #FFD700;">SKT</span>
       </div>
-      <div style="color: #444; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2em; margin-top: 8px;">
+      <div style="color: #666; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5em; margin-top: 12px; font-family: 'Inter', sans-serif;">
         "I was a lesson"
       </div>
     </div>
