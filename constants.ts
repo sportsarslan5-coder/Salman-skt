@@ -30,7 +30,7 @@ export const TRANSLATIONS: Translations = {
 
 export const PRODUCTS: Product[] = [
   {
-    id: 'soup-01',
+    id: 'soup-alpha-01',
     title: "Signature Soup Jacket (Alpha)",
     category: 'Men',
     price: 185.00,
@@ -42,7 +42,7 @@ export const PRODUCTS: Product[] = [
     isProtex: true
   },
   {
-    id: 'stand-01',
+    id: 'stand-studio-01',
     title: "The SKT Studio T-Shirt Stand",
     category: 'Accessories',
     price: 95.00,
@@ -54,24 +54,24 @@ export const PRODUCTS: Product[] = [
     isProtex: false
   },
   {
-    id: 'hoodie-01',
+    id: 'soup-hoodie-01',
     title: "Technical Soup Hoodie",
     category: 'Men',
     price: 75.00,
     image_url: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
-    description: "A mid-weight technical layer for the urban explorer. Features the signature SKT fit and high-density branding. Built for durability.",
+    description: "A mid-weight technical layer for the urban explorer. Features the signature SKT fit and high-density branding. Built for durability and 'lessons'.",
     sizes: ["S", "M", "L", "XL"],
     rating: 4.8,
     reviews: 312,
     isProtex: true
   },
   {
-    id: 'jersey-01',
+    id: 'export-jersey-01',
     title: "Elite Export Jersey",
     category: 'Men',
     price: 45.00,
     image_url: "https://images.unsplash.com/photo-1580087444194-03552a41d082?w=800&q=80",
-    description: "Professional grade moisture-wicking jersey. Built for the heat of the game with reinforced stitching.",
+    description: "Professional grade moisture-wicking jersey. Built for the heat of the game with reinforced stitching. Sialkot craft at its peak.",
     sizes: ["US Small", "US Medium", "US Large", "US XL"],
     rating: 4.9,
     reviews: 215,

@@ -5,7 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import ProductCard from '../components/ProductCard';
 
 const Home: React.FC = () => {
-  const { t, products, isLoading } = useAppContext();
+  const { products, isLoading } = useAppContext();
   const featuredProducts = products.slice(0, 4);
 
   if (isLoading) {
@@ -55,7 +55,7 @@ const Home: React.FC = () => {
                   href="#/shop" 
                   className="group inline-flex items-center justify-center bg-accent text-black px-14 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:bg-white transition-all transform hover:scale-105 shadow-[0_0_50px_rgba(255,215,0,0.3)]"
                 >
-                  Shop the Soup Collection <ChevronRight className="ml-2 group-hover:translate-x-2 transition-transform" size={16} />
+                  Shop the Collection <ChevronRight className="ml-2 group-hover:translate-x-2 transition-transform" size={16} />
                 </a>
                 <a 
                   href="#/smart-pricing" 
@@ -86,7 +86,7 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Featured: The Soup Jacket & The Stand */}
+      {/* Flagship Showreel */}
       <div className="py-32 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-20">
@@ -96,7 +96,7 @@ const Home: React.FC = () => {
                 <div className="absolute inset-0 p-12 flex flex-col justify-end bg-gradient-to-t from-black via-transparent to-transparent">
                     <span className="text-accent font-black uppercase tracking-[0.5em] text-[10px] mb-4">Flagship Asset</span>
                     <h3 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-6">THE SOUP JACKET</h3>
-                    <a href="#/product/soup-01" className="bg-white text-black self-start px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-accent transition-all">Claim Yours</a>
+                    <a href="#/product/soup-alpha-01" className="bg-white text-black self-start px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-accent transition-all">Claim Yours</a>
                 </div>
                 <div className="absolute top-10 right-10 bg-accent/20 backdrop-blur-xl p-4 rounded-3xl border border-accent/30 text-accent">
                     <ShieldCheck size={32} />
@@ -109,7 +109,7 @@ const Home: React.FC = () => {
                 <div className="absolute inset-0 p-12 flex flex-col justify-end bg-gradient-to-t from-black via-transparent to-transparent">
                     <span className="text-accent font-black uppercase tracking-[0.5em] text-[10px] mb-4">Studio Essential</span>
                     <h3 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-6">T-SHIRT STAND</h3>
-                    <a href="#/product/stand-01" className="bg-white text-black self-start px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-accent transition-all">Equip Studio</a>
+                    <a href="#/product/stand-studio-01" className="bg-white text-black self-start px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-accent transition-all">Equip Studio</a>
                 </div>
                 <div className="absolute top-10 right-10 bg-accent/20 backdrop-blur-xl p-4 rounded-3xl border border-accent/30 text-accent">
                     <Zap size={32} />
@@ -134,33 +134,6 @@ const Home: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Trust Grid */}
-      <div className="py-32 bg-[#050505] border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-16">
-            <div className="text-center">
-                <div className="bg-white/5 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-white/10 group-hover:bg-accent transition-all">
-                    <Zap size={32} className="text-accent" />
-                </div>
-                <h4 className="text-white font-black uppercase tracking-widest text-sm mb-4">Instant Export</h4>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest leading-loose">USA orders processed with priority flight shipping.</p>
-            </div>
-            <div className="text-center">
-                <div className="bg-white/5 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-white/10">
-                    <ShieldCheck size={32} className="text-accent" />
-                </div>
-                <h4 className="text-white font-black uppercase tracking-widest text-sm mb-4">Verified Tech</h4>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest leading-loose">All Soup Jackets undergo multi-stage stress testing.</p>
-            </div>
-            <div className="text-center">
-                <div className="bg-white/5 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-white/10">
-                    <CheckCircle2 size={32} className="text-accent" />
-                </div>
-                <h4 className="text-white font-black uppercase tracking-widest text-sm mb-4">SKT Certified</h4>
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-widest leading-loose">Authentic production direct from the SKT flagship studio.</p>
-            </div>
         </div>
       </div>
     </div>
