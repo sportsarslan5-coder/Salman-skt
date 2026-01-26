@@ -35,7 +35,7 @@ export const PRODUCTS: Product[] = [
     category: 'Men',
     price: 185.00,
     image_url: "https://images.unsplash.com/photo-1591047139829-d91aec16adcd?w=800&q=80",
-    description: "The definitive piece by Salman SKT. This soup jacket isn't just clothing; it's a technical shield. Engineered with fluid-repellent Protex fabric. As the founder says: 'I was a lesson.'",
+    description: "The definitive flagship piece by Salman SKT. Engineered with high-density fluid-repellent Protex. This isn't just clothing; it's an urban shield. Built on a legacy of resilience.",
     sizes: ["US M", "US L", "US XL", "US XXL"],
     rating: 5.0,
     reviews: 489,
@@ -43,12 +43,12 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'stand-studio-01',
-    title: "The SKT Studio T-Shirt Stand",
+    title: "Industrial T-Shirt Stand",
     category: 'Accessories',
     price: 95.00,
     image_url: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&q=80",
-    description: "The industrial-grade T-shirt stand used in Salman SKT's private studios. Minimalist, heavy-duty, and designed to display garments with the respect they deserve.",
-    sizes: ["Studio Size"],
+    description: "Heavy-duty studio equipment. Designed for high-end garment display and professional technical environments. Welded steel with a premium matte industrial finish.",
+    sizes: ["Studio Standard"],
     rating: 4.9,
     reviews: 82,
     isProtex: false
@@ -59,7 +59,7 @@ export const PRODUCTS: Product[] = [
     category: 'Men',
     price: 75.00,
     image_url: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800&q=80",
-    description: "A mid-weight technical layer for the urban explorer. Features the signature SKT fit and high-density branding. Built for durability and 'lessons'.",
+    description: "Mid-weight technical layer with multi-stage durability testing. Featuring reinforced seams and moisture-wicking properties for the urban athlete.",
     sizes: ["S", "M", "L", "XL"],
     rating: 4.8,
     reviews: 312,
@@ -71,7 +71,7 @@ export const PRODUCTS: Product[] = [
     category: 'Men',
     price: 45.00,
     image_url: "https://images.unsplash.com/photo-1580087444194-03552a41d082?w=800&q=80",
-    description: "Professional grade moisture-wicking jersey. Built for the heat of the game with reinforced stitching. Sialkot craft at its peak.",
+    description: "USA Export grade moisture-wicking jersey. Built for maximum performance in high-intensity conditions. Sialkot's technical pinnacle.",
     sizes: ["US Small", "US Medium", "US Large", "US XL"],
     rating: 4.9,
     reviews: 215,
@@ -82,9 +82,9 @@ export const PRODUCTS: Product[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "The Evolution of the Soup Jacket",
-    summary: "Discover why Salman SKT says 'I was a lesson' and how it shaped the most durable jacket on the market.",
-    date: "Jan 10, 2025",
+    title: "The Legacy of the Lesson",
+    summary: "Exploring the philosophy behind the Soup Jacket and why Salman SKT's production standards are unmatched globally.",
+    date: "Feb 12, 2025",
     image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
   }
 ];

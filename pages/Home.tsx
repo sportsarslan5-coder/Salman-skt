@@ -30,7 +30,7 @@ const Home: React.FC = () => {
         <img 
           src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop" 
           alt="Technical Studio" 
-          className="w-full h-full object-cover object-center opacity-40 grayscale group-hover:grayscale-0 scale-105"
+          className="w-full h-full object-cover object-center opacity-40 grayscale scale-105"
         />
         
         <div className="absolute inset-0 z-20 flex items-center px-6 md:px-12">
@@ -41,7 +41,7 @@ const Home: React.FC = () => {
                   SALMAN SKT FLAGSHIP
                 </span>
                 <span className="glass text-white/40 px-5 py-2 rounded-full text-[10px] font-black tracking-[0.4em] uppercase">
-                  EST. 1998
+                  USA EXPORT CERTIFIED
                 </span>
               </div>
               
@@ -53,7 +53,7 @@ const Home: React.FC = () => {
               
               <div className="flex flex-col md:flex-row md:items-end gap-12 mt-4">
                 <p className="text-xl md:text-2xl text-gray-400 font-medium max-w-sm uppercase tracking-tighter border-l-4 border-accent pl-10 leading-[1.1] italic">
-                  Technical apparel engineered for the global elite. Built on lessons learned in fire.
+                  Technical apparel engineered for the global elite. Built on lessons learned in the forge of Sialkot.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-6 animate-fade-in-up delay-150">
@@ -77,18 +77,18 @@ const Home: React.FC = () => {
       </div>
 
       {/* Philosophy Section */}
-      <div className="py-64 bg-black relative overflow-hidden">
+      <div className="py-64 bg-black relative overflow-hidden border-b border-white/5">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 text-[30vw] font-black text-white/[0.02] whitespace-nowrap select-none pointer-events-none italic uppercase">
           LESSON • LESSON
         </div>
         <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
             <Quote size={100} className="text-accent mx-auto mb-16 opacity-20" />
             <h2 className="text-6xl md:text-9xl font-display font-black text-white italic uppercase tracking-tighter mb-12 leading-[0.85] shimmer-text">
-              "I WAS A <span className="text-accent shimmer-none">LESSON.</span>"
+              "I WAS A <span className="text-accent">LESSON.</span>"
             </h2>
             <div className="grid md:grid-cols-2 gap-12 text-left mt-24">
                 <p className="text-gray-500 text-lg md:text-xl font-bold uppercase tracking-widest leading-relaxed opacity-80 border-t border-white/10 pt-10">
-                    Salman SKT didn't just build a brand; he built a standard. Every stitch in our Soup Jackets is a legacy.
+                    Salman SKT didn't just build a brand; he built a standard. Every stitch in our Soup Jackets is a legacy of resilience.
                 </p>
                 <div className="space-y-8 border-t border-white/10 pt-10">
                     <div className="flex items-center gap-6 group">
@@ -109,7 +109,7 @@ const Home: React.FC = () => {
       </div>
 
       {/* Flagship Showreel */}
-      <div className="py-40 bg-[#050505] border-y border-white/5">
+      <div className="py-40 bg-[#050505]">
         <div className="max-w-7xl mx-auto px-6 sm:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-32">
             {/* The Soup Jacket Highlight */}
