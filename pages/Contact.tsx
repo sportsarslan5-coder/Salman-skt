@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, MapPin, MessageCircle, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageCircle, Globe, ShieldCheck, RefreshCcw, CreditCard } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { WHATSAPP_NUMBER } from '../constants';
 
@@ -13,6 +13,31 @@ const Contact: React.FC = () => {
           Contact <span className="text-accent">Global Support</span>
         </h1>
         <p className="text-gray-500 uppercase text-[10px] font-bold tracking-[0.4em]">Direct factory bridge for USA & International inquiries</p>
+      </div>
+
+      {/* Financial Security Section */}
+      <div className="mb-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="glass p-10 rounded-[3rem] border border-accent/20 text-center">
+              <ShieldCheck size={48} className="text-accent mx-auto mb-6" />
+              <h3 className="text-white font-black uppercase text-xs tracking-widest mb-4">Secure Transactions</h3>
+              <p className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                  We never ask for bank or PayPal credentials on this site. Payments are handled via direct secure links on WhatsApp.
+              </p>
+          </div>
+          <div className="glass p-10 rounded-[3rem] border border-accent/20 text-center">
+              <RefreshCcw size={48} className="text-accent mx-auto mb-6" />
+              <h3 className="text-white font-black uppercase text-xs tracking-widest mb-4">Refund Guarantee</h3>
+              <p className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                  Full refunds are issued via PayPal for any order cancelled prior to factory dispatch.
+              </p>
+          </div>
+          <div className="glass p-10 rounded-[3rem] border border-accent/20 text-center">
+              <CreditCard size={48} className="text-accent mx-auto mb-6" />
+              <h3 className="text-white font-black uppercase text-xs tracking-widest mb-4">Payment Methods</h3>
+              <p className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                  We accept PayPal (International) and Direct Bank Transfers (IBAN) for all export orders.
+              </p>
+          </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
