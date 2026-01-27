@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight, Sparkles, ChevronRight, Quote, Zap, ShieldCheck, Activity } from 'lucide-react';
+import { ArrowRight, Sparkles, ChevronRight, Quote, Zap, ShieldCheck, Activity, Layers } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import ProductCard from '../components/ProductCard';
 
@@ -18,7 +18,7 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="overflow-x-hidden bg-black">
+    <div className="overflow-x-hidden bg-black selection:bg-accent selection:text-black">
       {/* Hero Section */}
       <div className="relative h-screen w-full bg-black overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10"></div>
@@ -70,18 +70,53 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Brand DNA Section */}
-      <div className="py-64 bg-[#050505] relative overflow-hidden">
-         <div className="absolute top-0 left-1/2 -translate-x-1/2 text-[40vw] font-black text-white/[0.02] whitespace-nowrap select-none italic uppercase pointer-events-none">LESSON</div>
-         <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
-            <Quote size={80} className="text-accent mx-auto mb-16 opacity-30" />
-            <h2 className="text-7xl md:text-[10rem] font-display font-black text-white italic uppercase tracking-tighter mb-12 leading-[0.8] shimmer-text">
-              "I WAS A <span className="text-accent">LESSON.</span>"
-            </h2>
-            <p className="text-gray-500 text-lg md:text-2xl font-bold uppercase tracking-[0.2em] leading-relaxed max-w-3xl mx-auto opacity-80 border-t border-white/10 pt-16 mt-16">
-              Salman SKT didn't just build a brand; he built a standard. Every Soup Jacket is a testament to resilience and technical mastery.
-            </p>
-         </div>
+      {/* Featured Drop Spotlight */}
+      <div className="py-40 bg-[#050505] border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 lg:px-16">
+          <div className="flex flex-col md:flex-row gap-20 items-center">
+            <div className="w-full md:w-1/2 relative group animate-fade-in-right">
+                <div className="absolute -inset-4 bg-accent/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative rounded-[4rem] overflow-hidden border border-white/10 shadow-2xl bg-black aspect-square">
+                    <img 
+                      src="https://res.cloudinary.com/dc0ytviey/image/upload/v1769492135/untitled-1769491073282_tjzjlc.jpg" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                      alt="Depression Shoes"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                    <div className="absolute bottom-12 left-12">
+                        <span className="glass px-6 py-2 rounded-full text-[10px] font-black text-accent border border-accent/20 uppercase tracking-[0.4em]">DROP_ALPHA_009</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div className="w-full md:w-1/2 animate-fade-in-up">
+                <span className="text-accent font-black uppercase tracking-[0.6em] text-[10px] mb-8 block">Exclusive Technical Footwear</span>
+                <h2 className="text-6xl md:text-8xl font-display font-black text-white italic uppercase tracking-tighter leading-none mb-10">THE <span className="text-accent underline underline-offset-8 decoration-white/10">'DEPRESSION'</span> PROTOTYPE</h2>
+                <p className="text-gray-400 text-lg md:text-xl font-medium uppercase tracking-tighter opacity-80 italic leading-relaxed mb-12 border-l-2 border-white/10 pl-8">
+                  "Crafted for those who walk through the storm. Industrial grade soles with a heavy emotional footprint."
+                </p>
+                
+                <div className="grid grid-cols-2 gap-8 mb-12">
+                    <div className="glass p-8 rounded-[2rem] border border-white/5">
+                        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Diagnostic Quality</h4>
+                        <div className="flex items-center gap-3">
+                            <Layers size={18} className="text-accent" />
+                            <span className="font-black text-white text-sm">GRADE_A_SIALKOT</span>
+                        </div>
+                    </div>
+                    <div className="glass p-8 rounded-[2rem] border border-white/5">
+                        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Export Status</h4>
+                        <div className="flex items-center gap-3">
+                            <Activity size={18} className="text-accent" />
+                            <span className="font-black text-white text-sm">USA_VERIFIED</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="#/product/depression-shoes-01" className="bg-white text-black px-16 py-7 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.4em] hover:bg-accent transition-all inline-block shadow-2xl transform hover:scale-105">Deploy Selection</a>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Flagship Product Showcase */}

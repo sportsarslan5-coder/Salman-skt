@@ -30,6 +30,18 @@ export const TRANSLATIONS: Translations = {
 
 export const PRODUCTS: Product[] = [
   {
+    id: 'depression-shoes-01',
+    title: "The 'Depression' Tech Footwear",
+    category: 'Footwear',
+    price: 220.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769492135/untitled-1769491073282_tjzjlc.jpg",
+    description: "A technical footwear lesson. Crafted for those who walk through the storm. Industrial grade soles with a heavy emotional footprint. Engineered for extreme urban durability.",
+    sizes: ["US 8", "US 9", "US 10", "US 11"],
+    rating: 5.0,
+    reviews: 124,
+    isProtex: true
+  },
+  {
     id: 'soup-alpha-01',
     title: "Signature Soup Jacket (Alpha)",
     category: 'Men',
@@ -64,18 +76,6 @@ export const PRODUCTS: Product[] = [
     rating: 4.8,
     reviews: 312,
     isProtex: true
-  },
-  {
-    id: 'export-jersey-elite',
-    title: "Elite Export Jersey",
-    category: 'Men',
-    price: 45.00,
-    image_url: "https://images.unsplash.com/photo-1580087444194-03552a41d082?w=800&q=80",
-    description: "Moisture-wicking mesh used by professional clubs. USA export certified. Engineered in the heart of Sialkot's sports forge.",
-    sizes: ["US Small", "US Medium", "US Large", "US XL"],
-    rating: 4.9,
-    reviews: 215,
-    isProtex: false
   }
 ];
 
@@ -83,7 +83,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
     title: "The Legacy of the Lesson",
-    summary: "How a single failure in the workshop led to the invention of the world's most durable soup jacket.",
+    summary: "How a single failure in the workshop led to the invention of the world's most durable technical gear.",
     date: "Feb 15, 2025",
     image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&q=80"
   }
