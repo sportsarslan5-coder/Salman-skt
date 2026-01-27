@@ -4,7 +4,7 @@ import {
   Package, ShoppingBag, Plus, Edit, Trash2, X, Check, Save, 
   Camera, LayoutDashboard, LogOut, Search,
   Eye, Box, User, Phone, Loader2,
-  RefreshCw, Database, ArrowRight, Zap, ShieldCheck, Activity
+  RefreshCw, Database, ArrowRight, Zap, ShieldCheck, Activity, Globe
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { dbService, getDiagnostics } from '../services/dbService';
@@ -222,6 +222,7 @@ const AdminDashboard: React.FC = () => {
                       <div>
                         <h4 className="font-black text-2xl text-white uppercase tracking-tighter italic">{order.customer_name}</h4>
                         <div className="flex items-center gap-6 mt-3">
+                          {/* Fixed: Globe icon added to imports to resolve Cannot find name 'Globe' */}
                           <span className="text-[10px] text-gray-500 uppercase font-black tracking-[0.3em] flex items-center gap-2"><Globe size={12}/> {order.city}</span>
                           <span className="text-[10px] text-accent uppercase font-black tracking-[0.3em] glass px-4 py-1.5 rounded-full border border-accent/10">{convertPrice(order.total)}</span>
                         </div>
