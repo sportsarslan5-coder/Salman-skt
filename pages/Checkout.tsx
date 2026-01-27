@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { CreditCard, CheckCircle, MessageCircle, MapPin, User, Loader2, DollarSign, ShieldCheck, RefreshCcw } from 'lucide-react';
+import { CreditCard, CheckCircle, MessageCircle, MapPin, User, Loader2, DollarSign, ShieldCheck, RefreshCcw, Lock } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '../constants';
 import { dbService } from '../services/dbService';
 import { Order } from '../types';
@@ -57,7 +57,7 @@ const Checkout: React.FC = () => {
                       `*ITEMS:*%0a${orderItems}%0a` + 
                       `*TOTAL:* ${convertPrice(totalUSD)}%0a` +
                       `------------------%0a` +
-                      `Please provide the secure ${paymentMethod} details for final settlement.`;
+                      `Protocol: Secure Factory Finalization Request.`;
       
       clearCart();
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
@@ -74,7 +74,7 @@ const Checkout: React.FC = () => {
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 text-center">
             <CheckCircle size={60} className="text-accent mb-8 animate-bounce" />
             <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-4 text-white">Manifest Transmitted</h2>
-            <p className="text-gray-500 uppercase text-[10px] font-bold tracking-[0.3em] mb-10">Our global team is awaiting you on WhatsApp to provide payment details.</p>
+            <p className="text-gray-500 uppercase text-[10px] font-bold tracking-[0.3em] mb-10">Secure channel initialized. Awaiting you on WhatsApp for payment finalization.</p>
             <a href="#/" className="bg-white text-black px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-accent transition-all">Return to Studio</a>
         </div>
       );
@@ -82,23 +82,33 @@ const Checkout: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-20">
-      <h1 className="text-5xl font-black uppercase italic tracking-tighter mb-12 text-white">Security <span className="text-accent">Checkout</span></h1>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-12">
+        <div>
+            <span className="text-accent font-black uppercase tracking-[0.6em] text-[10px] mb-4 block">Manifest Finalization</span>
+            <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter text-white">Secure <span className="text-accent">Checkout</span></h1>
+        </div>
+        <div className="glass px-8 py-4 rounded-full border border-white/5 flex items-center gap-4">
+            <Lock size={16} className="text-green-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-green-500">Encrypted Bridge Active</span>
+        </div>
+      </div>
       
-      {/* Policy Banner */}
-      <div className="mb-12 glass border border-accent/20 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+      {/* Policy Banner - Dazing Update */}
+      <div className="mb-12 glass border border-accent/20 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-accent/20"></div>
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0">
-              <RefreshCcw size={32} />
+              <RefreshCcw size={32} className="animate-spin-slow" />
           </div>
           <div>
-              <h4 className="text-white font-black uppercase text-xs tracking-widest mb-2">100% Pre-Dispatch Refund Guarantee</h4>
+              <h4 className="text-white font-black uppercase text-xs tracking-widest mb-2">Refund Assurance Protocol</h4>
               <p className="text-gray-500 text-[10px] uppercase tracking-tighter leading-relaxed">
-                  Orders can be fully refunded via PayPal or Bank Transfer at any time before the status is marked as 'Dispatched'. 
-                  Contact Studio Ops on WhatsApp for immediate reversal.
+                  Payments are held in escrow until dispatch. Full refunds issued via PayPal/Bank instantly upon request before order completion. 
+                  Direct factory reversal.
               </p>
           </div>
-          <div className="md:ml-auto flex gap-4">
-              <ShieldCheck className="text-accent" size={24} />
-              <DollarSign className="text-accent" size={24} />
+          <div className="md:ml-auto flex gap-6">
+              <ShieldCheck className="text-accent opacity-40" size={32} />
+              <DollarSign className="text-accent opacity-40" size={32} />
           </div>
       </div>
 
@@ -116,46 +126,49 @@ const Checkout: React.FC = () => {
                 </div>
             </div>
 
-            {/* Payment Selection */}
-            <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] shadow-2xl">
+            {/* Payment Selection - Explicitly informational */}
+            <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] shadow-2xl relative">
+                <div className="absolute -top-4 -right-4 bg-accent text-black px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-xl">Secure Selector</div>
                 <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-10 flex items-center gap-4">
-                  <CreditCard size={24} className="text-accent" /> Payment Methodology
+                  <CreditCard size={24} className="text-accent" /> Preferred Funding Method
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <button 
                         type="button"
                         onClick={() => setPaymentMethod('PayPal')}
-                        className={`p-6 rounded-2xl border transition-all flex flex-col items-center gap-4 ${paymentMethod === 'PayPal' ? 'border-accent bg-accent/5 text-accent' : 'border-white/5 bg-white/5 text-gray-500'}`}
+                        className={`p-6 rounded-2xl border transition-all flex flex-col items-center gap-4 ${paymentMethod === 'PayPal' ? 'border-accent bg-accent/5 text-accent shadow-[0_0_30px_rgba(255,215,0,0.1)]' : 'border-white/5 bg-white/5 text-gray-500 opacity-40'}`}
                     >
                         <DollarSign size={32} />
-                        <span className="font-black text-[10px] uppercase tracking-widest">PayPal Global</span>
+                        <span className="font-black text-[10px] uppercase tracking-widest">PayPal / International</span>
                     </button>
                     <button 
                         type="button"
                         onClick={() => setPaymentMethod('Bank Transfer')}
-                        className={`p-6 rounded-2xl border transition-all flex flex-col items-center gap-4 ${paymentMethod === 'Bank Transfer' ? 'border-accent bg-accent/5 text-accent' : 'border-white/5 bg-white/5 text-gray-500'}`}
+                        className={`p-6 rounded-2xl border transition-all flex flex-col items-center gap-4 ${paymentMethod === 'Bank Transfer' ? 'border-accent bg-accent/5 text-accent shadow-[0_0_30px_rgba(255,215,0,0.1)]' : 'border-white/5 bg-white/5 text-gray-500 opacity-40'}`}
                     >
                         <MapPin size={32} />
-                        <span className="font-black text-[10px] uppercase tracking-widest">Direct IBAN</span>
+                        <span className="font-black text-[10px] uppercase tracking-widest">Bank Transfer / IBAN</span>
                     </button>
                 </div>
-                <p className="mt-8 text-[9px] text-gray-600 font-bold uppercase tracking-widest text-center">
-                    DO NOT ENTER NUMBERS HERE. SECURE DETAILS PROVIDED ON WHATSAPP.
-                </p>
+                <div className="mt-8 p-6 bg-red-500/5 border border-red-500/10 rounded-2xl">
+                    <p className="text-[9px] text-red-400 font-black uppercase tracking-[0.2em] text-center leading-relaxed">
+                        CRITICAL SECURITY NOTICE: Do not enter bank or PayPal details on this form. <br/> Your secure payment bridge will be provided directly by the Factory Link.
+                    </p>
+                </div>
             </div>
 
-            <button disabled={isSubmitting} type="submit" className="w-full bg-accent text-black py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl flex items-center justify-center gap-4 hover:bg-white transition-all disabled:opacity-50 group">
-                {isSubmitting ? <Loader2 className="animate-spin" /> : <MessageCircle size={24} />} 
-                {isSubmitting ? 'ENCRYPTING MANIFEST...' : 'FINALIZE VIA STUDIO BRIDGE'}
+            <button disabled={isSubmitting} type="submit" className="w-full bg-accent text-black py-7 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-[0_20px_60px_rgba(255,215,0,0.2)] flex items-center justify-center gap-4 hover:bg-white transition-all disabled:opacity-50 group transform active:scale-95">
+                {isSubmitting ? <Loader2 className="animate-spin" /> : <MessageCircle size={24} className="group-hover:rotate-12 transition-transform" />} 
+                {isSubmitting ? 'ENCRYPTING MANIFEST...' : 'FINALIZE MANIFEST ON WHATSAPP'}
             </button>
         </div>
 
         {/* Manifest Summary */}
-        <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] h-fit shadow-2xl">
-            <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-10 pb-6 border-b border-white/5">Order Manifest</h3>
+        <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] h-fit shadow-2xl sticky top-40">
+            <h3 className="text-xl font-black text-white uppercase italic tracking-tight mb-10 pb-6 border-b border-white/5">Studio Manifest Summary</h3>
             <div className="space-y-6 mb-10">
                 {cart.map(item => (
-                    <div key={`${item.id}-${item.selectedSize}`} className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div key={`${item.id}-${item.selectedSize}`} className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/5 group hover:border-white/10 transition-all">
                         <div className="flex flex-col">
                             <span className="text-[10px] font-black text-white uppercase tracking-widest mb-1">{item.title}</span>
                             <span className="text-[9px] text-gray-500 uppercase font-black">QTY: {item.quantity} | SIZE: {item.selectedSize}</span>
@@ -166,7 +179,11 @@ const Checkout: React.FC = () => {
             </div>
             <div className="flex justify-between items-center mt-10 pt-10 border-t border-white/10">
                 <span className="text-sm font-black text-gray-500 uppercase tracking-[0.3em]">Total Valuation</span>
-                <span className="text-4xl font-black text-white italic tracking-tighter">{convertPrice(totalUSD)}</span>
+                <span className="text-4xl font-black text-white italic tracking-tighter shimmer-text">{convertPrice(totalUSD)}</span>
+            </div>
+            <div className="mt-10 flex items-center gap-4 justify-center">
+                 <ShieldCheck size={14} className="text-accent" />
+                 <p className="text-[8px] font-black text-gray-700 uppercase tracking-[0.6em]">Secure Studio Logistics Active</p>
             </div>
         </div>
       </form>

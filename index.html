@@ -31,6 +31,7 @@
               'scan-line': 'scanLine 3s linear infinite',
               'shimmer': 'shimmer 2s linear infinite',
               'float': 'float 6s ease-in-out infinite',
+              'glitch': 'glitch 1s linear infinite',
             },
             keyframes: {
               fadeInUp: {
@@ -46,8 +47,8 @@
                 '100%': { transform: 'translateX(-50%)' },
               },
               scanLine: {
-                '0%': { top: '0%' },
-                '100%': { top: '100%' }
+                '0%': { transform: 'translateY(-100%)' },
+                '100%': { transform: 'translateY(100%)' }
               },
               shimmer: {
                 '0%': { backgroundPosition: '-200% 0' },
@@ -56,6 +57,13 @@
               float: {
                 '0%, 100%': { transform: 'translateY(0)' },
                 '50%': { transform: 'translateY(-20px)' }
+              },
+              glitch: {
+                '0%, 100%': { transform: 'translate(0)' },
+                '20%': { transform: 'translate(-2px, 2px)' },
+                '40%': { transform: 'translate(-2px, -2px)' },
+                '60%': { transform: 'translate(2px, 2px)' },
+                '80%': { transform: 'translate(2px, -2px)' },
               }
             }
           },
@@ -76,6 +84,19 @@
         -webkit-font-smoothing: antialiased;
       }
 
+      /* Blueprint Grid Background */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: 
+          linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        z-index: -1;
+        pointer-events: none;
+      }
+
       /* Noise Grain Texture Overlay */
       body::before {
         content: "";
@@ -84,7 +105,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        opacity: 0.03;
+        opacity: 0.04;
         z-index: 9998;
         pointer-events: none;
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
@@ -125,9 +146,9 @@
         border-radius: 10px;
       }
       .glass {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
         border: 1px solid rgba(255, 255, 255, 0.05);
       }
       .shimmer-text {
@@ -136,6 +157,23 @@
         color: transparent;
         -webkit-background-clip: text;
         animation: shimmer 3s linear infinite;
+      }
+      .technical-scan {
+        position: relative;
+        overflow: hidden;
+      }
+      .technical-scan::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--accent);
+        box-shadow: 0 0 15px var(--accent);
+        animation: scanLine 4s ease-in-out infinite;
+        opacity: 0.3;
+        z-index: 10;
       }
       ::selection {
         background: var(--accent);

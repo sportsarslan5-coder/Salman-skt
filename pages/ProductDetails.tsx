@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, MessageCircle, ShieldCheck, Zap, ArrowLeft, Layers, Globe, Activity } from 'lucide-react';
+import { ShoppingCart, MessageCircle, ShieldCheck, Zap, ArrowLeft, Layers, Globe, Activity, Cpu, Box } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { WHATSAPP_NUMBER } from '../constants';
 
@@ -52,10 +52,10 @@ const ProductDetails: React.FC = () => {
           <ArrowLeft size={18} className="group-hover:-translate-x-2 transition-transform" /> Back to Archive
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
           {/* Asset Image Section */}
-          <div className="relative animate-fade-in-right">
-            <div className="aspect-[4/5] rounded-[4rem] overflow-hidden border border-white/10 bg-[#050505] relative group shadow-2xl">
+          <div className="relative animate-fade-in-right sticky top-32">
+            <div className="aspect-[4/5] rounded-[4rem] overflow-hidden border border-white/10 bg-[#050505] relative group shadow-2xl technical-scan">
               <img 
                 src={product.image_url} 
                 alt={product.title} 
@@ -77,34 +77,50 @@ const ProductDetails: React.FC = () => {
               </div>
             </div>
             
-            {/* Abstract Elements */}
-            <div className="absolute -top-10 -left-10 w-40 h-40 bg-accent/5 blur-[80px] rounded-full pointer-events-none"></div>
+            {/* Asset Metadata Table */}
+            <div className="mt-10 glass rounded-[2.5rem] border border-white/5 p-8 grid grid-cols-3 gap-8">
+               <div className="text-center">
+                  <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-1">Density</p>
+                  <p className="text-white font-black text-sm">450 GSM</p>
+               </div>
+               <div className="text-center border-x border-white/5">
+                  <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-1">Thread</p>
+                  <p className="text-white font-black text-sm">Nylon_V2</p>
+               </div>
+               <div className="text-center">
+                  <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-1">Origin</p>
+                  <p className="text-white font-black text-sm">SKT_Forge</p>
+               </div>
+            </div>
           </div>
 
           {/* Technical Specs Section */}
           <div className="flex flex-col animate-fade-in-up">
             <div className="mb-12">
-              <span className="text-accent font-black uppercase tracking-[0.5em] text-[10px] mb-6 block">Asset Specifications</span>
+              <span className="text-accent font-black uppercase tracking-[0.5em] text-[10px] mb-6 block">Asset Specifications / {product.id.slice(0, 8)}</span>
               <h1 className="text-6xl md:text-8xl font-display font-black text-white mb-6 leading-[0.85] italic tracking-tighter uppercase">{product.title}</h1>
               <div className="flex items-center gap-6">
                 <span className="text-4xl font-display font-black text-white tracking-tighter italic">{convertPrice(product.price)}</span>
-                <span className="glass text-green-500 text-[10px] font-black px-5 py-2 rounded-full border border-green-500/20 tracking-widest uppercase">Verified Sync</span>
+                <span className="glass text-accent text-[10px] font-black px-5 py-2 rounded-full border border-accent/20 tracking-widest uppercase flex items-center gap-2">
+                    <Cpu size={12} /> Sync_Protocol_Active
+                </span>
               </div>
             </div>
 
-            <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] mb-12 shadow-xl">
-              <p className="text-gray-400 text-lg leading-relaxed font-medium uppercase tracking-tighter opacity-80 italic">
+            <div className="bg-[#0a0a0a] border border-white/5 p-10 rounded-[3rem] mb-12 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5"><Box size={100} /></div>
+              <p className="text-gray-400 text-lg leading-relaxed font-medium uppercase tracking-tighter opacity-80 italic relative z-10">
                 {product.description}
               </p>
               
-              <div className="grid grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/5">
+              <div className="grid grid-cols-2 gap-8 mt-12 pt-12 border-t border-white/5 relative z-10">
                 <div className="flex items-center gap-4">
                   <Layers size={24} className="text-accent/40" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Technical Fit</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Technical Construct</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <Globe size={24} className="text-accent/40" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Global Export</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">USA_Export_Ready</span>
                 </div>
               </div>
             </div>
@@ -145,9 +161,11 @@ const ProductDetails: React.FC = () => {
               </button>
             </div>
             
-            <div className="mt-16 flex items-center gap-4 justify-center">
-                <Zap size={14} className="text-accent animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-[0.6em] text-gray-700">Studio Origin: Sialkot, Pakistan</span>
+            {/* Warning Message */}
+            <div className="mt-16 p-6 glass rounded-2xl border border-white/5 text-center">
+                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-gray-600 leading-relaxed">
+                    Financial Policy: Secure payment links are generated via WhatsApp. <br/> Do not transmit account numbers on this interface.
+                </p>
             </div>
           </div>
         </div>
