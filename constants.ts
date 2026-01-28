@@ -31,12 +31,24 @@ export const TRANSLATIONS: Translations = {
 
 export const PRODUCTS: Product[] = [
   {
+    id: 'skt-price-depression-v2',
+    title: "Price & Depression Elite Stick Jacket",
+    category: "Active & Casual",
+    price: 50.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769616091/IMG_20241109_212640_976_mndkiy.jpg",
+    description: "The definitive technical outerwear from the Price & Depression series. This 'Stick Jacket' features industrial-grade stitching, premium insulated lining, and a high-performance silhouette optimized for the professional studio environment.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 64,
+    isProtex: true
+  },
+  {
     id: 'skt-price-depression',
-    title: "Price & Depression Elite Shoes",
+    title: "Price & Depression Archive I",
     category: "Elite Shoes",
     price: 155.00,
     image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769492135/untitled-1769491073282_tjzjlc.jpg",
-    description: "Exclusive technical footwear featuring complex manufacturing standards. Built for high-performance studio environments and street style.",
+    description: "The original technical footwear from the 'I was a lesson' collection. High-performance design optimized for technical apparel synergy.",
     sizes: ["7", "8", "9", "10", "11", "12"],
     rating: 5.0,
     reviews: 48,
@@ -112,18 +124,6 @@ export const PRODUCTS: Product[] = [
     sizes: ["S", "M", "L", "XL"],
     rating: 4.8,
     reviews: 112,
-    isProtex: false
-  },
-  {
-    id: 'skt-book-bag',
-    title: "Studio Book Bag",
-    category: "Gear & Bags",
-    price: 40.00,
-    image_url: "https://images.unsplash.com/photo-1581605405669-fec81425952e?w=800&q=80",
-    description: "Customizable team book bags. Available with screen printing and tackle twill embroidery.",
-    sizes: ["Standard"],
-    rating: 4.6,
-    reviews: 42,
     isProtex: false
   }
 ];
