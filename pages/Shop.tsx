@@ -23,7 +23,7 @@ const Shop: React.FC = () => {
      setActiveCategory(params.get('category') || 'All');
   }, [route]);
 
-  const categories = ['All', "Men's Fashion", "Women's Fashion", 'Shoes', 'Accessories'];
+  const categories = ['All', 'Team Uniforms', 'Active & Casual', 'Elite Shoes', 'Gear & Bags'];
 
   const handleCategoryClick = (cat: string) => {
     if (cat === 'All') {
@@ -47,7 +47,7 @@ const Shop: React.FC = () => {
         {/* Catalog Header */}
         <div className="mb-20 flex flex-col md:flex-row justify-between items-end gap-10">
           <div className="animate-fade-in-right">
-            <span className="text-accent font-black uppercase tracking-[0.6em] text-[10px] mb-4 block">Archive Directory</span>
+            <span className="text-accent font-black uppercase tracking-[0.6em] text-[10px] mb-4 block">Manufacturing Registry</span>
             <h1 className="text-6xl md:text-8xl font-display font-black text-gray-900 italic uppercase tracking-tighter leading-none">Studio<br/><span className="text-accent">Inventory</span></h1>
           </div>
           
@@ -72,8 +72,8 @@ const Shop: React.FC = () => {
         {filteredProducts.length === 0 ? (
           <div className="text-center py-40 bg-gray-50 border-2 border-dashed border-gray-100 rounded-[3rem]">
             <Filter size={48} className="mx-auto mb-6 text-gray-300" />
-            <h2 className="text-xl font-display font-black text-gray-400 uppercase italic">Empty Archive</h2>
-            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-3">No assets detected for this protocol</p>
+            <h2 className="text-xl font-display font-black text-gray-400 uppercase italic">Empty Registry</h2>
+            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-3">No products found in this manufacturing line</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
