@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Sparkles, Globe, Heart, Menu, X, User } from 'lucide-react';
+import { ShoppingBag, Search, Sparkles, Globe, Heart, Menu, X, User, Lock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import BottomNav from './BottomNav';
 
@@ -114,16 +114,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-900 mb-6">Catalog</h4>
               <ul className="text-xs font-bold text-gray-500 space-y-4 uppercase tracking-wider">
                 <li><a href="#/shop" className="hover:text-accent transition-colors">All Products</a></li>
-                <li><a href="#/shop?category=Men's Fashion" className="hover:text-accent transition-colors">Men's Apparel</a></li>
-                <li><a href="#/shop?category=Women's Fashion" className="hover:text-accent transition-colors">Women's Apparel</a></li>
+                <li><a href="#/shop?category=Team Uniforms" className="hover:text-accent transition-colors">Team Uniforms</a></li>
+                <li><a href="#/shop?category=Elite Shoes" className="hover:text-accent transition-colors">Elite Shoes</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-900 mb-6">Support</h4>
               <ul className="text-xs font-bold text-gray-500 space-y-4 uppercase tracking-wider">
                 <li><a href="#/contact" className="hover:text-accent transition-colors">Factory Help</a></li>
-                <li><a href="#" className="hover:text-accent transition-colors">Shipping Policy</a></li>
-                <li><a href="#" className="hover:text-accent transition-colors">Bulk Orders</a></li>
+                <li><a href="#/admin" className="hover:text-accent transition-colors flex items-center gap-2 text-dark">Admin Portal <Lock size={12}/></a></li>
               </ul>
             </div>
             <div>
