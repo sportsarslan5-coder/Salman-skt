@@ -31,12 +31,24 @@ export const TRANSLATIONS: Translations = {
 
 export const PRODUCTS: Product[] = [
   {
+    id: 'skt-technical-hoodie-gif',
+    title: "Technical Studio Hoodie",
+    category: "Active & Casual",
+    price: 30.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747839/tshirt-2.original_le1qch.gif",
+    description: "Industrial-grade technical hoodie featuring a performance-optimized blend. This 'Salman SKT' studio essential brings motion to streetwear with complex panelling and factory-grade durability. Built for the USA technical fashion scene.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 62,
+    isProtex: true
+  },
+  {
     id: 'skt-pd-stick-jacket-1',
     title: "Price & Depression Stick Jacket",
     category: "Active & Casual",
     price: 50.00,
     image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747603/IMG_20241109_212720_166_tqlcub.jpg",
-    description: "Premium technical 'Stick Jacket' from the Price & Depression collection. USA SEO Optimized industrial streetwear with signature stitching and weather-resistant utility. A core piece of the Sialkot manufacturing archive.",
+    description: "Premium technical 'Stick Jacket' from the Price & Depression collection. USA SEO Optimized industrial streetwear with signature stitching and weather-resistant utility.",
     sizes: ["S", "M", "L", "XL", "XXL"],
     rating: 5.0,
     reviews: 142,
@@ -88,18 +100,6 @@ export const PRODUCTS: Product[] = [
     sizes: ["S", "M", "L", "XL", "XXL"],
     rating: 4.9,
     reviews: 112,
-    isProtex: true
-  },
-  {
-    id: 'skt-price-depression-v2',
-    title: "Price & Depression Elite Stick Jacket",
-    category: "Active & Casual",
-    price: 50.00,
-    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769616091/IMG_20241109_212640_976_mndkiy.jpg",
-    description: "The definitive technical outerwear from the Price & Depression series. Features industrial-grade 'stick' stitching and high-performance silhouette.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    rating: 5.0,
-    reviews: 72,
     isProtex: true
   },
   {
