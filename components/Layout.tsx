@@ -1,146 +1,183 @@
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Sparkles, Globe, Heart, Menu, X, User, Lock } from 'lucide-react';
+import { ShoppingBag, Search, MapPin, Menu, X, User, ChevronDown, Package, Heart } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import BottomNav from './BottomNav';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { 
-    t, cart, navigate, route 
-  } = useAppContext();
+  const { t, cart, navigate, route, language } = useAppContext();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'home', path: '/' },
-    { name: 'shop', path: '/shop' },
-    { name: 'smartPricing', path: '/smart-pricing' }, 
-    { name: 'contact', path: '/contact' },
-  ];
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      <nav className={`fixed w-full top-0 z-40 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-2' : 'bg-white py-5 border-b border-gray-100'}`}>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center gap-6">
-          {/* Logo */}
-          <a href="#/" className="text-xl md:text-2xl font-display font-black tracking-tight text-gray-900 flex items-center gap-1 group whitespace-nowrap">
-            SALMAN<span className="text-accent group-hover:opacity-80 transition-opacity">SKT</span>
+      {/* Marketplace Top Bar */}
+      <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-dark' : 'bg-dark'}`}>
+        <div className="max-w-[1600px] mx-auto px-4 py-2 flex items-center gap-4 lg:gap-8">
+          
+          {/* Logo & Brand */}
+          <a href="#/" className="flex items-center gap-1 group shrink-0">
+            <div className="text-xl md:text-2xl font-display font-black text-white tracking-tighter">
+              SALMAN<span className="text-accent italic">SKT</span>
+            </div>
           </a>
 
-          {/* Amazon-style Search Bar */}
-          <div className="hidden lg:flex flex-1 max-w-2xl relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search size={18} className="text-gray-400" />
+          {/* Delivery Info (Desktop) */}
+          <div className="hidden xl:flex items-center gap-2 text-white/70 hover:text-white cursor-pointer px-2 py-1 border border-transparent hover:border-white/20 rounded-sm transition-all">
+            <MapPin size={18} className="text-white" />
+            <div className="flex flex-col -space-y-1">
+              <span className="text-[10px] font-medium">Deliver to</span>
+              <span className="text-xs font-black uppercase tracking-widest text-white">USA Market</span>
             </div>
-            <input 
-              type="text" 
-              placeholder={t('search')} 
-              className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-12 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
-            />
           </div>
 
-          {/* Desktop Nav Actions */}
-          <div className="hidden lg:flex items-center gap-8">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Account</span>
-              <a href="#/admin" className="text-xs font-black uppercase tracking-widest hover:text-accent transition-colors flex items-center gap-2">
-                Studio Access <User size={14} />
-              </a>
+          {/* Amazon-Style Search Hub */}
+          <form onSubmit={handleSearch} className="flex-1 flex group">
+            <div className="hidden md:flex items-center bg-gray-100 px-3 rounded-l-md border-r border-gray-300 text-[10px] font-black uppercase cursor-pointer hover:bg-gray-200">
+              All <ChevronDown size={14} className="ml-1" />
             </div>
-            
-            <a href="#/cart" className="relative group p-2 text-gray-600 hover:text-accent transition-all flex items-center gap-3">
-              <div className="relative">
-                <ShoppingBag size={24} strokeWidth={1.5} />
-                {cart.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-white text-[9px] font-black h-5 w-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+            <div className="relative flex-1">
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('search')} 
+                className="w-full bg-white text-dark py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <button type="submit" className="bg-accent hover:bg-white text-black px-5 rounded-r-md transition-colors">
+              <Search size={20} strokeWidth={3} />
+            </button>
+          </form>
+
+          {/* Account & Orders (Desktop) */}
+          <div className="hidden lg:flex items-center gap-2">
+             <div className="flex items-center gap-1 text-white/70 hover:text-white cursor-pointer px-3 py-1 border border-transparent hover:border-white/20 rounded-sm">
+                <div className="flex flex-col -space-y-1 text-left">
+                  <span className="text-[10px] font-medium">Hello, Sign in</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-white flex items-center">Account <ChevronDown size={12} className="ml-1 opacity-50" /></span>
+                </div>
+             </div>
+             
+             <a href="#/admin" className="flex flex-col -space-y-1 text-left px-3 py-1 border border-transparent hover:border-white/20 rounded-sm text-white/70 hover:text-white transition-all">
+               <span className="text-[10px] font-medium">Returns</span>
+               <span className="text-xs font-black uppercase tracking-widest text-white">& Orders</span>
+             </a>
+
+             {/* Cart Button */}
+             <a href="#/cart" className="relative flex items-end gap-1 px-3 py-1 border border-transparent hover:border-white/20 rounded-sm text-white group">
+                <div className="relative">
+                  <ShoppingBag size={28} strokeWidth={1.5} className="group-hover:text-accent transition-colors" />
+                  <span className="absolute -top-1 -right-1 bg-accent text-black text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full border-2 border-dark">
                     {cart.reduce((a, b) => a + b.quantity, 0)}
                   </span>
-                )}
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest hidden xl:block">Cart</span>
-            </a>
+                </div>
+                <span className="text-sm font-black uppercase tracking-tighter hidden xl:block">Cart</span>
+             </a>
           </div>
 
-          <button className="lg:hidden text-gray-900" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {/* Mobile Menu Toggle */}
+          <button className="lg:hidden text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
-      </nav>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-white flex flex-col p-10 lg:hidden">
-          <button className="self-end mb-12" onClick={() => setMobileMenuOpen(false)}>
-            <X size={32} />
-          </button>
-          <div className="flex flex-col gap-6">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={`#${link.path}`}
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-2xl font-display font-bold uppercase tracking-tighter border-b border-gray-50 pb-4 hover:text-accent transition-colors"
+        {/* Sub-Header: Categories Bar */}
+        <div className="bg-[#232f3e] text-white py-2 px-4 flex items-center gap-6 overflow-x-auto no-scrollbar shadow-md">
+            <button className="flex items-center gap-1 text-xs font-black uppercase tracking-widest whitespace-nowrap px-2 py-1 border border-transparent hover:border-white/40 rounded-sm">
+              <Menu size={16} /> All
+            </button>
+            {['Team Uniforms', 'Active & Casual', 'Elite Shoes', 'Gear & Bags'].map(cat => (
+              <a 
+                key={cat} 
+                href={`#/shop?category=${encodeURIComponent(cat)}`}
+                className="text-xs font-bold uppercase tracking-widest whitespace-nowrap px-2 py-1 border border-transparent hover:border-white/40 rounded-sm"
               >
-                {t(link.name)}
+                {cat}
               </a>
             ))}
-            <a href="#/admin" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-display font-bold uppercase tracking-tighter text-accent pt-4">Admin Login</a>
+            <a href="#/smart-pricing" className="text-xs font-black uppercase tracking-widest text-accent whitespace-nowrap px-2 py-1 border border-transparent hover:border-white/40 rounded-sm flex items-center gap-1">
+              Studio Lens <Search size={12} />
+            </a>
+        </div>
+      </header>
+
+      {/* Mobile Nav Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col p-8 lg:hidden animate-fade-in-up">
+          <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-100">
+             <div className="text-2xl font-display font-black">SALMAN<span className="text-accent">SKT</span></div>
+             <button onClick={() => setMobileMenuOpen(false)}><X size={32} /></button>
+          </div>
+          <div className="flex flex-col gap-6">
+            <a href="#/" onClick={() => setMobileMenuOpen(false)} className="text-xl font-black uppercase tracking-tighter flex items-center justify-between">Home <ChevronDown className="-rotate-90 opacity-20" /></a>
+            <a href="#/shop" onClick={() => setMobileMenuOpen(false)} className="text-xl font-black uppercase tracking-tighter flex items-center justify-between">Marketplace <ChevronDown className="-rotate-90 opacity-20" /></a>
+            <a href="#/cart" onClick={() => setMobileMenuOpen(false)} className="text-xl font-black uppercase tracking-tighter flex items-center justify-between">My Cart ({cart.length}) <ChevronDown className="-rotate-90 opacity-20" /></a>
+            <a href="#/admin" onClick={() => setMobileMenuOpen(false)} className="text-xl font-black uppercase tracking-tighter text-accent pt-6 border-t">Admin Access</a>
           </div>
         </div>
       )}
 
-      <main className="flex-grow pt-20">
+      <main className="flex-grow pt-[104px] bg-gray-100/50">
         {children}
       </main>
 
       <BottomNav />
 
-      <footer className="bg-gray-50 border-t border-gray-100 pt-16 pb-32 md:pb-16">
+      {/* Modern Footer */}
+      <footer className="bg-dark text-white pt-16 pb-32 md:pb-16 mt-20">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12 border-b border-white/10 pb-12">
             <div>
-              <h2 className="text-lg font-display font-black mb-4">SALMAN<span className="text-accent">SKT</span></h2>
-              <p className="text-gray-500 text-xs leading-relaxed uppercase font-bold tracking-tighter opacity-80">
-                The global studio for technical apparel and elite fashion. Exported directly from our Sialkot manufacturing facility to your doorstep.
+              <h2 className="text-xl font-display font-black mb-6">SALMAN<span className="text-accent italic">SKT</span></h2>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                Proprietary technical gear and elite fashion studio. Manufactured in Sialkot, PK. Distributed globally for the USA market.
               </p>
             </div>
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-900 mb-6">Catalog</h4>
-              <ul className="text-xs font-bold text-gray-500 space-y-4 uppercase tracking-wider">
-                <li><a href="#/shop" className="hover:text-accent transition-colors">All Products</a></li>
-                <li><a href="#/shop?category=Team Uniforms" className="hover:text-accent transition-colors">Team Uniforms</a></li>
-                <li><a href="#/shop?category=Elite Shoes" className="hover:text-accent transition-colors">Elite Shoes</a></li>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-6">Get to Know Us</h4>
+              <ul className="text-xs font-bold text-gray-400 space-y-4 uppercase tracking-widest">
+                <li><a href="#/" className="hover:text-white transition-colors">Our Studio</a></li>
+                <li><a href="#/blog" className="hover:text-white transition-colors">Tech Journal</a></li>
+                <li><a href="#/" className="hover:text-white transition-colors">Sustainability</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-900 mb-6">Support</h4>
-              <ul className="text-xs font-bold text-gray-500 space-y-4 uppercase tracking-wider">
-                <li><a href="#/contact" className="hover:text-accent transition-colors">Factory Help</a></li>
-                <li><a href="#/admin" className="hover:text-accent transition-colors flex items-center gap-2 text-dark">Admin Portal <Lock size={12}/></a></li>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-6">Studio Support</h4>
+              <ul className="text-xs font-bold text-gray-400 space-y-4 uppercase tracking-widest">
+                <li><a href="#/admin" className="hover:text-white transition-colors">Order Manifests</a></li>
+                <li><a href="#/contact" className="hover:text-white transition-colors">Factory Direct Link</a></li>
+                <li><a href="#/cart" className="hover:text-white transition-colors">Returns Center</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-900 mb-6">Factory Link</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-6">Join Pro List</h4>
               <div className="flex flex-col gap-4">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                   <Globe size={14} /> SIALKOT, PK
-                </p>
-                <button className="bg-dark text-white py-3 px-6 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] hover:bg-accent hover:text-black transition-all">Join Studio Mail</button>
+                <input type="text" placeholder="Email Address" className="bg-white/5 border border-white/10 p-3 rounded-md text-[10px] font-bold outline-none focus:border-accent" />
+                <button className="bg-accent text-black py-3 rounded-md font-black uppercase text-[10px] tracking-widest hover:bg-white transition-all">Sign Up</button>
               </div>
             </div>
           </div>
-          <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400 text-[9px] font-black uppercase tracking-[0.4em]">© 2025 SALMAN SKT • GLOBAL EXPORT PROTOCOL</p>
-            <div className="flex gap-6 opacity-30">
-               <div className="w-8 h-5 bg-gray-400 rounded-sm"></div>
-               <div className="w-8 h-5 bg-gray-400 rounded-sm"></div>
-               <div className="w-8 h-5 bg-gray-400 rounded-sm"></div>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.5em]">© 2025 SALMAN SKT GLOBAL STUDIO PROTOCOL</p>
+            <div className="flex gap-4">
+               <div className="w-10 h-6 bg-white/10 rounded flex items-center justify-center text-[8px] font-bold">VISA</div>
+               <div className="w-10 h-6 bg-white/10 rounded flex items-center justify-center text-[8px] font-bold">PAYPAL</div>
+               <div className="w-10 h-6 bg-white/10 rounded flex items-center justify-center text-[8px] font-bold">IBAN</div>
             </div>
           </div>
         </div>
