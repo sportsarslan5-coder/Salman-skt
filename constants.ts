@@ -31,63 +31,63 @@ export const TRANSLATIONS: Translations = {
 
 export const PRODUCTS: Product[] = [
   {
-    id: 'skt-varsity-jacket-streetwear',
-    title: "Men’s Designer Varsity Baseball Jacket – Streetwear Style",
-    category: "Active & Casual",
-    price: 59.99,
-    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747603/IMG_20241109_212702_161_ciaowd.jpg",
-    description: "Premium varsity-style baseball jacket crafted with soft yet durable fabric. Featuring classic ribbed cuffs and collar, bold embroidered logo details, and a modern streetwear silhouette — perfect for casual everyday outfits, campus style, or urban fashion. A must-have outerwear essential for fall and winter.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    rating: 4.9,
-    reviews: 86,
-    isProtex: true
-  },
-  {
-    id: 'skt-price-depression-alpha',
-    title: "Price & Depression Alpha Stick Jacket",
-    category: "Active & Casual",
-    price: 50.00,
-    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747602/IMG_20241105_202206_389_eugddm.jpg",
-    description: "Technical Alpha-series outerwear. This 'Price & Depression' edition features reinforced stitching and a weather-resistant technical shell, optimized for the USA streetwear market.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    rating: 5.0,
-    reviews: 42,
-    isProtex: true
-  },
-  {
-    id: 'skt-price-depression-lesson',
-    title: "Price & Depression 'Lesson' Tech Shell",
-    category: "Active & Casual",
-    price: 50.00,
-    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747584/IMG_20241104_002851_263_rrzyjq.jpg",
-    description: "I was a lesson. High-performance technical shell jacket with industrial-grade finishing. A core piece of the Salman SKT technical archive.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    rating: 5.0,
-    reviews: 31,
-    isProtex: true
-  },
-  {
-    id: 'skt-price-depression-studio',
-    title: "Price & Depression Studio Tech Jacket",
-    category: "Active & Casual",
-    price: 50.00,
-    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747602/IMG_20241105_202208_105_leu9ci.jpg",
-    description: "Designed for the urban explorer. This technical jacket balances industrial aesthetics with functional manufacturing standards.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    rating: 4.8,
-    reviews: 19,
-    isProtex: true
-  },
-  {
-    id: 'skt-price-depression-v3',
-    title: "Price & Depression Industrial Parka",
+    id: 'skt-pd-stick-jacket-1',
+    title: "Price & Depression Stick Jacket",
     category: "Active & Casual",
     price: 50.00,
     image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747603/IMG_20241109_212720_166_tqlcub.jpg",
-    description: "Maximum utility stick jacket. Features complex panelling and factory-grade insulated lining for the ultimate fall/winter essential.",
+    description: "Premium technical 'Stick Jacket' from the Price & Depression collection. USA SEO Optimized industrial streetwear with signature stitching and weather-resistant utility. A core piece of the Sialkot manufacturing archive.",
     sizes: ["S", "M", "L", "XL", "XXL"],
     rating: 5.0,
-    reviews: 27,
+    reviews: 142,
+    isProtex: true
+  },
+  {
+    id: 'skt-pd-stick-jacket-2',
+    title: "Price & Depression Stick Jacket (Archive II)",
+    category: "Active & Casual",
+    price: 50.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747602/IMG_20241105_202206_389_eugddm.jpg",
+    description: "Technical Stick Jacket featuring industrial-grade panelling and reinforced seams. Designed for the high-end USA streetwear market by Salman SKT.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 89,
+    isProtex: true
+  },
+  {
+    id: 'skt-pd-stick-jacket-3',
+    title: "Price & Depression Stick Jacket (Lesson Edition)",
+    category: "Active & Casual",
+    price: 50.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747584/IMG_20241104_002851_263_rrzyjq.jpg",
+    description: "'I was a lesson' technical shell. Precision stick stitching and high-performance silhouette. Elite manufacturing standards for the urban explorer.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 76,
+    isProtex: true
+  },
+  {
+    id: 'skt-pd-stick-jacket-4',
+    title: "Price & Depression Stick Jacket (Studio Series)",
+    category: "Active & Casual",
+    price: 50.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747602/IMG_20241105_202208_105_leu9ci.jpg",
+    description: "Factory-grade technical outerwear. This Stick Jacket balances complex industrial aesthetics with functional export durability. Optimized for autumn and winter.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.8,
+    reviews: 54,
+    isProtex: true
+  },
+  {
+    id: 'skt-pd-stick-jacket-5',
+    title: "Price & Depression Stick Jacket (Varsity Hybrid)",
+    category: "Active & Casual",
+    price: 50.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747603/IMG_20241109_212702_161_ciaowd.jpg",
+    description: "Technical varsity-style hybrid Stick Jacket. Features bold embroidered details and a modern streetwear silhouette. High-quality Sialkot craftsmanship.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 112,
     isProtex: true
   },
   {
@@ -96,19 +96,19 @@ export const PRODUCTS: Product[] = [
     category: "Active & Casual",
     price: 50.00,
     image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769616091/IMG_20241109_212640_976_mndkiy.jpg",
-    description: "The definitive technical outerwear from the Price & Depression series. This 'Stick Jacket' features industrial-grade stitching, premium insulated lining, and a high-performance silhouette.",
+    description: "The definitive technical outerwear from the Price & Depression series. Features industrial-grade 'stick' stitching and high-performance silhouette.",
     sizes: ["S", "M", "L", "XL", "XXL"],
     rating: 5.0,
-    reviews: 64,
+    reviews: 72,
     isProtex: true
   },
   {
-    id: 'skt-price-depression',
+    id: 'skt-price-depression-shoes',
     title: "Price & Depression Archive I",
     category: "Elite Shoes",
     price: 155.00,
     image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769492135/untitled-1769491073282_tjzjlc.jpg",
-    description: "The original technical footwear from the 'I was a lesson' collection. High-performance design optimized for technical apparel synergy.",
+    description: "Original technical footwear from the 'I was a lesson' collection. High-performance design optimized for technical apparel synergy.",
     sizes: ["7", "8", "9", "10", "11", "12"],
     rating: 5.0,
     reviews: 48,
@@ -131,9 +131,9 @@ export const PRODUCTS: Product[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "Price & Depression: The Studio Philosophy",
-    summary: "Exploring the rise of technical 'Stick Jackets' in the USA streetwear market and Sialkot's manufacturing role.",
-    date: "May 10, 2025",
+    title: "The Rise of Stick Jackets in the USA",
+    summary: "How the Price & Depression series became a technical streetwear staple through Sialkot's manufacturing excellence.",
+    date: "June 05, 2025",
     image: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747603/IMG_20241109_212720_166_tqlcub.jpg"
   }
 ];
