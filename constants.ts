@@ -31,6 +31,18 @@ export const TRANSLATIONS: Translations = {
 
 export const PRODUCTS: Product[] = [
   {
+    id: 'skt-varsity-jacket-streetwear',
+    title: "Men’s Designer Varsity Baseball Jacket – Streetwear Style",
+    category: "Active & Casual",
+    price: 59.99,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769747603/IMG_20241109_212702_161_ciaowd.jpg",
+    description: "Premium varsity-style baseball jacket crafted with soft yet durable fabric. Featuring classic ribbed cuffs and collar, bold embroidered logo details, and a modern streetwear silhouette — perfect for casual everyday outfits, campus style, or urban fashion. A must-have outerwear essential for the season.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 42,
+    isProtex: true
+  },
+  {
     id: 'skt-price-depression-v2',
     title: "Price & Depression Elite Stick Jacket",
     category: "Active & Casual",
