@@ -31,6 +31,18 @@ export const TRANSLATIONS: Translations = {
 
 export const PRODUCTS: Product[] = [
   {
+    id: 'skt-premium-hoodie-v2',
+    title: "Premium Studio Hoodie",
+    category: "Active & Casual",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dc0ytviey/image/upload/v1769946025/received_534683599421218_fvdmuq.jpg",
+    description: "New season technical hoodie. Featuring factory-grade reinforced stitching and a premium cotton-poly blend for maximum comfort and durability. A Sialkot manufacturing exclusive for the global streetwear scene.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 24,
+    isProtex: true
+  },
+  {
     id: 'skt-technical-hoodie-gif',
     title: "Technical Studio Hoodie",
     category: "Active & Casual",
