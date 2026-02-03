@@ -30,7 +30,261 @@ export const TRANSLATIONS: Translations = {
 };
 
 export const PRODUCTS: Product[] = [
-  // --- NEWEST ADDITIONS ---
+  // --- BASKETBALL UNIFORMS: PHASE 2 (NEW ADDITIONS) ---
+  {
+    id: 'skt-bball-p2-1',
+    title: "SKT Championship Series Pro-Fit Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959108/r2bTqPDVgvog-1_hgbxbr.jpg",
+    description: "Elite Championship Series uniform designed for high-stakes USA tournaments. Features high-definition sublimation and athletic tailoring for maximum speed and comfort.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 156,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-2',
+    title: "SKT Varsity Legend Basketball Kit",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959108/189-1_407fdb46-3f2a-4381-8fdd-26b09f0a65cb_mchjhk.jpg",
+    description: "Classic Varsity styling meets professional manufacturing. Built for USA high school and collegiate programs that demand durability and prestige.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 82,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-3',
+    title: "SKT Pro-Am Performance League Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959106/unisex-nike-stephen-curry-black-golden-state-warriors-swingman-badge-player-jersey-city-edition_pi5202000_ff_5202680-898016d5c53d4c7303a4_full_s1hfmj.jpg",
+    description: "Professional Grade Swingman quality. Advanced moisture-wicking fabric and heat-pressed graphics. Engineered for the USA Pro-Am circuit.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 310,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-4',
+    title: "SKT Stateside Elite Team Gear",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959077/realistic-basketball-jersey-front-and-back-view-mockup-free-vector_rp66dv.jpg",
+    description: "Full kit including performance jersey and shorts. Features 4-way stretch mesh for ultimate freedom on the full court.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.8,
+    reviews: 44,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-5',
+    title: "SKT AAU Tournament Grade Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959076/Youth-Basketball-Uniforms-manufacturer-Pakistan_ur1l7x.jpg",
+    description: "The preferred choice for USA Youth and AAU programs. Lightweight, ultra-breathable, and built for a heavy tournament schedule.",
+    sizes: ["Y-S", "Y-M", "Y-L", "S", "M"],
+    rating: 5.0,
+    reviews: 215,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-6',
+    title: "SKT Challenger Series Reversible",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959075/ZWBK-700-F_vizasi.jpg",
+    description: "High-tech reversible kit for practice and competition. Laser-cut ventilation and precision reinforced seams.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.7,
+    reviews: 63,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-7',
+    title: "SKT Metro City League Jersey",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959050/188-1_59d0b9a1-c567-4ad9-ad5f-2ba062b470d6_pao8pn.jpg",
+    description: "Street-inspired urban basketball gear. High-density embroidery and pro-grade materials for the city courts.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 98,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-8',
+    title: "SKT Custom Draft Pro Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959049/Custom_Adult_Basketball_Uniforms_664264dfe7ddc_jqmbze.jpg",
+    description: "Advanced custom uniform for professional league drafts. Ergonomic cut and high-performance synthetic blend.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 51,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-9',
+    title: "SKT Retro Archive Court Jersey",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959047/s-l1200_szuyx4.jpg",
+    description: "Nostalgic styling paired with modern technical performance. A tribute to the golden era of USA basketball.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.8,
+    reviews: 124,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-10',
+    title: "SKT Patriot Elite USA Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959046/usa-basketball-uniforms_lmxidn.jpg",
+    description: "USA Team inspired colors and technical specifications. Engineered for peak performance on the international stage.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 187,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-11',
+    title: "SKT Baseline High-Performance Kit",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959010/03-1_rok8gj.jpg",
+    description: "Focused on core performance metrics. Lightweight mesh and flexible side-panels for maximum court speed.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.6,
+    reviews: 39,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-12',
+    title: "SKT Collegiate Maroon Elite Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959009/MaroonBasketballUniform_o6zycg.jpg",
+    description: "Classic maroon and white varsity colorway. Features heavy-duty tackle twill options and moisture control.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 77,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-13',
+    title: "SKT Platinum Baseline Jersey",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959008/1-38_ldi0e1.jpg",
+    description: "Premium baseline jersey for elite athletes. Features advanced technical mesh and athletic tailoring.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 112,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-14',
+    title: "SKT Full-Court Press Pro Kit",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959008/1-42_u5zayn.jpg",
+    description: "Designed for the aggressive defender. High-tension fabric and reinforced seams for intense league play.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.8,
+    reviews: 93,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-15',
+    title: "SKT Reversible Scrimmage Pro",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959007/Wholesale-Blank-Basketball-Uniforms-Youth-Unisex-Reversible-Basketball-Jersey_ljzsb0.webp",
+    description: "The ultimate dual-sided jersey for USA basketball training programs and developmental leagues.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.7,
+    reviews: 41,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-16',
+    title: "SKT National Pride Team Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/Custom_Adult_Basketball_Uniforms_664264dfe7ddc_zhcmjr.jpg",
+    description: "Bold styling and performance focus for regional teams. High-density sublimation that never fades.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 104,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-17',
+    title: "SKT Varsity Prime Team Set",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/183-1_a1023030-c00d-43ad-8f5c-1541d6348c01_bqxydt.jpg",
+    description: "Traditional varsity aesthetics with modern technical fabric. Built for high performance in USA leagues.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 66,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-18',
+    title: "SKT Urban Street Court Jersey",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/71uA4UbhXvL._AC_UY1000__rhhrri.jpg",
+    description: "Fashion-forward basketball jersey for urban summer leagues and high-intensity practice sessions.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.8,
+    reviews: 119,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-19',
+    title: "SKT Elite Pro Suit Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958928/BSuit0040_900x_g9jbkf.jpg",
+    description: "Full uniform set featuring sleek modern design and advanced performance synthetic materials.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 55,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-20',
+    title: "SKT Pro-Am Division Jersey",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/mens_bball14_vhu6hj.jpg",
+    description: "The choice for elite players in the USA Pro-Am division. Engineered for explosive movement and sweat management.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 5.0,
+    reviews: 89,
+    isProtex: true
+  },
+  {
+    id: 'skt-bball-p2-21',
+    title: "SKT Studio Baseline Uniform",
+    category: "Team Uniforms",
+    price: 35.00,
+    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959108/r2bTqPDVgvog-1_hgbxbr.jpg",
+    description: "Technical baseline uniform set. High-performance manufacturing standards for professional athletic programs.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    rating: 4.9,
+    reviews: 31,
+    isProtex: true
+  },
+
+  // --- PREVIOUSLY POSTED ITEMS (PRESERVED) ---
   {
     id: 'skt-signature-hoodie-v3',
     title: "SKT Signature Archive Hoodie",
@@ -43,8 +297,6 @@ export const PRODUCTS: Product[] = [
     reviews: 42,
     isProtex: true
   },
-
-  // --- AMERICAN FIELD SERIES ---
   {
     id: 'skt-am-1',
     title: "SKT Diamond Elite Pro Baseball Uniform",
@@ -69,8 +321,6 @@ export const PRODUCTS: Product[] = [
     reviews: 420,
     isProtex: true
   },
-
-  // --- BASKETBALL ELITE COLLECTION (RESTORATION 1-20) ---
   {
     id: 'skt-bball-1',
     title: "SKT Dynasty Pro-Swingman Jersey",
@@ -83,236 +333,6 @@ export const PRODUCTS: Product[] = [
     reviews: 245,
     isProtex: true
   },
-  {
-    id: 'skt-bball-2',
-    title: "SKT Patriot USA Elite Uniform",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959046/usa-basketball-uniforms_lmxidn.jpg",
-    description: "National team inspired performance kit. Includes sublimated jersey and matching shorts for intense court sessions.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.9,
-    reviews: 112,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-3',
-    title: "SKT Maroon Dynasty Team Kit",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959009/MaroonBasketballUniform_o6zycg.jpg",
-    description: "Classic maroon and white collegiate style. Heavy-duty construction for high school and semi-pro teams.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.8,
-    reviews: 89,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-4',
-    title: "SKT Youth Elite Pro Basketball Kit",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959076/Youth-Basketball-Uniforms-manufacturer-Pakistan_ur1l7x.jpg",
-    description: "Professional grade youth basketball uniforms. Comfort and durability for rising stars in USA leagues.",
-    sizes: ["Y-S", "Y-M", "Y-L", "S"],
-    rating: 5.0,
-    reviews: 320,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-5',
-    title: "SKT Reversible Elite Scrimmage Jersey",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959007/Wholesale-Blank-Basketball-Uniforms-Youth-Unisex-Reversible-Basketball-Jersey_ljzsb0.webp",
-    description: "Dual-layer reversible jersey for practice. High-grade mesh for superior ventilation.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.7,
-    reviews: 56,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-6',
-    title: "SKT Z-Series Pro Court Uniform",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959075/ZWBK-700-F_vizasi.jpg",
-    description: "Technical Z-Series basketball uniform featuring laser-cut ventilation and reinforced stitching.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.9,
-    reviews: 74,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-7',
-    title: "SKT Modern League Performance Jersey",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959108/r2bTqPDVgvog-1_hgbxbr.jpg",
-    description: "State-of-the-art performance jersey with athletic tailoring. Features 4-way stretch fabric.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 5.0,
-    reviews: 132,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-8',
-    title: "SKT Varsity Prime Uniform Set",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959108/189-1_407fdb46-3f2a-4381-8fdd-26b09f0a65cb_mchjhk.jpg",
-    description: "Traditional varsity styling meets modern tech. Built to withstand a full high-stakes season.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.8,
-    reviews: 94,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-9',
-    title: "SKT Urban Court Elite Jersey",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/71uA4UbhXvL._AC_UY1000__rhhrri.jpg",
-    description: "Street-inspired basketball jersey for urban leagues. Bold graphics and relaxed fit.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.9,
-    reviews: 156,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-10',
-    title: "SKT Modern Pro Basketball Suit",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958928/BSuit0040_900x_g9jbkf.jpg",
-    description: "Next-gen basketball apparel. Sleek, minimal design with high-performance synthetic blends.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 5.0,
-    reviews: 42,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-11',
-    title: "SKT Classic Varsity Basketball Kit",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/183-1_a1023030-c00d-43ad-8f5c-1541d6348c01_bqxydt.jpg",
-    description: "Timeless design featuring premium tackle-twill options. Hand-crafted in Sialkot.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.7,
-    reviews: 118,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-12',
-    title: "SKT Prime League Basketball Uniform",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/Custom_Adult_Basketball_Uniforms_664264dfe7ddc_zhcmjr.jpg",
-    description: "Custom-grade league uniform with breathable mesh panels and moisture-control tech.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.9,
-    reviews: 67,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-13',
-    title: "SKT Full-Court Press Uniform",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959008/1-42_u5zayn.jpg",
-    description: "Aggressive styling and performance features for freedom of movement.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.8,
-    reviews: 83,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-14',
-    title: "SKT Baseline Pro Basketball Jersey",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959008/1-38_ldi0e1.jpg",
-    description: "Essential basketball jersey. Lightweight and airy with signature technical fit.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.9,
-    reviews: 145,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-15',
-    title: "SKT High-Performance Mesh Kit",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959010/03-1_rok8gj.jpg",
-    description: "Advanced mesh-based uniform set providing ultimate airflow for intense play.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.6,
-    reviews: 38,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-16',
-    title: "SKT Retro Archive Jersey",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959047/s-l1200_szuyx4.jpg",
-    description: "Nostalgic basketball jersey with a modern performance twist. Golden era aesthetics.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 5.0,
-    reviews: 91,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-17',
-    title: "SKT Custom League Pro Uniform",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959049/Custom_Adult_Basketball_Uniforms_664264dfe7ddc_jqmbze.jpg",
-    description: "Premium custom uniform set for organized leagues. High-density embroidery.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.9,
-    reviews: 52,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-18',
-    title: "SKT Metro Varsity Uniform",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959050/188-1_59d0b9a1-c567-4ad9-ad5f-2ba062b470d6_pao8pn.jpg",
-    description: "Urban varsity aesthetics favored by metropolitan city leagues across the USA.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.8,
-    reviews: 76,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-19',
-    title: "SKT Studio Vector Performance Set",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959077/realistic-basketball-jersey-front-and-back-view-mockup-free-vector_rp66dv.jpg",
-    description: "Aerodynamic fit and high-tech moisture management for semi-pro teams.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 4.7,
-    reviews: 29,
-    isProtex: true
-  },
-  {
-    id: 'skt-bball-20',
-    title: "SKT Pro-League Performance Jersey",
-    category: "Team Uniforms",
-    price: 35.00,
-    image_url: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769958927/mens_bball14_vhu6hj.jpg",
-    description: "The ultimate performance jersey for high-stakes games. Sweat-resistant ergonomic cut.",
-    sizes: ["S", "M", "L", "XL"],
-    rating: 5.0,
-    reviews: 104,
-    isProtex: true
-  },
-
-  // --- STREETWEAR & STUDIO GEAR ---
   {
     id: 'skt-premium-hoodie-v2',
     title: "Premium Studio Hoodie",
@@ -366,9 +386,9 @@ export const PRODUCTS: Product[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "Sialkot to USA: The Apparel Revolution",
-    summary: "How Salman SKT is redefining team sports and streetwear through a factory-direct global model.",
-    date: "June 20, 2025",
-    image: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959046/usa-basketball-uniforms_lmxidn.jpg"
+    title: "The All-American Basketball League Standard",
+    summary: "How Salman SKT's factory-direct model is providing tournament-grade uniforms to pro-am and collegiate leagues across the USA.",
+    date: "June 25, 2025",
+    image: "https://res.cloudinary.com/dzt2nrkjr/image/upload/v1769959106/unisex-nike-stephen-curry-black-golden-state-warriors-swingman-badge-player-jersey-city-edition_pi5202000_ff_5202680-898016d5c53d4c7303a4_full_s1hfmj.jpg"
   }
 ];
